@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/w3.css">
+  <link rel="stylesheet" href="css/w3-theme-black.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <script language='javascript' type="text/javascript" src="js/jquery-3.7.1.min.js"></script>
+  <script language='javascript' type="text/javascript" src="js/Sortable.min.js"></script>
+  <script language='javascript' type="text/javascript" src="js/logicEdit.js"></script>
+  <title>Ofen- und Heizungssteuerung</title>
+  <style>
+    html,
+    body,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-family: "Trebuchet MS", Helvetica, sans-serif
+    }
+  </style>
+</head>
+
+<script>
+  var temperaturNames = [];
+  for (let i = 0; i < 24; i++) {
+    temperaturNames[i] = `Measurement ${i + 1}`;
+  }
+  var outputNames = [];
+  for (let i = 0; i < 12; i++) {
+    outputNames[i] = `Relays ${i + 1}`;
+  }
+  var inputNames = [];
+  for (let i = 0; i < 8; i++) {
+    inputNames[i] = `Eingang ${i + 1}`;
+  }
+
+  function meineFunktion() {
+    let body = '<div style="height:100%; width:100%; overflow:auto"><table class="w3-table-all w3-hoverable"><tr><th> Bezeichnung </th><th> Wert </th></tr>';
+    for (let i = 0; i < 24; i++) {
+      body += `<tr><td id="name_tempholdingreg${i}">${temperaturNames[i]}</td><td style="text-align: right;" id="tempholdingreg${i}" class="div100"> &nbsp; </td></tr>`;
+    }
+    for (let i = 0; i < 8; i++) {
+      body += `<tr><td id="name_inputintern${i}">${inputNames[i]}</td><td style="text-align: right;" id="inputintern${i}"> &nbsp; </td></tr>`;
+    }
+    for (let i = 0; i < 12; i++) {
+      body += `<tr><td id="name_relay${i}">${outputNames[i]}</td><td style="text-align: right;" id="relay${i}" class="lightbulb"> &nbsp; </td></tr>`;
+    }
+    body += '</table></div>';
+    $("#mySpace").html(body);
+
+    // $.getJSON("temperatures.json", function (data) {
+    //   //console.log(data);
+    //   if (data.name && Array.isArray(data.name) &&
+    //     data.value && Array.isArray(data.value)) {
+    //     $.each(data.name, function (i, item) {
+    //       $("#name"+i).text(item);
+    //       $("#value"+i).text(((data.value[i] || 0) / 100).toFixed(2));
+    //     })
+    //   }
+    // });
+  }
+
+  function buildPage(anchor) {
+    meineFunktion();
+  }
+
+
+  function getAnchor() {
+    var currentUrl = document.URL,
+      urlParts = currentUrl.split('#');
+
+    return (urlParts.length > 1) ? urlParts[1] : null;
+  }
+
+  
+  function doPage(e) {
+    var anchor = getAnchor();
+    console.log(anchor);
+    $("#mySpace").empty();
+    $("#myAddon").empty();
+    switch (anchor) {
+      case "": {
+        break;
+      }
+      case "process": {
+        buildPageProcess();
+        break;
+      }
+      default:
+        buildPage(anchor);
+    }
+    getReadings();
+  }
+
+  $(window).on('hashchange', doPage);
+  $(window).on('load', doPage);
+
+
+</script>
+
+<body>
+
+  <!-- Navbar -->
+  <div class="w3-top">
+    <div class="w3-bar w3-theme w3-top w3-left-align w3-large">
+      <a class="w3-bar-item w3-button w3-hide-large w3-hover-white w3-large w3-theme-l1" href="javascript:void(0)"
+        onclick="w3_open()"><i class="fa fa-bars"></i></a>
+      <a href="#" class="w3-bar-item w3-button w3-theme-l1"><i class="fa fa-home"></i></a>
+      <i id="AjaxLoad" class="w3-bar-item w3-right w3-large fa fa-spinner fa-pulse fa-fw" style="display:none"></i>
+      <i id="AjaxWork" class="w3-bar-item w3-right w3-large fa fa-cog fa-spin fa-fw" style="display:none"></i>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="w3-sidebar w3-bar-block w3-collapse w3-large w3-theme-l5 w3-animate-left"
+    style="z-index:3;width:250px;margin-top:43px;" id="mySidebar">
+    <a href="javascript:void(0)" onclick="w3_close()"
+      class="w3-right w3-xlarge w3-padding-large w3-hover-black w3-hide-large" title="Close Menu">
+      <i class="fa fa-remove"></i>
+    </a>
+    <h4 class="w3-bar-item"><b>Menu</b></h4>
+    <a class="w3-bar-item w3-button w3-medium w3-hover-black" href="#values">jQuery</a>
+    <a class="w3-bar-item w3-button w3-medium w3-hover-black" href="#values">Script</a>
+    <a class="w3-bar-item w3-button w3-medium w3-hover-black" href="#process">Design Process</a>
+    <br>
+    <br>
+  </div>
+
+  <!-- Overlay effect when opening sidebar on small screens -->
+  <div class="w3-overlay w3-hide-large" onclick="w3_close()" style="cursor:pointer" title="close side menu"
+    id="myOverlay"></div>
+
+  <!-- Main content: shift it to the right by 250 pixels when the sidebar is visible -->
+  <div class="w3-main" style="margin-left:250px">
+
+    <div class="w3-container" style="height:100%; width:100%; padding:0px">
+      <div style="height:28px; width:100%">
+        <p>&nbsp;</p>
+      </div>
+      <div id="mySpace" style="height:100%; width:100%">
+        <p>&nbsp;</p>
+      </div>
+    </div>
+
+    <footer id="myFooter">
+      <div id="myExtension" class="w3-container w3-theme-l2">
+        <p>&nbsp;</p>
+      </div>
+
+      <div class="w3-container w3-theme-l1 w3-center w3-tiny">
+        <a class="w3-bar-item w3-button w3-left w3-theme-l1"><i class="fa fa-copyright"></i> 2024 Christian
+          Tr&auml;ger</a>
+        <a id="myAddon" class="w3-bar-item w3-center w3-theme-l1">&nbsp;</a>
+        <a class="w3-bar-item w3-button w3-hover-white w3-right w3-theme-l1" href="javascript:void(0)"
+          onclick="myExtension_toggle()"><i id="myExtensionToggle" class="fa fa-arrow-up"></i></a>
+      </div>
+    </footer>
+
+    <!-- END MAIN -->
+  </div>
+  <script language='javascript' type="text/javascript" src="js/menu.js"></script>
+  <script language='javascript' type="text/javascript" src="js/ws.js"></script>
+</body>
+
+</html>
