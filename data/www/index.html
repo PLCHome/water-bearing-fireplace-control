@@ -8,8 +8,9 @@
   <link rel="stylesheet" href="css/w3-theme-black.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <script language='javascript' type="text/javascript" src="js/jquery-3.7.1.min.js"></script>
-  <script language='javascript' type="text/javascript" src="js/Sortable.min.js"></script>
-  <script language='javascript' type="text/javascript" src="js/logicEdit.js"></script>
+  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/Sortable.min.js"></script>
+  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/logicEdit.js"></script>
+  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/main.js"></script>
   <title>Ofen- und Heizungssteuerung</title>
   <style>
     html,
@@ -24,84 +25,6 @@
     }
   </style>
 </head>
-
-<script>
-  var temperaturNames = [];
-  for (let i = 0; i < 24; i++) {
-    temperaturNames[i] = `Measurement ${i + 1}`;
-  }
-  var outputNames = [];
-  for (let i = 0; i < 12; i++) {
-    outputNames[i] = `Relays ${i + 1}`;
-  }
-  var inputNames = [];
-  for (let i = 0; i < 8; i++) {
-    inputNames[i] = `Eingang ${i + 1}`;
-  }
-
-  function meineFunktion() {
-    let body = '<div style="height:100%; width:100%; overflow:auto"><table class="w3-table-all w3-hoverable"><tr><th> Bezeichnung </th><th> Wert </th></tr>';
-    for (let i = 0; i < 24; i++) {
-      body += `<tr><td id="name_tempholdingreg${i}">${temperaturNames[i]}</td><td style="text-align: right;" id="tempholdingreg${i}" class="div100"> &nbsp; </td></tr>`;
-    }
-    for (let i = 0; i < 8; i++) {
-      body += `<tr><td id="name_inputintern${i}">${inputNames[i]}</td><td style="text-align: right;" id="inputintern${i}"> &nbsp; </td></tr>`;
-    }
-    for (let i = 0; i < 12; i++) {
-      body += `<tr><td id="name_relay${i}">${outputNames[i]}</td><td style="text-align: right;" id="relay${i}" class="lightbulb"> &nbsp; </td></tr>`;
-    }
-    body += '</table></div>';
-    $("#mySpace").html(body);
-
-    // $.getJSON("temperatures.json", function (data) {
-    //   //console.log(data);
-    //   if (data.name && Array.isArray(data.name) &&
-    //     data.value && Array.isArray(data.value)) {
-    //     $.each(data.name, function (i, item) {
-    //       $("#name"+i).text(item);
-    //       $("#value"+i).text(((data.value[i] || 0) / 100).toFixed(2));
-    //     })
-    //   }
-    // });
-  }
-
-  function buildPage(anchor) {
-    meineFunktion();
-  }
-
-
-  function getAnchor() {
-    var currentUrl = document.URL,
-      urlParts = currentUrl.split('#');
-
-    return (urlParts.length > 1) ? urlParts[1] : null;
-  }
-
-  
-  function doPage(e) {
-    var anchor = getAnchor();
-    console.log(anchor);
-    $("#mySpace").empty();
-    $("#myAddon").empty();
-    switch (anchor) {
-      case "": {
-        break;
-      }
-      case "process": {
-        buildPageProcess();
-        break;
-      }
-      default:
-        buildPage(anchor);
-    }
-    getReadings();
-  }
-
-  $(window).on('hashchange', doPage);
-  $(window).on('load', doPage);
-
-
-</script>
 
 <body>
 
@@ -163,8 +86,8 @@
 
     <!-- END MAIN -->
   </div>
-  <script language='javascript' type="text/javascript" src="js/menu.js"></script>
-  <script language='javascript' type="text/javascript" src="js/ws.js"></script>
+  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/menu.js"></script>
+  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/ws.js"></script>
 </body>
 
 </html>

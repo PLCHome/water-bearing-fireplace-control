@@ -1,7 +1,7 @@
 #include "myServer.h"
 #include <ArduinoJson.h>
 
-#define _ASYNC_WEBSERVER_LOGLEVEL_ 4
+#define _ASYNC_WEBSERVER_LOGLEVEL_ 10
 
 #include <AsyncTCP.h>
 #include <WebServer_WT32_ETH01.h>
@@ -171,6 +171,59 @@ void handleFileList(AsyncWebServerRequest *request)
     request->send(200, "text/json", output);
 }
 
+void handleRestart(AsyncWebServerRequest *request)
+{
+    request->send(200);
+    ESP.restart();
+}
+
+void handleForwardIndex(AsyncWebServerRequest *request)
+{
+    request->redirect("/index.html");
+}
+
+void handleOK(AsyncWebServerRequest *request)
+{
+    request->send(200);
+}
+
+void handleFileDelete(AsyncWebServerRequest *request)
+{
+    // Den Dateinamen aus der URL-Parameter abfragen
+    String filename = "";
+    if (request->hasParam("filename"))
+    {
+        filename = request->getParam("filename")->value();
+    }
+
+    if (filename == "")
+    {
+        request->send(400, "text/plain", "Dateiname fehlt in der Anfrage");
+        return;
+    }
+
+    // Überprüfen, ob die Datei existiert
+    if (SPIFFS.exists(filename))
+    {
+        if (SPIFFS.remove(filename))
+        {
+            Serial.println("Datei erfolgreich gelöscht: " + filename);
+            request->send(200, "text/plain", "Datei erfolgreich gelöscht: " + filename);
+        }
+        else
+        {
+            Serial.println("Fehler beim Löschen der Datei: " + filename);
+            request->send(500, "text/plain", "Fehler beim Löschen der Datei");
+        }
+    }
+    else
+    {
+        Serial.println("Datei existiert nicht: " + filename);
+        request->send(404, "text/plain", "Datei nicht gefunden: " + filename);
+    }
+    request->redirect("/");
+}
+
 void initFS()
 {
     // Initialize LittleFS/SPIFFS file-system
@@ -191,36 +244,55 @@ void initFS()
     }
 }
 
-void onUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-  //Handle upload
+// handles uploads
+void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
+{
+    String logmessage = "Client:" + request->client()->remoteIP().toString() + " " + request->url();
+    Serial.println(logmessage);
+
+    if (!index)
+    {
+        logmessage = "Upload Start: " + String(filename);
+        // open the file on first call and store the file handle in the request object
+        request->_tempFile = SPIFFS.open("/" + filename, "w");
+        Serial.println(logmessage);
+    }
+
+    if (len)
+    {
+        // stream the incoming chunk to the opened file
+        request->_tempFile.write(data, len);
+        logmessage = "Writing file: " + String(filename) + " index=" + String(index) + " len=" + String(len);
+        Serial.println(logmessage);
+    }
+
+    if (final)
+    {
+        logmessage = "Upload Complete: " + String(filename) + ",size: " + String(index + len);
+        // close the file handle as the upload is now done
+        request->_tempFile.close();
+        Serial.println(logmessage);
+        request->redirect("/");
+    }
 }
 
 void initWebserver()
 {
     // SERVER INIT
-    // list directory
+    // Filesystem
     server.on("/list", HTTP_GET, handleFileList);
-    server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request)
-              { ESP.restart(); });
+    server.on("/upload", HTTP_POST, handleOK, handleUpload);
+    server.on("/delete-file", HTTP_GET, handleFileDelete);
 
-    // Web Page handlers
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->redirect("/index.html"); });
-    server.on("/index", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->redirect("/index.html"); });
+    server.on("/reboot", HTTP_GET, handleRestart);
 
-    // server.serveStatic("/page2", SPIFFS, "/page2.html");
-    // server.serveStatic("/page3", SPIFFS, "/page3.html");
+    // Web Page forward
+    server.on("/", HTTP_GET, handleForwardIndex);
+    server.on("/index", HTTP_GET, handleForwardIndex);
+
+    // Web Files
     server.serveStatic("/", SPIFFS, "/www/");
     server.serveStatic("/config/", SPIFFS, "/config/");
-    server.on("/config", HTTP_POST, [](AsyncWebServerRequest *request){
-        request->send(200);
-    }, onUpload);    
-    // Other usage with various web site assets:
-    // server.serveStatic("/assets/css/test.css", SPIFFS, "/assets/css/test.css"); // Style sheet
-    // server.serveStatic("/assets/js/test_script.js", SPIFFS,"/assets/js/test_script.js"); // Javascript
-    // server.serveStatic("/assets/font/fonticons.ttf", SPIFFS,"/assets/font/fonticons.ttf"); // font
-    // server.serveStatic("/assets/picture.png", SPIFFS,"/assets/picture.png"); // Picture
 
     server.begin();
 }

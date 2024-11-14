@@ -5,6 +5,7 @@ const PT_TEMPT = 1;
 const PT_LOGIC = 2;
 const PT_OUT = 3;
 
+const POINTSFILENAME = "/config/points.json";
 
 var sortable;
 
@@ -18,20 +19,20 @@ const barTemperature = `<form>
 <div class="edit-cont">
   <div class="edit-bar">
     <div class="edit-item">
-      <input id="name" class="name_input""/>
-      <label for="name">name</label>
+      <input id="name-%id%" class="name name_input""/>
+      <label for="name-%id%">name</label>
     </div>
     <div class="edit-item">
-      <select id="tpos" class="tempselect" ></select>
-      <label for="tpos">temperature measurement <a class="value div100">&nbsp;</a></label>
+      <select id="tpos-%id%" class="tpos tempselect" ></select>
+      <label for="tpos-%id%">temperature measurement <a class="value div100">&nbsp;</a></label>
     </div>
-    <div class="edit-item">
-      <input id="ton" class="2dec_input"/>
-      <label for="ton">temperature on</label>
+    <div class="edit-sitem">
+      <input id="ton-%id%" class="ton 2dec_input"/>
+      <label for="ton-%id%">temperature on</label>
     </div>
-    <div class="edit-item">
-      <input id="toff" class="2dec_input"/>
-      <label for="toff">temperature off</label>
+    <div class="edit-sitem">
+      <input id="toff-%id%" class="toff 2dec_input"/>
+      <label for="toff-%id%">temperature off</label>
     </div>
   </div>
 </div>
@@ -47,24 +48,24 @@ const bar2Temperature = `<form>
 <div class="edit-cont">
   <div class="edit-bar">
     <div class="edit-item">
-      <input id="name" class="name_input""/>
-      <label for="name">name</label>
+      <input id="name-%id%" class="name name_input""/>
+      <label for="name-%id%">name</label>
     </div>
     <div class="edit-item">
-      <select id="tpos" class="tempselect" ></select>
-      <label for="tpos">temperature measurement <a class="value div100">&nbsp;</a></label>
+      <select id="tpos-%id%" class="tpos tempselect" ></select>
+      <label for="tpos-%id%">temperature measurement <a class="value div100">&nbsp;</a></label>
     </div>
     <div class="edit-item">
-      <select id="tpos2"" class="tempselect" ></select>
-      <label for="tpos2"">hysteresis measurement <a class="value div100">&nbsp;</a></label>
+      <select id="tpos2-%id%" class="tpos2 tempselect" ></select>
+      <label for="tpos2-%id%">hysteresis measurement <a class="value div100">&nbsp;</a></label>
     </div>
-    <div class="edit-item">
-      <input id="t2plus" class="2dec_input"/>
-      <label for="t2plus">hysteresis on</label>
+    <div class="edit-sitem">
+      <input id="t2plus-%id%" class="t2plus 2dec_input"/>
+      <label for="t2plus-%id%">hysteresis on</label>
     </div>
-    <div class="edit-item">
-      <input id="t2minus" class="2dec_input"/>
-      <label for="t2minus">hysteresis off</label>
+    <div class="edit-sitem">
+      <input id="t2minus-%id%" class="t2minus 2dec_input"/>
+      <label for="t2minus-%id%">hysteresis off</label>
     </div>
   </div>
 </div>
@@ -80,20 +81,20 @@ const barLogic = `<form>
 <div class="edit-cont">
   <div class="edit-bar">
     <div class="edit-item">
-      <input id="name" class="name_input""/>
-      <label for="name">name</label>
+      <input id="name-%id%" class="name name_input""/>
+      <label for="name-%id%">name</label>
     </div>
     <div class="edit-item">
-      <select id="ida" class="processelect" ></select>
-      <label for="ida">process a <a class="value">&nbsp;</a></label>
+      <select id="ida-%id%" class="ida processelect" ></select>
+      <label for="ida-%id%">process a <a class="value">&nbsp;</a></label>
+    </div>
+    <div class="edit-sitem">
+      <select id="logic-%id%" class="logic logcselect" ></select>
+      <label for="logic-%id%">logic</label>
     </div>
     <div class="edit-item">
-      <select id="logic" class="logcselect" ></select>
-      <label for="logic">logic</label>
-    </div>
-    <div class="edit-item">
-      <select id="idb" class="processelect" ></select>
-      <label for="idb">process b <a class="value">&nbsp;</a></label>
+      <select id="idb-%id%" class="idb processelect" ></select>
+      <label for="idb-%id%">process b <a class="value">&nbsp;</a></label>
     </div>
   </div>
 </div>
@@ -109,20 +110,20 @@ const barOutput = `<form>
 <div class="edit-cont">
   <div class="edit-bar">
     <div class="edit-item">
-      <input id="name" class="name_input""/>
-      <label for="name">name</label>
+      <input id="name-%id%" class="name name_input""/>
+      <label for="name-%id%">name</label>
     </div>
     <div class="edit-item">
-      <select id="ida" class="processelect" ></select>
-      <label for="ida">process <a class="value">&nbsp;</a></label>
+      <select id="ida-%id%" class="ida processelect" ></select>
+      <label for="ida-%id%">process <a class="value">&nbsp;</a></label>
+    </div>
+    <div class="edit-sitem">
+      <select id="opos-%id%" class="opos inversselect" ></select>
+      <label for="opos-%id%">logic</label>
     </div>
     <div class="edit-item">
-      <select id="opos" class="inversselect" ></select>
-      <label for="opos">logic</label>
-    </div>
-    <div class="edit-item">
-      <select id="op" class="outselect" ></select>
-      <label for="op">output <a class="value">&nbsp;</a></label>
+      <select id="op-%id%" class="op outselect" ></select>
+      <label for="op-%id%">output <a class="value">&nbsp;</a></label>
     </div>
   </div>
 </div>
@@ -143,7 +144,8 @@ function setAtt() {
     .attr("min", "-99.99")
     .attr("max", "99.99")
     .attr("autocomplete", "off")
-    .addClass("w3-input");
+    .addClass("w3-input")
+    .css({ "text-align": "right" });
   $(".name_input")
     .attr("type", "text")
     .attr("autocomplete", "off")
@@ -153,7 +155,15 @@ function setAtt() {
       makeProcessSelect();
     });
   $(".tempselect")
-    .addClass("w3-select");
+    .addClass("w3-select")
+    .off("change")
+    .on("change", function () {
+      var sel = $(this).find('option:selected').val();
+      if (sel != "") {
+        $(this).parent().find('.value').prop("id", "tempholdingreg" + sel).html("");
+        getReadings();
+      }
+    });
   $("label")
     .css({ "font-size": "0.8em" });
   $(".processelect")
@@ -177,6 +187,9 @@ function setAtt() {
   $(".edit-item")
     .addClass("w3-bar-item")
     .css({ "width": "15em" });
+  $(".edit-sitem")
+    .addClass("w3-bar-item")
+    .css({ "min-width": "7em" });
   $(".btn-item")
     .addClass("w3-bar-item")
   $(".process-del")
@@ -200,7 +213,7 @@ function setAtt() {
     .addClass("w3-button")
     .off("click")
     .on("click", function () {
-      let type = $(this).attr("type");
+      let type = $(this).attr("data-type");
       createNewRow(type)
     });
   $(".mySaveButton")
@@ -215,15 +228,6 @@ function setAtt() {
   makeLogicSelect();
   makeInversSelect();
 
-  $(".tempselect")
-  .off("change")
-  .on("change", function () {
-    var sel = $(this).find('option:selected').val();
-    if (sel!="") {
-      $(this).parent().find('.value').prop("id", "tempholdingreg"+sel).html("");
-      getReadings();
-    }
-  });
 }
 
 function makeLogicSelect() {
@@ -246,7 +250,7 @@ function makeProcessSelect() {
   var order = sortable.toArray();
   var vals = {};
   for (let i = 0; i < order.length; i++) {
-    vals[order[i]] = $(`[data-id='${order[i]}'] #name`).val();
+    vals[order[i]] = $(`[data-id='${order[i]}'] .name`).val();
   }
   updateSelect("processelect", vals)
 }
@@ -254,7 +258,7 @@ function makeProcessSelect() {
 function updateSelect(calss, vals) {
   $(`.${calss}`).each(function (index) {
     var sel = $(this).find('option:selected').val();
-    var html = `<option value="" disabled selected>Choose your option</option>`;
+    var html = `<option value="" disabled selected>choose</option>`;
     var key = Object.keys(vals);
     for (let i = 0; i < key.length; i++) {
       html += `<option value="${key[i]}">${vals[i]}</option>`;
@@ -265,24 +269,23 @@ function updateSelect(calss, vals) {
 }
 
 function createNewRow(type) {
-  var val = {};
+  var val = { "type": parseInt(type, 10), "id": 0 };
   var order = sortable.toArray();
-  let row = 0;
-  while (order.includes(String(row)) || row > 100) row++;
-  switch (parseInt(type, 10)) {
-    case PT_TEMP: val = { ton: 22, toff: 23 }; break;
-    case PT_TEMPT: val = { t2plus: 1, t2minus: -1, }; break;
-    case PT_LOGIC: val = {}; break;
-    case PT_OUT: val = {}; break;
+  while (order.includes(String(val.id))) val.id++;
+  switch (val.type) {
+    case PT_TEMP: val.ton = 22; val.toff = 23; break;
+    case PT_TEMPT: val.t2plus = 1; val.t2minus = -1; break;
+    case PT_LOGIC: break;
+    case PT_OUT: break;
   }
-  val.name = `Process ${row + 1}`;
-  createRow(type, row, val)
+  val.name = `Process ${val.id + 1}`;
+  createRow(val)
 }
 
-function createRow(type, row, val) {
-  body = `<div data-id="${row}" type="${type}" class="list-group-item">`;
-  switch (parseInt(type, 10)) {
-    case PT_TEMP: body += barTemperature; break;
+function createRow(val) {
+  body = `<div data-id="${val.id}" data-type="${val.type}" class="list-group-item">`;
+  switch (parseInt(val.type, 10)) {
+    case PT_TEMP: body += barTemperature.replaceAll(`%id%`, `${val.id}`); break;
     case PT_TEMPT: body += bar2Temperature; break;
     case PT_LOGIC: body += barLogic; break;
     case PT_OUT: body += barOutput; break;
@@ -290,19 +293,19 @@ function createRow(type, row, val) {
   body += `</div>`;
   $("#mySortArea").append(body);
   setAtt();
-  $(`[data-id='${row}'] #name`).val(val.name);
-  $(`[data-id='${row}'] #name`).trigger('change');
-  $(`[data-id='${row}'] #ton`).val(parseFloat(val.ton).toFixed(2));
-  $(`[data-id='${row}'] #toff`).val(parseFloat(val.toff).toFixed(2));
-  $(`[data-id='${row}'] #t2plus`).val(parseFloat(val.t2plus).toFixed(2));
-  $(`[data-id='${row}'] #t2minus`).val(parseFloat(val.t2minus).toFixed(2));
+  $(`[data-id='${val.id}'] .name`).val(val.name);
+  $(`[data-id='${val.id}'] .name`).trigger('change');
+  $(`[data-id='${val.id}'] .ton`).val((parseFloat(val.ton)/100).toFixed(2));
+  $(`[data-id='${val.id}'] .toff`).val((parseFloat(val.toff)/100).toFixed(2));
+  $(`[data-id='${val.id}'] .t2plus`).val((parseFloat(val.t2plus)/100).toFixed(2));
+  $(`[data-id='${val.id}'] .t2minus`).val((parseFloat(val.t2minus)/100).toFixed(2));
   function setOption(id) {
-    $(`[data-id='${row}'] #${id} option`)
-      .filter(`[value=""]`)
+    var ele = $(`[data-id='${val.id}'] .${id} option`);
+    ele.filter(`[value=""]`)
       .attr('selected', true)
-    $(`[data-id='${row}'] #${id} option`)
-      .filter(`[value="${val[id]}"]`)
+    ele.filter(`[value="${val[id]}"]`)
       .attr('selected', true)
+    ele.trigger('change');
   }
   setOption('tpos')
   setOption('tpos2')
@@ -322,10 +325,10 @@ function buildPageProcess() {
     fallbackTolerance: 3, // So that we can select items on mobile
     animation: 150
   });
-  body = `<a type="${PT_TEMP}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature value</a>`;
-  body += `<a type="${PT_TEMPT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature to another</a>`;
-  body += `<a type="${PT_LOGIC}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> logic</a>`;
-  body += `<a type="${PT_OUT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> output</a>`;
+  body = `<a data-type="${PT_TEMP}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature value</a>`;
+  body += `<a data-type="${PT_TEMPT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature to another</a>`;
+  body += `<a data-type="${PT_LOGIC}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> logic</a>`;
+  body += `<a data-type="${PT_OUT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> output</a>`;
   body += `<a class="mySaveButton"><i class="fa-regular fa-floppy-disk"></i> save</a>`;
   $("#myAddon").append(body);
   setAtt();
@@ -333,20 +336,28 @@ function buildPageProcess() {
 }
 
 function loadJSON() {
-  let json = `[{"id":0,"type":0,"name":"Test 1","ton":22,"toff":23,"tpos":0},
-  {"id":1,"type":1,"name":"Test 2","t2plus":1,"t2minus":-1,"tpos":1,"tpos2":2},
-  {"id":2,"type":2,"name":"Test 3","logic":3,"ida":0,"idb":1},
-  {"id":3,"type":3,"name":"Test 4","ida":2,"opos":1,"op":0}]`
-
-
-  var vals = JSON.parse(json);
-  for (var i = 0; i < vals.length; i++) {
-    createRow(vals[i].type, i, vals[i])
-  }
+  
+  $.getJSON(POINTSFILENAME, function (data) {
+    // Prüfen, ob die Daten ein Array sind
+    if (Array.isArray(data)) {
+      // Jedes Element im Array an die Callback-Funktion übergeben
+      for (var i = 0; i < data.length; i++) {
+        createRow(data[i]);
+      }
+    } else {
+      console.log("Die geladenen Daten sind kein Array.");
+    }
+  }).fail(function (jqxhr, textStatus, error) {
+    console.log("Fehler beim Laden der JSON-Daten:", textStatus, error);
+  });
 }
 
+
+
 function saveJSON() {
-  console.log(buildJSON());
+  var json = buildJSON();
+  console.log(json);
+  uploadString(POINTSFILENAME, json);
 }
 
 function buildJSON() {
@@ -356,29 +367,38 @@ function buildJSON() {
     let ele = $(`[data-id='${order[i]}']`);
     vals[i] = {
       "id": parseFloat(order[i]),
-      "type": parseFloat(ele.attr('type'))
+      "type": parseFloat(ele.attr('data-type'))
     }
 
-    function setValues(name, string) {
-      ele.find(`#${name}`).each(function () {
+    function setValues(name, func) {
+      ele.find(`.${name}`).each(function () {
         vals[i][name] = $(this).val()
-        if (!string) {
-          vals[i][name] = parseFloat(vals[i][name])
-        }
+        vals[i][name] = func(vals[i][name])
       });
     }
-    setValues('name', true)
-    setValues('ton', false)
-    setValues('toff', false)
-    setValues('t2plus', false)
-    setValues('t2minus', false)
-    setValues('tpos', false)
-    setValues('tpos2', false)
-    setValues('logic', false)
-    setValues('ida', false)
-    setValues('idb', false)
-    setValues('opos', false)
-    setValues('op', false)
+
+    function valString(val){
+      return val.toString();
+    }
+    function valInt(val){
+      return parseInt(val,10);
+    }
+    function valInt100(val){
+      return parseFloat(val,10)*100;
+    }
+
+    setValues('name', valString)
+    setValues('ton', valInt100)
+    setValues('toff', valInt100)
+    setValues('t2plus', valInt100)
+    setValues('t2minus', valInt100)
+    setValues('tpos', valInt)
+    setValues('tpos2', valInt)
+    setValues('logic', valInt)
+    setValues('ida', valInt)
+    setValues('idb', valInt)
+    setValues('opos', valInt)
+    setValues('op', valInt)
   }
   return JSON.stringify(vals);
 }

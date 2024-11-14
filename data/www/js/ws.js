@@ -10,9 +10,13 @@ function onload(event) {
     initWebSocket();
 }
 
+var toGetReadings;
 function getReadings() {
-    if (websocket)
-        websocket.send("getReadings");
+    clearTimeout(toGetReadings);
+    toGetReadings = setTimeout(function () {
+        if (websocket)
+            websocket.send("getReadings");
+    }, 1000)
 }
 
 function sendData(data) {
@@ -50,7 +54,7 @@ function setValue(path, val) {
         if (ele.hasClass("div100")) {
             html = ((val || 0) / 100).toFixed(2);
         } else if (ele.hasClass("lightbulb")) {
-            html = `<i class="${val ? 'fa-solid':'fa-regular'} fa-lightbulb" onClick="sendData({${path}:${!val}});"></i>`
+            html = `<i class="${val ? 'fa-solid' : 'fa-regular'} fa-lightbulb" onClick="sendData({${path}:${!val}});"></i>`
         } else {
             html = val;
         }
@@ -74,4 +78,86 @@ function onMessage(event) {
         }
     }
     change('', myObj);
+}
+
+function uploadString(filename, fileContent) {
+    // Entferne führenden Slash (falls vorhanden) vom Dateinamen
+    if (filename.startsWith("/")) {
+        filename = filename.substring(1); // Entfernt das erste Zeichen (den Slash)
+    }
+
+    // Blob aus dem Textinhalt erstellen
+    var strblob = new Blob([fileContent], { type: 'text/plain' });
+
+    // FormData erstellen und die Datei sowie andere Felder anhängen
+    var formdata = new FormData();
+    formdata.append("file", strblob, filename);
+    formdata.append("field-1", "field-1-data"); // Beispiel für ein weiteres Feld
+
+    // AJAX-Request ausführen
+    $.ajax({
+        url: "/upload",
+        type: "POST",
+        data: formdata,
+        processData: false, // verhindert die automatische Verarbeitung von FormData
+        contentType: false, // verhindert das Setzen des Content-Type Headers (wichtig für FormData)
+        success: function (result) {
+            console.log("Upload erfolgreich:", result); // Erfolgsmeldung
+        },
+        error: function (xhr, status, error) {
+            // Detaillierte Fehlerbehandlung
+            console.log("Fehler beim Upload:", error);
+            console.log("Status:", status);
+            console.log("XHR-Status:", xhr.status);
+            console.log("XHR-Antwort:", xhr.responseText);
+        }
+    });
+}
+
+function getFileNameFromUrl(url) {
+    // Extrahiert den Dateinamen aus der URL
+    return url.substring(url.lastIndexOf('/') + 1);
+}
+
+// Funktion zum Herunterladen einer Datei
+function downloadFile(fileUrl, fileName) {
+    // Wenn der Dateiname nicht angegeben wurde, versuche, ihn aus der URL zu extrahieren
+    fileUrl = fileUrl.replace('/www/','/');
+
+    if (!fileName) {
+        fileName = getFileNameFromUrl(fileUrl);
+    }
+
+    // Erstelle ein unsichtbares <a>-Tag
+    var a = document.createElement('a');
+    a.href = fileUrl;  // Setze die URL der Datei
+    a.download = fileName;  // Setze den Namen der Datei, die heruntergeladen wird
+
+    // Füge das <a>-Tag zum DOM hinzu
+    document.body.appendChild(a);
+
+    // Simuliere den Klick auf den Download-Link
+    a.click();
+
+    // Entferne das <a>-Tag nach dem Klick, um den DOM sauber zu halten
+    document.body.removeChild(a);
+}
+
+function deleteFile(filename, Callback) {
+    cb = Callback;
+    $.ajax({
+        url: '/delete-file',           // Die URL, die aufgerufen werden soll
+        type: 'GET',                   // HTTP-Methode (GET)
+        data: { filename: filename },  // Der Dateiname als Query-Parameter
+        success: function(response) {
+            // Erfolg: Die Antwort vom Server wird hier verarbeitet
+            console.log("Erfolgreich gelöscht: " + response);
+            alert("Erfolgreich gelöscht: " + response);
+        },
+        error: function(xhr, status, error) {
+            // Fehlerbehandlung, falls etwas schief geht
+            console.error("Fehler beim Löschen der Datei: " + error);
+            alert("Fehler beim Löschen der Datei.");
+        }
+    });
 }

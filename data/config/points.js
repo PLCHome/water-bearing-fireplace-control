@@ -1,0 +1,1 @@
+[{"id":0,"type":0,"name":"Test 1","ton":2300,"toff":2400,"tpos":8},{"id":1,"type":1,"name":"Test 2","t2plus":100,"t2minus":-100,"tpos":1,"tpos2":2},{"id":2,"type":2,"name":"Test 3","logic":1,"ida":0,"idb":1},{"id":3,"type":3,"name":"Test 4","ida":0,"opos":0,"op":0}]
