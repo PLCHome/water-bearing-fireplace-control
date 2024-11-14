@@ -153,8 +153,6 @@ void handleFileList(AsyncWebServerRequest *request)
 
             output += "{\"type\":\"";
             output += (file.isDirectory()) ? "dir" : "file";
-            output += "\",\"name\":\"";
-            output += String(file.name());
             output += "\",\"path\":\"";
             output += String(file.path());
             output += "\",\"size\":\"";

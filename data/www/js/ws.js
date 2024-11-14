@@ -114,6 +114,45 @@ function uploadString(filename, fileContent) {
     });
 }
 
+function uploadFile(file, filename, cb) {
+    // Entferne führenden Slash (falls vorhanden) vom Dateinamen
+    if (filename.startsWith("/")) {
+        filename = filename.substring(1); // Entfernt das erste Zeichen (den Slash)
+    }
+
+    if (!file) {
+        console.log("Keine Datei ausgewählt.");
+        return;
+    }
+
+    // FormData erstellen und die Datei sowie andere Felder anhängen
+    var formdata = new FormData();
+    formdata.append("file", file, filename);
+    formdata.append("field-1", "field-1-data"); // Beispiel für ein weiteres Feld
+
+    // AJAX-Request ausführen
+    $.ajax({
+        url: "/upload",
+        type: "POST",
+        data: formdata,
+        processData: false, // verhindert die automatische Verarbeitung von FormData
+        contentType: false, // verhindert das Setzen des Content-Type Headers (wichtig für FormData)
+        success: function (result) {
+            console.log("Upload erfolgreich:"); // Erfolgsmeldung
+            if (typeof cb === "function") {
+                cb(); // Callback aufrufen, falls definiert
+            }
+        },
+        error: function (xhr, status, error) {
+            // Detaillierte Fehlerbehandlung
+            console.log("Fehler beim Upload:", error);
+            console.log("Status:", status);
+            console.log("XHR-Status:", xhr.status);
+            console.log("XHR-Antwort:", xhr.responseText);
+        }
+    });
+}
+
 function getFileNameFromUrl(url) {
     // Extrahiert den Dateinamen aus der URL
     return url.substring(url.lastIndexOf('/') + 1);
@@ -122,7 +161,7 @@ function getFileNameFromUrl(url) {
 // Funktion zum Herunterladen einer Datei
 function downloadFile(fileUrl, fileName) {
     // Wenn der Dateiname nicht angegeben wurde, versuche, ihn aus der URL zu extrahieren
-    fileUrl = fileUrl.replace('/www/','/');
+    fileUrl = fileUrl.replace('/www/', '/');
 
     if (!fileName) {
         fileName = getFileNameFromUrl(fileUrl);
@@ -149,12 +188,14 @@ function deleteFile(filename, Callback) {
         url: '/delete-file',           // Die URL, die aufgerufen werden soll
         type: 'GET',                   // HTTP-Methode (GET)
         data: { filename: filename },  // Der Dateiname als Query-Parameter
-        success: function(response) {
+        success: function (response) {
             // Erfolg: Die Antwort vom Server wird hier verarbeitet
             console.log("Erfolgreich gelöscht: " + response);
-            alert("Erfolgreich gelöscht: " + response);
+            if (typeof cb === "function") {
+                cb(); // Callback aufrufen, falls definiert
+            }
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             // Fehlerbehandlung, falls etwas schief geht
             console.error("Fehler beim Löschen der Datei: " + error);
             alert("Fehler beim Löschen der Datei.");
