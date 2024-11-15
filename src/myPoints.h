@@ -29,6 +29,7 @@ enum pointTyp : int8_t
 class myPoints
 {
   myPoint *first = NULL; /**< Pointer to the first point in the collection. */
+  bool changed = false;
 
 public:
   /**
@@ -40,6 +41,20 @@ public:
    * @brief Builds the collection of points.
    */
   void build();
+
+  /**
+   * @brief Called every cycle
+   */
+  void loop();
+
+  /**
+   * @brief Calculates and updates the values of points.
+   */
+  void calcVal();
+
+  void setChanged();
+
+  String getJSONValue();
 
   /**
    * @brief Retrieves a point by its ID.
@@ -72,11 +87,6 @@ public:
    * @return The value associated with the point.
    */
   ergPoint getVal(String name);
-
-  /**
-   * @brief Calculates and updates the values of points.
-   */
-  void calcVal();
 };
 
 /** External instance of the myPoints class. */

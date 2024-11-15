@@ -20,7 +20,7 @@ function meineFunktion() {
     body += `<tr><td id="name_inputintern${i}">${inputNames[i]}</td><td style="text-align: right;" id="inputintern${i}"> &nbsp; </td></tr>`;
   }
   for (let i = 0; i < 12; i++) {
-    body += `<tr><td id="name_relay${i}">${outputNames[i]}</td><td style="text-align: right;" id="relay${i}" class="lightbulb"> &nbsp; </td></tr>`;
+    body += `<tr><td id="name_relay${i}">${outputNames[i]}</td><td style="text-align: right;" id="relays${i}" class="lightbulb"> &nbsp; </td></tr>`;
   }
   body += '</table></div>';
   $("#mySpace").html(body);

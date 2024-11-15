@@ -48,12 +48,12 @@ const BARTEMPERATURE = `<form>
       <label for="tpos-%id%">temperature measurement <a class="value div100">&nbsp;</a></label>
     </div>
     <div class="edit-sitem">
-      <input id="ton-%id%" class="ton 2dec_input"/>
-      <label for="ton-%id%">temperature on</label>
-    </div>
-    <div class="edit-sitem">
       <input id="toff-%id%" class="toff 2dec_input"/>
       <label for="toff-%id%">temperature off</label>
+    </div>
+    <div class="edit-sitem">
+      <input id="ton-%id%" class="ton 2dec_input"/>
+      <label for="ton-%id%">temperature on</label>
     </div>
   </div>
 </div>
@@ -81,12 +81,12 @@ const BAR2TEMPERATURE = `<form>
       <label for="tpos2-%id%">hysteresis measurement <a class="value div100">&nbsp;</a></label>
     </div>
     <div class="edit-sitem">
-      <input id="t2plus-%id%" class="t2plus 2dec_input"/>
-      <label for="t2plus-%id%">hysteresis on</label>
-    </div>
-    <div class="edit-sitem">
       <input id="t2minus-%id%" class="t2minus 2dec_input"/>
       <label for="t2minus-%id%">hysteresis off</label>
+    </div>
+    <div class="edit-sitem">
+      <input id="t2plus-%id%" class="t2plus 2dec_input"/>
+      <label for="t2plus-%id%">hysteresis on</label>
     </div>
   </div>
 </div>
@@ -144,7 +144,7 @@ const BAROUTPUT = `<form>
     </div>
     <div class="edit-item">
       <select id="opos-%id%" class="opos outselect" ></select>
-      <label for="opos-%id%">output <a class="value">&nbsp;</a></label>
+      <label for="opos-%id%">output <a class="value lightbulb">&nbsp;</a></label>
     </div>
   </div>
 </div>
@@ -192,9 +192,17 @@ function setAtt() {
   $(".logcselect")
     .addClass("w3-select");
   $(".outselect")
-    .addClass("w3-select");
+    .addClass("w3-select")
+    .off("change")
+    .on("change", function () {
+      var sel = $(this).find('option:selected').val();
+      if (sel != "") {
+        $(this).parent().find('.value').prop("id", "relays" + sel).html("");
+        getReadings();
+      }
+    });
 
-    //relay
+    //
   $(".inversselect")
     .addClass("w3-select");
   $(".list-group-item")
@@ -367,7 +375,9 @@ function loadJSON() {
 function saveJSON() {
   var json = buildJSON();
   console.log(json);
-  uploadString(POINTSFILENAME, json);
+  uploadString(POINTSFILENAME, json, function (){
+    sendData('reloadPoints');
+  });
 }
 
 function buildJSON() {

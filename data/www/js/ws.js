@@ -20,7 +20,7 @@ function getReadings() {
 }
 
 function sendData(data) {
-    if (typeof data === 'String') {
+    if (typeof data === 'string') {
         websocket.send(data);
     } else {
         websocket.send(JSON.stringify(data));
@@ -80,125 +80,125 @@ function onMessage(event) {
     change('', myObj);
 }
 
-function uploadString(filename, fileContent) {
-    // Entferne führenden Slash (falls vorhanden) vom Dateinamen
+function uploadString(filename, fileContent, cb) {
+    // Remove leading slash (if present) from the filename
     if (filename.startsWith("/")) {
-        filename = filename.substring(1); // Entfernt das erste Zeichen (den Slash)
+        filename = filename.substring(1); // Removes the first character (the slash)
     }
 
-    // Blob aus dem Textinhalt erstellen
+    // Create a Blob from the text content
     var strblob = new Blob([fileContent], { type: 'text/plain' });
 
-    // FormData erstellen und die Datei sowie andere Felder anhängen
+    // Create FormData and append the file and other fields
     var formdata = new FormData();
     formdata.append("file", strblob, filename);
-    formdata.append("field-1", "field-1-data"); // Beispiel für ein weiteres Feld
+    formdata.append("field-1", "field-1-data"); // Example of another field
 
-    // AJAX-Request ausführen
+    // Perform the AJAX request
     $.ajax({
         url: "/upload",
         type: "POST",
         data: formdata,
-        processData: false, // verhindert die automatische Verarbeitung von FormData
-        contentType: false, // verhindert das Setzen des Content-Type Headers (wichtig für FormData)
+        processData: false, // Prevents automatic processing of FormData
+        contentType: false, // Prevents setting the Content-Type header (important for FormData)
         success: function (result) {
-            console.log("Upload erfolgreich:", result); // Erfolgsmeldung
+            console.log("Upload successful:", result); // Success message
+            if (typeof cb === "function") {
+                cb(); // Call the callback, if defined
+            }
         },
         error: function (xhr, status, error) {
-            // Detaillierte Fehlerbehandlung
-            console.log("Fehler beim Upload:", error);
+            // Detailed error handling
+            console.log("Error during upload:", error);
             console.log("Status:", status);
-            console.log("XHR-Status:", xhr.status);
-            console.log("XHR-Antwort:", xhr.responseText);
+            console.log("XHR Status:", xhr.status);
+            console.log("XHR Response:", xhr.responseText);
         }
     });
 }
 
 function uploadFile(file, filename, cb) {
-    // Entferne führenden Slash (falls vorhanden) vom Dateinamen
+    // Remove leading slash (if present) from the filename
     if (filename.startsWith("/")) {
-        filename = filename.substring(1); // Entfernt das erste Zeichen (den Slash)
+        filename = filename.substring(1); // Removes the first character (the slash)
     }
 
     if (!file) {
-        console.log("Keine Datei ausgewählt.");
+        console.log("No file selected.");
         return;
     }
 
-    // FormData erstellen und die Datei sowie andere Felder anhängen
+    // Create FormData and append the file and other fields
     var formdata = new FormData();
     formdata.append("file", file, filename);
-    formdata.append("field-1", "field-1-data"); // Beispiel für ein weiteres Feld
+    formdata.append("field-1", "field-1-data"); // Example of another field
 
-    // AJAX-Request ausführen
+    // Perform the AJAX request
     $.ajax({
         url: "/upload",
         type: "POST",
         data: formdata,
-        processData: false, // verhindert die automatische Verarbeitung von FormData
-        contentType: false, // verhindert das Setzen des Content-Type Headers (wichtig für FormData)
+        processData: false, // Prevents automatic processing of FormData
+        contentType: false, // Prevents setting the Content-Type header (important for FormData)
         success: function (result) {
-            console.log("Upload erfolgreich:"); // Erfolgsmeldung
+            console.log("Upload successful:"); // Success message
             if (typeof cb === "function") {
-                cb(); // Callback aufrufen, falls definiert
+                cb(); // Call the callback, if defined
             }
         },
         error: function (xhr, status, error) {
-            // Detaillierte Fehlerbehandlung
-            console.log("Fehler beim Upload:", error);
+            // Detailed error handling
+            console.log("Error during upload:", error);
             console.log("Status:", status);
-            console.log("XHR-Status:", xhr.status);
-            console.log("XHR-Antwort:", xhr.responseText);
+            console.log("XHR Status:", xhr.status);
+            console.log("XHR Response:", xhr.responseText);
         }
     });
 }
 
 function getFileNameFromUrl(url) {
-    // Extrahiert den Dateinamen aus der URL
+    // Extracts the filename from the URL
     return url.substring(url.lastIndexOf('/') + 1);
 }
 
-// Funktion zum Herunterladen einer Datei
+// Function to download a file
 function downloadFile(fileUrl, fileName) {
-    // Wenn der Dateiname nicht angegeben wurde, versuche, ihn aus der URL zu extrahieren
-    fileUrl = fileUrl.replace('/www/', '/');
-
     if (!fileName) {
         fileName = getFileNameFromUrl(fileUrl);
     }
 
-    // Erstelle ein unsichtbares <a>-Tag
+    // Create an invisible <a> tag
     var a = document.createElement('a');
-    a.href = fileUrl;  // Setze die URL der Datei
-    a.download = fileName;  // Setze den Namen der Datei, die heruntergeladen wird
+    a.href = '/download?filename=' + encodeURIComponent(fileUrl);  // Set the file URL
+    a.download = fileName;  // Set the filename to be downloaded
 
-    // Füge das <a>-Tag zum DOM hinzu
+    // Append the <a> tag to the DOM
     document.body.appendChild(a);
 
-    // Simuliere den Klick auf den Download-Link
+    // Simulate a click on the download link
     a.click();
 
-    // Entferne das <a>-Tag nach dem Klick, um den DOM sauber zu halten
+    // Remove the <a> tag after the click to keep the DOM clean
     document.body.removeChild(a);
 }
 
 function deleteFile(filename, Callback) {
     cb = Callback;
     $.ajax({
-        url: '/delete-file',           // Die URL, die aufgerufen werden soll
-        type: 'GET',                   // HTTP-Methode (GET)
-        data: { filename: filename },  // Der Dateiname als Query-Parameter
+        url: '/delete-file',           // The URL to be called
+        type: 'GET',                   // HTTP method (GET)
+        data: { filename: filename },  // The filename as a query parameter
         success: function (response) {
-            // Erfolg: Die Antwort vom Server wird hier verarbeitet
-            console.log("Erfolgreich gelöscht: " + response);
+            // Success: The response from the server is processed here
+            console.log("Successfully deleted: " + response);
             if (typeof cb === "function") {
-                cb(); // Callback aufrufen, falls definiert
+                cb(); // Call the callback, if defined
             }
         },
         error: function (xhr, status, error) {
-            // Fehlerbehandlung, falls etwas schief geht
-            console.error("Fehler beim Löschen der Datei: " + error);
-            alert("Fehler beim Löschen der Datei.");
+            // Error handling in case something goes wrong
+            console.error("Error during file deletion: " + error);
+            alert("Error deleting the file.");
         }
     });
 }

@@ -95,9 +95,7 @@ void myLogicPoint::calcVal()
     if (calc != this->on)
     {
         this->on = calc;
-        String jsonOutput = getJson(); // Generate JSON output for the current state
-        Serial.println(jsonOutput);    // Output the JSON to the serial monitor
-        notifyClients(jsonOutput);     // Send JSON to clients (e.g., via network)
+        mypoints.setChanged();
     }
 }
 

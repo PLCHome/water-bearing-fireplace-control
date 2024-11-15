@@ -3,6 +3,7 @@
 
 #include <Arduino.h>      ///< Includes Arduino framework for basic functionalities
 #include <ArduinoJson.h>  ///< Includes ArduinoJson library for JSON handling
+#include "myPoints.h"
 #include "myPoint.h"      ///< Includes custom header for the myPoint class
 #include "myData.h"       ///< Includes custom header for data handling (presumably)
 #include "myServer.h"     ///< Includes custom header for server handling (presumably)

@@ -1,51 +1,32 @@
 #include "myServer.h"
 #include <ArduinoJson.h>
 
-#define _ASYNC_WEBSERVER_LOGLEVEL_ 10
+#define _ASYNC_WEBSERVER_LOGLEVEL_ 0
 
 #include <AsyncTCP.h>
 #include <WebServer_WT32_ETH01.h>
 #include <WebServer_WT32_ETH01_Debug.h>
 #include <ESPAsyncWebServer.h>
+#include "myPoints.h"
 
+/// Filesystem object, set to SPIFFS.
 FS *filesystem = &SPIFFS;
+
+/// Web server instance on port 80.
 AsyncWebServer server(80);
+
+/// WebSocket instance with URI "/ws".
 AsyncWebSocket ws("/ws");
+
+/// File handle for uploading files to the filesystem.
 File fsUploadFile;
 
-void heartBeatPrint()
-{
-    static int num = 1;
-
-    Serial.print(F("H")); // H means alive
-
-    if (num == 80)
-    {
-        Serial.println();
-        num = 1;
-    }
-    else if (num++ % 10 == 0)
-    {
-        Serial.print(F(" "));
-    }
-}
-
-void check_status()
-{
-    static ulong checkstatus_timeout = 0;
-    static ulong current_millis;
-
-    current_millis = millis();
-
-    // Print hearbeat every HEARTBEAT_INTERVAL (10) seconds.
-    if ((current_millis > checkstatus_timeout) || (checkstatus_timeout == 0))
-    {
-        heartBeatPrint();
-        checkstatus_timeout = current_millis + HEARTBEAT_INTERVAL;
-    }
-}
-
-// format bytes
+/**
+ * @brief Converts bytes to a human-readable string format (B, KB, MB, or GB).
+ *
+ * @param bytes The number of bytes to format.
+ * @return A formatted string representing the size.
+ */
 String formatBytes(size_t bytes)
 {
     if (bytes < 1024)
@@ -66,17 +47,20 @@ String formatBytes(size_t bytes)
     }
 }
 
+/**
+ * @brief Determines the MIME type based on the file extension.
+ *
+ * @param filename The name of the file.
+ * @param request The web server request.
+ * @return A string representing the MIME type.
+ */
 String getContentType(String filename, AsyncWebServerRequest *request)
 {
     if (request->hasArg("download"))
     {
         return "application/octet-stream";
     }
-    else if (filename.endsWith(".htm"))
-    {
-        return "text/html";
-    }
-    else if (filename.endsWith(".html"))
+    else if (filename.endsWith(".htm") || filename.endsWith(".html"))
     {
         return "text/html";
     }
@@ -124,6 +108,11 @@ String getContentType(String filename, AsyncWebServerRequest *request)
     return "text/plain";
 }
 
+/**
+ * @brief Handles requests for listing files in a specified directory.
+ *
+ * @param request The web server request.
+ */
 void handleFileList(AsyncWebServerRequest *request)
 {
     if (!request->hasArg("dir"))
@@ -169,25 +158,44 @@ void handleFileList(AsyncWebServerRequest *request)
     request->send(200, "text/json", output);
 }
 
+/**
+ * @brief Restarts the ESP device upon receiving a request.
+ *
+ * @param request The web server request.
+ */
 void handleRestart(AsyncWebServerRequest *request)
 {
     request->send(200);
     ESP.restart();
 }
 
+/**
+ * @brief Redirects client requests to the main index page.
+ *
+ * @param request The web server request.
+ */
 void handleForwardIndex(AsyncWebServerRequest *request)
 {
     request->redirect("/index.html");
 }
 
+/**
+ * @brief Sends an HTTP 200 OK response.
+ *
+ * @param request The web server request.
+ */
 void handleOK(AsyncWebServerRequest *request)
 {
     request->send(200);
 }
 
+/**
+ * @brief Deletes a specified file on the filesystem.
+ *
+ * @param request The web server request.
+ */
 void handleFileDelete(AsyncWebServerRequest *request)
 {
-    // Den Dateinamen aus der URL-Parameter abfragen
     String filename = "";
     if (request->hasParam("filename"))
     {
@@ -196,110 +204,112 @@ void handleFileDelete(AsyncWebServerRequest *request)
 
     if (filename == "")
     {
-        request->send(400, "text/plain", "Dateiname fehlt in der Anfrage");
+        request->send(400, "text/plain", "Filename missing");
         return;
     }
 
-    // Überprüfen, ob die Datei existiert
     if (SPIFFS.exists(filename))
     {
         if (SPIFFS.remove(filename))
         {
-            Serial.println("Datei erfolgreich gelöscht: " + filename);
-            request->send(200, "text/plain", "Datei erfolgreich gelöscht: " + filename);
+            Serial.println("File deleted: " + filename);
+            request->send(200, "text/plain", "File deleted: " + filename);
         }
         else
         {
-            Serial.println("Fehler beim Löschen der Datei: " + filename);
-            request->send(500, "text/plain", "Fehler beim Löschen der Datei");
+            Serial.println("Failed to delete file: " + filename);
+            request->send(500, "text/plain", "Error deleting file");
         }
     }
     else
     {
-        Serial.println("Datei existiert nicht: " + filename);
-        request->send(404, "text/plain", "Datei nicht gefunden: " + filename);
+        Serial.println("File not found: " + filename);
+        request->send(404, "text/plain", "File not found: " + filename);
     }
     request->redirect("/");
 }
 
+/**
+ * @brief Initializes the filesystem, with formatting if necessary.
+ */
 void initFS()
 {
-    // Initialize LittleFS/SPIFFS file-system
-    // Format SPIFFS if not yet
     if (!FileFS.begin(true))
     {
-        Serial.println(F("SPIFFS/LittleFS failed! Formatting."));
+        Serial.println(F("Filesystem init failed! Formatting..."));
 
         if (!FileFS.begin())
         {
             while (true)
             {
-                Serial.println(F("SPIFFS failed!. Please use LittleFS."));
-                // Stay forever here as useless to go further
+                Serial.println(F("Failed to initialize filesystem."));
                 delay(5000);
             }
         }
     }
 }
 
-// handles uploads
+/**
+ * @brief Manages file upload through web server requests.
+ */
 void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
-    String logmessage = "Client:" + request->client()->remoteIP().toString() + " " + request->url();
-    Serial.println(logmessage);
-
     if (!index)
     {
-        logmessage = "Upload Start: " + String(filename);
-        // open the file on first call and store the file handle in the request object
         request->_tempFile = SPIFFS.open("/" + filename, "w");
-        Serial.println(logmessage);
     }
 
     if (len)
     {
-        // stream the incoming chunk to the opened file
         request->_tempFile.write(data, len);
-        logmessage = "Writing file: " + String(filename) + " index=" + String(index) + " len=" + String(len);
-        Serial.println(logmessage);
     }
 
     if (final)
     {
-        logmessage = "Upload Complete: " + String(filename) + ",size: " + String(index + len);
-        // close the file handle as the upload is now done
         request->_tempFile.close();
-        Serial.println(logmessage);
         request->redirect("/");
     }
 }
 
+void handleDownload(AsyncWebServerRequest *request)
+{
+    String filename = request->getParam("filename")->value();
+    request->send(SPIFFS, filename);
+}
+
+/**
+ * @brief Initializes the web server with defined routes and handlers.
+ */
 void initWebserver()
 {
-    // SERVER INIT
-    // Filesystem
     server.on("/list", HTTP_GET, handleFileList);
     server.on("/upload", HTTP_POST, handleOK, handleUpload);
     server.on("/delete-file", HTTP_GET, handleFileDelete);
-
     server.on("/reboot", HTTP_GET, handleRestart);
-
-    // Web Page forward
     server.on("/", HTTP_GET, handleForwardIndex);
     server.on("/index", HTTP_GET, handleForwardIndex);
-
-    // Web Files
+    server.on("/download", HTTP_GET, handleDownload);
     server.serveStatic("/", SPIFFS, "/www/");
     server.serveStatic("/config/", SPIFFS, "/config/");
-
     server.begin();
 }
 
+/**
+ * @brief Broadcasts sensor readings to all WebSocket clients.
+ *
+ * @param sensorReadings JSON string with the current sensor readings.
+ */
 void notifyClients(String sensorReadings)
 {
+    Serial.println(sensorReadings);
     ws.textAll(sensorReadings);
 }
 
+/**
+ * @brief Called when specific data changes; sends updates to WebSocket clients.
+ *
+ * @param dataChange Enum value indicating the type of data change.
+ */
 void dadaChanged(change dataChange)
 {
     switch (dataChange)
@@ -316,6 +326,9 @@ void dadaChanged(change dataChange)
     }
 }
 
+/**
+ * @brief Handles WebSocket messages and triggers updates or actions.
+ */
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 {
     AwsFrameInfo *info = (AwsFrameInfo *)arg;
@@ -323,16 +336,22 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
     {
         data[len] = 0;
         String message = (char *)data;
-        Serial.println(String("got message:") + message);
-        //  Check if the message is "getReadings"
+        Serial.println("WS message: " + message);
         if (strchr((char *)data, '{') == NULL)
         {
             if (strcmp((char *)data, "getReadings") == 0)
             {
-                // if it is, send current sensor readings
                 dadaChanged(ch_inputintern);
                 dadaChanged(ch_relay);
                 dadaChanged(ch_tempholdingreg);
+            }
+            else if (strcmp((char *)data, "reloadPoints") == 0)
+            {
+                mypoints.build();
+            }
+            else if (strcmp((char *)data, "reboot") == 0)
+            {
+                ESP.restart();
             }
         }
         else
@@ -343,13 +362,12 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
             for (JsonPair kv : root)
             {
                 String key = String(kv.key().c_str());
-                if (key.startsWith("relay"))
+                if (key.startsWith("relays"))
                 {
-                    Serial.println(key.substring(5));
-                    int pos = key.substring(5).toInt();
-                    if (pos >= 0 and pos < RELAYS)
+                    int pos = key.substring(6).toInt();
+                    if (pos >= 0 && pos < RELAYS)
                     {
-                        relay[pos] = kv.value().as<bool>();
+                        relays[pos] = kv.value().as<bool>();
                     }
                 }
             }
@@ -357,6 +375,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
     }
 }
 
+/**
+ * @brief Manages WebSocket events like connection, disconnection, and data reception.
+ */
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
 {
     switch (type)
@@ -376,41 +397,34 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
     }
 }
 
+/**
+ * @brief Initializes the WebSocket service.
+ */
 void initWebSocket()
 {
     ws.onEvent(onEvent);
     server.addHandler(&ws);
 }
 
+/**
+ * @brief Configures and initializes the web server, WebSocket, and Ethernet.
+ */
 void WEBsetup()
 {
-    // Using this if Serial debugging is not necessary or not using Serial port
-    // while (!Serial && (millis() < 3000));
-
     Serial.print("\nStarting WebServer on " + String(ARDUINO_BOARD));
     Serial.println(" with " + String(SHIELD_TYPE));
     Serial.println(WEBSERVER_WT32_ETH01_VERSION);
 
-    // To be called before ETH.begin()
     WT32_ETH01_onEvent();
-
-    // bool begin(uint8_t phy_addr=ETH_PHY_ADDR, int power=ETH_PHY_POWER, int mdc=ETH_PHY_MDC, int mdio=ETH_PHY_MDIO,
-    //            eth_phy_type_t type=ETH_PHY_TYPE, eth_clock_mode_t clk_mode=ETH_CLK_MODE);
     ETH.begin(ETH_PHY_ADDR, ETH_PHY_POWER, ETH_PHY_MDC, ETH_PHY_MDIO, ETH_PHY_TYPE, ETH_CLK_MODE);
-    // ETH.begin(ETH_PHY_ADDR, ETH_PHY_POWER);
-
-    // Static IP, leave without this line to get IP via DHCP
-    // bool config(IPAddress local_ip, IPAddress gateway, IPAddress subnet, IPAddress dns1 = 0, IPAddress dns2 = 0);
-    // ETH.config(myIP, myGW, mySN, myDNS);
-
-    // WT32_ETH01_waitForConnect();
-
     initWebSocket();
-    // start the web server on port 80
     initWebserver();
     setDATAchanged(dadaChanged);
 }
 
+/**
+ * @brief Manages WebSocket clients, cleaning up inactive clients.
+ */
 void WEBloop()
 {
     ws.cleanupClients();

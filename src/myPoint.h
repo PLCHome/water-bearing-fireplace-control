@@ -91,6 +91,16 @@ public:
    * @return A String containing the JSON representation of the point.
    */
   virtual String getJson() = 0;
+
+  /**
+   * @brief Called every cycle
+   */
+  void loop();
+
+  int getId();
+  
+  ergPoint getOn();
+
 };
 
 #endif /* MYPOINT_H_ */ ///< End of the include guard

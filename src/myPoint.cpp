@@ -121,3 +121,23 @@ ergPoint myPoint::getVal()
     }
     return this->on;
 }
+
+
+/**
+ * @brief Retrieves the value of the point, calculating it if necessary.
+ * 
+ * call Loop for all points in the linked list.
+ * 
+ */
+void myPoint::loop()
+{ }
+
+int myPoint::getId()
+{
+    return this->id;
+}
+
+ergPoint myPoint::getOn()
+{
+    return this->on;
+}

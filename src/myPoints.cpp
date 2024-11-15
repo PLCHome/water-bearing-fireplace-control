@@ -98,6 +98,7 @@ ergPoint myPoints::getVal(String name)
 void myPoints::calcVal()
 {
     myPoint *p = this->first; // Startet mit dem ersten Punkt
+    this->changed = false;
     if (p != NULL)
     {
         p->unsetCalculated(); // Setzt den berechneten Zustand des ersten Punktes zurück
@@ -106,6 +107,9 @@ void myPoints::calcVal()
     {
         p->getVal(); // Ruft den Wert des aktuellen Punktes ab
         p = p->getNext(); // Geht zum nächsten Punkt
+    }
+    if (this->changed) {
+        notifyClients(getJSONValue());
     }
 }
 
@@ -123,6 +127,44 @@ void myPoints::cleanUp()
         delete del; // Löscht den alten ersten Punkt
     }
 }
+
+/**
+ * @brief Called every cycle
+ */
+void myPoints::loop()
+{
+    myPoint *loop = this->first;
+    while (loop != NULL) // Überprüft, ob der erste Punkt existiert
+    {
+        loop->loop();
+        loop = loop->getNext();
+    }
+}
+
+void myPoints::setChanged()
+{
+    this->changed = true;
+}
+
+String myPoints::getJSONValue()
+{
+    JsonDocument doc; ///< Create a new JSON document
+    JsonObject data = doc["process"].to<JsonObject>();
+
+    // Fill the document with the current object's data
+    myPoint *loop = this->first;
+    while (loop != NULL) // Überprüft, ob der erste Punkt existiert
+    {
+        data[String(loop->getId())] = loop->getOn();
+        loop->loop();
+        loop = loop->getNext();
+    }
+
+    String out;              ///< Variable to hold the serialized JSON string
+    serializeJson(doc, out); ///< Serialize the document into a string
+    return out;              ///< Return the JSON string
+}
+
 
 /**
  * @brief Liest und baut die Punkteliste aus der Datei points.json.

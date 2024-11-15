@@ -28,6 +28,7 @@ void setup()
 void loop()
 {
   // WiFiClient client = server.available();   // Listen for incoming clients
+  mypoints.loop();
   DATAloop();
   WEBloop();
 }

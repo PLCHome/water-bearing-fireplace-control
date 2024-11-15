@@ -81,13 +81,10 @@ void myOutPoint::calcVal()
         if (this->on != TP_ERR)
         {
             // Schalte das Relay entsprechend dem berechneten Wert
-            relay[this->opos] = (this->on == TP_ON);
+            relays[this->opos] = (this->on == TP_ON);
         }
 
-        // Erzeuge eine JSON-Darstellung des OutPoints
-        String o = getJson();
-        Serial.println(o);  // Gebe die JSON-Daten auf der Seriellen Konsole aus
-        notifyClients(o);   // Benachrichtige verbundene Clients über die Änderung
+        mypoints.setChanged();
     }
 }
 

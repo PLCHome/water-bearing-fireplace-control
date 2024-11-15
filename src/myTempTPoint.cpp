@@ -71,8 +71,8 @@ void myTempTPoint::calcVal()
     if (this->tpos >= 0 && this->tpos < TEMPHOLDINGREG && this->tpos2 >= 0 && this->tpos2 < TEMPHOLDINGREG)
     {
         // Retrieve the temperature values from the tempHoldingReg array
-        int16_t t = tempHoldingReg[this->tpos];     ///< Current temperature at tpos
-        int16_t t2 = tempHoldingReg[this->tpos2];   ///< Reference temperature at tpos2
+        int16_t t = temperatures[this->tpos];     ///< Current temperature at tpos
+        int16_t t2 = temperatures[this->tpos2];   ///< Reference temperature at tpos2
 
         // Calculate the adjusted temperature thresholds
         int16_t t2p = t2 + this->t2plus; ///< Upper threshold: t2 + t2plus
@@ -107,9 +107,7 @@ void myTempTPoint::calcVal()
     if (calc != this->on)
     {
         this->on = calc; ///< Update the state to the new value
-        String o = getJson(); ///< Generate the JSON representation of the state
-        Serial.println(o); ///< Output the state to the serial monitor for debugging
-        notifyClients(o); ///< Notify connected clients with the updated state
+        mypoints.setChanged();
     }
 }
 

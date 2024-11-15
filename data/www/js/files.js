@@ -17,7 +17,7 @@ const FILEAREA = `
 <table id="fileupload" class="w3-table-all w3-hoverable">
     <tr>
         <td class="colbtn">
-            <a class="filebtn upload"><i class="fa-solid fa-upload" aria-hidden="true"></i></a>
+            <a class="filebtn upload" title="upload the selected file"><i class="fa-solid fa-upload" aria-hidden="true"></i></a>
         </td>
         <td>
             <input style="width:100%" type="file" id="fileInput"/> 
@@ -37,9 +37,10 @@ const FILEAREA = `
 const FILEROW = `
 <tr>
     <td class="colbtn">
-        <a class="filebtn upload"><i class="fa-solid fa-upload" aria-hidden="true"></i></a>
-        <a class="filebtn download"><i class="fa-solid fa-download" aria-hidden="true"></i></a>
-        <a class="filebtn delete"><i class="fa-solid fa-trash-arrow-up" aria-hidden="true"></i></a>
+        <a class="filebtn upload" title="upload the on the top selected file"><i class="fa-solid fa-upload" aria-hidden="true"></i></a>
+        <a class="filebtn download" title="save the file on this computer"><i class="fa-solid fa-download" aria-hidden="true"></i></a>
+        <a class="filebtn delete" title="delete the file"><i class="fa-solid fa-trash-arrow-up" aria-hidden="true"></i></a>
+        <a class="filebtn show" title="show the file"><i class="fa-solid fa-magnifying-glass"></i></i></a>
     </td>
     <td class="path">&nbsp;</td>
     <td class="size">&nbsp;</td>
@@ -106,6 +107,87 @@ function doDownload() {
     }
 }
 
+
+function doShow() {
+    // Check if the element with ID 'filePopup' exists
+    if ($('#filePopup').length === 0) {
+        // If it doesn't exist, create and append the popup modal and overlay
+        var filePopupOverlay = $('<div id="filePopupOverlay"></div>');
+        var filePopup = $('<div id="filePopup"><h3>File Content</h3><pre id="fileContent"></pre><button id="closePopup">Close</button></div>');
+
+        // Append the popup and overlay to the body
+        $('body').append(filePopupOverlay, filePopup);
+
+        // Set initial styles for the popup
+        $('#filePopup').css({
+            'display': 'none',
+            'position': 'fixed',
+            'top': '50%',
+            'left': '50%',
+            'transform': 'translate(-50%, -50%)',
+            'background': 'white',
+            'padding': '20px',
+            'box-shadow': '0px 0px 10px rgba(0, 0, 0, 0.1)',
+            'z-index': '1000',
+            'max-width': '90%',   // Optional: Control the max width of the popup
+            'max-height': '80%'   // Optional: Limit the height to avoid covering the entire screen
+        });
+
+        // Set initial styles for the overlay
+        $('#filePopupOverlay').css({
+            'display': 'none',
+            'position': 'fixed',
+            'top': '0',
+            'left': '0',
+            'width': '100%',
+            'height': '100%',
+            'background': 'rgba(0, 0, 0, 0.5)',
+            'z-index': '999'
+        });
+
+        // Set styles for file content with scrolling
+        $('#fileContent').css({
+            'max-height': '400px', // Set max height to enable scrolling
+            'overflow-y': 'auto',  // Enable vertical scrolling
+            'white-space': 'pre-wrap', // Maintain line breaks and wrap text
+            'word-wrap': 'break-word' // Allow long words to break and wrap
+        });
+
+        // Close the popup when the "Close" button is clicked
+        $('#closePopup').on('click', function () {
+            $('#filePopup').fadeOut();
+            $('#filePopupOverlay').fadeOut();
+        });
+
+        // Close the popup when clicking on the overlay
+        $('#filePopupOverlay').on('click', function () {
+            $('#filePopup').fadeOut();
+            $('#filePopupOverlay').fadeOut();
+        });
+    }
+
+    var filename = $(this).data('path'); // Get the filename from the data attribute
+    if (!filename) return;  // If filename is not provided, exit
+
+    // Construct the URL for the /download route with the filename as a query parameter
+    var fileUrl = '/download?filename=' + encodeURIComponent(filename);
+    
+    // Load the file content via AJAX
+    $.ajax({
+        url: fileUrl, // The /download route
+        method: 'GET',
+        dataType: 'text', // Expect plain text content
+        success: function (data) {
+            $('#fileContent').text(data);  // Display file content in the popup
+            $('#filePopup').fadeIn();  // Show the popup
+            $('#filePopupOverlay').fadeIn();  // Show the overlay
+        },
+        error: function (xhr, status, error) {
+            alert("Error loading file: " + error);  // Handle error
+        }
+    });
+}
+
 // Function to build and display the file list
 function buildFilelist() {
     $("#fileTab").html('<div id="loading">Loading files...</div>');
@@ -119,7 +201,7 @@ function buildFilelist() {
             // Remove loading indicator once data is loaded
             $("#fileTab").html(FILETAB);
             $("#filetable").append(FILEHEAD);
-    
+
             // Check if the response data is an array
             if (Array.isArray(data)) {
                 if (data.length === 0) {
@@ -150,23 +232,28 @@ function buildFilelist() {
                             .data("path", data[i].path)
                             .off("click")
                             .on('click', doUpload);
+
+                        row.find('.show')
+                            .data("path", data[i].path)
+                            .off("click")
+                            .on('click', doShow);
                         // Add the row to the table
                         $("#filetable").append(row);
                     }
                 }
-
-                // Apply styling to table elements
-                $(".colbtn").css({ "width": "7em" });
-                $(".type").css({ "width": "7em" });
-                $(".size").css({ "width": "7em", "text-align": "right" });
-                $(".filebtn")
-                    .addClass('w3-button w3-hover-black w3-round-large')
-                    .css({ "padding-top": "0px", "padding-bottom": "0px", "padding-right": "4px", "padding-left": "4px" });
             } else {
                 // Error message if response is not in array format
                 $("#filetable").append('<tr><td colspan="4">Error: Invalid data structure received.</td></tr>');
                 console.error("The loaded data is not an array.");
             }
+
+            // Apply styling to table elements
+            $(".colbtn").css({ "width": "9em" });
+            $(".type").css({ "width": "7em" });
+            $(".size").css({ "width": "7em", "text-align": "right" });
+            $(".filebtn")
+                .addClass('w3-button w3-hover-black w3-round-large')
+                .css({ "padding-top": "0px", "padding-bottom": "0px", "padding-right": "4px", "padding-left": "4px" });
         },
         error: function (jqxhr, textStatus, error) {
             // Remove loading indicator and show error message
@@ -190,7 +277,9 @@ function buildPageFiles() {
     // Insert file area HTML into #mySpace
     $("#mySpace").html(FILEAREA);
     // Update filename input field with the selected file’s name on file input change
-    $("#fileInput").on('change', function () {
+    $("#fileInput")
+    .off("change")
+    .on('change', function () {
         $("#filename").val(this.files[0].name);
     });
     // Add styling to buttons and set up the upload button click handler
