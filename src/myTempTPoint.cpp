@@ -40,59 +40,9 @@ myTempTPoint::myTempTPoint(JsonVariant json, myPoint *next) : myPoint(json, next
  * whether the point should be in the on or off state based on the configured thresholds.
  * If the state changes, the object is serialized into JSON and sent to the clients.
  *
- * Explanation:
- * Logic:
- *
- * If t2plus >= t2minus, the system compares t to t2p (adjusted t2 with t2plus).
- * If t2plus < t2minus, the system compares t to t2m (adjusted t2 with t2minus).
- * If the temperature t is greater than or equal to t2p (or less than or equal to t2m in the inverted case), the system will turn off (TP_OFF).
- * If the temperature t is less than or equal to t2m (or greater than or equal to t2p in the standard case), the system will turn on (TP_ON).
- * 
-*/
+ */
 void myTempTPoint::calcVal()
 {
-    /*
-     * Table of possible states for `myTempTPoint::calcVal()` method (including positive and negative temperatures):
-     *
-/*
- * Table of possible states for `myTempTPoint::calcVal()` method (sorted by t2plus, t2minus, t, and t2):
- *
- * | `t` (temperature at tpos) | `t2` (temperature at tpos2) | `t2plus` | `t2minus` | Adjusted `t2p` (t2 + t2plus) | Adjusted `t2m` (t2 + t2minus) | `this->on` before the run | `this->on` after the run | Description/Logic |
- * |--------------------------|-----------------------------|----------|-----------|-----------------------------|-----------------------------|--------------------------|-------------------------|-------------------|
- * | -2150                    | -2200                       | -50      | 50        | -2200                       | -2150                       | TP_ON                    | TP_OFF                  | Inverted: Turns off if temperature <= t2p (-2200) |
- * | -2100                    | -2150                       | -50      | 50        | -2150                       | -2100                       | TP_ON                    | TP_OFF                  | Inverted: Turns off if temperature <= t2p (-2150) |
- * | -2050                    | -2100                       | -50      | 50        | -2100                       | -2050                       | TP_ON                    | TP_OFF                  | Inverted: Turns off if temperature <= t2p (-2100) |
- * | -2000                    | -2050                       | -50      | 50        | -2050                       | -2000                       | TP_ON                    | TP_OFF                  | Inverted: Turns off if temperature <= t2p (-2050) |
- * | 2100                     | 2050                        | -50      | 50        | 2050                        | 2000                        | TP_ON                    | TP_OFF                  | Inverted: Turns off if temperature <= t2p (20.50°C) |
- * | 2150                     | 2100                        | -50      | 50        | 2100                        | 2000                        | TP_ON                    | TP_OFF                  | Inverted: Turns off if temperature <= t2p (21.00°C) |
- * | 2000                     | 2050                        | -50      | 50        | 2100                        | 2000                        | Any                      | Same as before          | Standard: Turns off if temperature <= t2p (20.00°C) |
- * | 2050                     | 2100                        | -50      | 50        | 2150                        | 2000                        | Any                      | Same as before          | Standard: Turns off if temperature <= t2p (20.50°C) |
- * | -2000                    | -2050                       | 50       | -50       | -2000                       | -2100                       | Any                      | Same as before          | Standard: Turns off if temperature >= t2p (-2000) |
- * | -2050                    | -2100                       | 50       | -50       | -2050                       | -2150                       | Any                      | Same as before          | Standard: No change if temperature == t2p (-2050) |
- * | -2100                    | -2150                       | 50       | -50       | -2100                       | -2200                       | TP_OFF                   | TP_ON                   | Standard: Turns on if temperature <= t2m (-2150) |
- * | -2150                    | -2200                       | 50       | -50       | -2150                       | -2250                       | TP_OFF                   | TP_ON                   | Standard: Turns on if temperature <= t2m (-2200) |
- * | 2000                     | 2050                        | 50       | -50       | 2050                        | 2000                        | Any                      | Same as before          | Standard: Turns off if temperature >= t2p (20.50°C) |
- * | 2050                     | 2100                        | 50       | -50       | 2100                        | 2000                        | Any                      | Same as before          | Standard: No change if temperature == t2p (20.50°C) |
- * | 2100                     | 2150                        | 50       | -50       | 2150                        | 2050                        | TP_OFF                   | TP_ON                   | Standard: Turns on if temperature <= t2m (21.00°C) |
- * | 2150                     | 2200                        | 50       | -50       | 2200                        | 2100                        | TP_OFF                   | TP_ON                   | Standard: Turns on if temperature <= t2m (21.50°C) |
- * | 2100                     | 2150                        | 50       | -50       | 2150                        | 2100                        | TP_ON                    | TP_OFF                  | Standard: Turns off if temperature >= t2m (21.00°C) |
- * | 2150                     | 2200                        | 50       | -50       | 2200                        | 2150                        | TP_ON                    | TP_OFF                  | Standard: Turns off if temperature >= t2m (21.50°C) |
- * | -2050                    | -2100                       | 50       | 50        | -2050                       | -2000                       | Any                      | Same as before          | Inverted: No change if temperature >= t2m (-2050) |
- * | -2100                    | -2150                       | 50       | 50        | -2100                       | -2000                       | Any                      | Same as before          | Inverted: No change if temperature >= t2m (-2100) |
- * | -2000                    | -2050                       | 50       | 50        | -2000                       | -2100                       | Any                      | Same as before          | Inverted: No change if temperature >= t2m (-2000) |
- * | -2150                    | -2200                       | 50       | 50        | -2150                       | -2200                       | Any                      | Same as before          | Inverted: No change if temperature >= t2m (-2150) |
- * | -2100                    | -2150                       | 50       | 50        | -2100                       | -2200                       | Any                      | Same as before          | Inverted: No change if temperature >= t2m (-2100) |
- * | -2050                    | -2100                       | 50       | 50        | -2050                       | -2150                       | Any                      | Same as before          | Inverted: No change if temperature >= t2m (-2050) |
- * | -2000                    | -2050                       | 50       | 50        | -2000                       | -2100                       | Any                      | Same as before          | Inverted: No change if temperature >= t2m (-2000) |
- * | 2050                     | 2100                        | 50       | 50        | 2100                        | 2150                        | Any                      | Same as before          | Inverted: No change if temperature >= t2m (21.00°C) |
- * | 2000                     | 2050                        | 50       | 50        | 2050                        | 2100                        | Any                      | Same as before          | Inverted: No change if temperature >= t2m (20.50°C) |
- * | 2150                     | 2200                        | 50       | 50        | 2200                        | 2250                        | Any                      | Same as before          | Inverted: No change if temperature >= t2m (21.50°C) |
- * | 2100                     | 2150                        | 50       | 50        | 2150                        | 2200                        | Any                      | Same as before          | Inverted: No change if temperature >= t2m (21.00°C) |
- * | 2000                     | 2050                        | 50       | 50        | 2050                        | 2100                        | Any                      | Same as before          | Standard: No change if temperature >= t2m (20.00°C) |
- * | 2050                     | 2100                        | 50       | 50        | 2100                        | 2150                        | Any                      | Same as before          | Standard: No change if temperature >= t2m (20.50°C) |
- * | 2100                     | 2150                        | 50       | 50        | 2150                        | 2200                        | Any                      | Same as before          | Standard: No change if temperature >= t2m (21.00°C) |
- * | 2150                     | 2200                        | 50       | 50        | 2200                        | 2250                        | Any                      | Same as before          | Standard: No change if temperature >= t2m (21.50°C) |
- */
 
     ergPoint calc = this->on; ///< Store the current state (on or off)
 
@@ -107,29 +57,26 @@ void myTempTPoint::calcVal()
         int16_t t2p = t2 + this->t2plus;
         int16_t t2m = t2 + this->t2minus;
 
-        // Determine whether to change the state based on the temperature values
-        if ((t2p) >= (t2m))
+        if ((t2m) <= (t2p))
         {
-            // If t2plus is greater than or equal to t2minus, check if the state needs to be turned off or on
-            if (this->on != TP_OFF && t >= (t2p))
+            if (this->on != TP_ON && t >= (t2p))
             {
-                calc = TP_OFF; ///< Turn off the temperature point
+                calc = TP_ON;
             }
-            else if (this->on != TP_ON && t <= (t2m))
+            else if (this->on != TP_OFF && t <= (t2m))
             {
-                calc = TP_ON; ///< Turn on the temperature point
+                calc = TP_OFF;
             }
         }
         else
         {
-            // If t2plus is less than t2minus, reverse the logic for turning off or on
-            if (this->on != TP_OFF && t <= (t2p))
+            if (this->on != TP_ON && t <= (t2p))
             {
-                calc = TP_OFF; ///< Turn off the temperature point
+                calc = TP_ON;
             }
-            else if (this->on != TP_ON && t >= (t2m))
+            else if (this->on != TP_OFF && t >= (t2m))
             {
-                calc = TP_ON; ///< Turn on the temperature point
+                calc = TP_OFF;
             }
         }
     }

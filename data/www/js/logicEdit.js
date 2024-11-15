@@ -9,7 +9,28 @@ const POINTSFILENAME = "/config/points.json";
 
 var sortable;
 
-const barTemperature = `<form>
+const LOGCSELECT = {
+  "0": "AND",
+  "1": "OR",
+  "2": "AND NOT",
+  "3": "OR NOT"
+};
+const INVERSSELECT = {
+  "0": "SET",
+  "1": "SET NOT"
+};
+
+const BARBUTTONS = `
+<a data-type="${PT_TEMP}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature value</a>
+<a data-type="${PT_TEMPT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature to another</a>
+<a data-type="${PT_LOGIC}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> logic</a>
+<a data-type="${PT_OUT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> output</a>
+<a class="mySaveButton"><i class="fa-regular fa-floppy-disk"></i> save</a>`;
+
+const SORTAREA = '<div id="mySortArea" style="height:100%; width:100%; overflow:auto"" class="list-group" ></div>';
+
+
+const BARTEMPERATURE = `<form>
 <div class="edit-btn process-mov">
   <i class="fa-solid fa-up-down"></i>
 </div>
@@ -38,7 +59,7 @@ const barTemperature = `<form>
 </div>
 </form>`;
 
-const bar2Temperature = `<form>
+const BAR2TEMPERATURE = `<form>
 <div class="edit-btn process-mov">
   <i class="fa-solid fa-up-down"></i>
 </div>
@@ -71,7 +92,7 @@ const bar2Temperature = `<form>
 </div>
 </form>`;
 
-const barLogic = `<form>
+const BARLOGIC = `<form>
 <div class="edit-btn process-mov">
   <i class="fa-solid fa-up-down"></i>
 </div>
@@ -100,7 +121,7 @@ const barLogic = `<form>
 </div>
 </form>`;
 
-const barOutput = `<form>
+const BAROUTPUT = `<form>
 <div class="edit-btn process-mov">
   <i class="fa-solid fa-up-down"></i>
 </div>
@@ -118,12 +139,12 @@ const barOutput = `<form>
       <label for="ida-%id%">process <a class="value">&nbsp;</a></label>
     </div>
     <div class="edit-sitem">
-      <select id="opos-%id%" class="opos inversselect" ></select>
-      <label for="opos-%id%">logic</label>
+      <select id="op-%id%" class="op inversselect" ></select>
+      <label for="op-%id%">logic</label>
     </div>
     <div class="edit-item">
-      <select id="op-%id%" class="op outselect" ></select>
-      <label for="op-%id%">output <a class="value">&nbsp;</a></label>
+      <select id="opos-%id%" class="opos outselect" ></select>
+      <label for="opos-%id%">output <a class="value">&nbsp;</a></label>
     </div>
   </div>
 </div>
@@ -172,6 +193,8 @@ function setAtt() {
     .addClass("w3-select");
   $(".outselect")
     .addClass("w3-select");
+
+    //relay
   $(".inversselect")
     .addClass("w3-select");
   $(".list-group-item")
@@ -231,19 +254,11 @@ function setAtt() {
 }
 
 function makeLogicSelect() {
-  updateSelect("logcselect", {
-    "0": "AND",
-    "1": "OR",
-    "2": "AND NOT",
-    "3": "OR NOT"
-  });
+  updateSelect("logcselect", LOGCSELECT);
 }
 
 function makeInversSelect() {
-  updateSelect("inversselect", {
-    "0": "SET",
-    "1": "SET NOT"
-  });
+  updateSelect("inversselect", INVERSSELECT);
 }
 
 function makeProcessSelect() {
@@ -283,14 +298,15 @@ function createNewRow(type) {
 }
 
 function createRow(val) {
-  body = `<div data-id="${val.id}" data-type="${val.type}" class="list-group-item">`;
+  body = $(`<div class="list-group-item"/>`);
+  body.attr('data-id',val.id);
+  body.attr('data-type',val.type);
   switch (parseInt(val.type, 10)) {
-    case PT_TEMP: body += barTemperature.replaceAll(`%id%`, `${val.id}`); break;
-    case PT_TEMPT: body += bar2Temperature; break;
-    case PT_LOGIC: body += barLogic; break;
-    case PT_OUT: body += barOutput; break;
+    case PT_TEMP: body.html(BARTEMPERATURE.replaceAll(`%id%`, `${val.id}`)); break;
+    case PT_TEMPT: body.html(BAR2TEMPERATURE.replaceAll(`%id%`, `${val.id}`)); break;
+    case PT_LOGIC: body.html(BARLOGIC.replaceAll(`%id%`, `${val.id}`)); break;
+    case PT_OUT: body.html(BAROUTPUT.replaceAll(`%id%`, `${val.id}`)); break;
   }
-  body += `</div>`;
   $("#mySortArea").append(body);
   setAtt();
   $(`[data-id='${val.id}'] .name`).val(val.name);
@@ -317,20 +333,14 @@ function createRow(val) {
 }
 
 function buildPageProcess() {
-  let body = '<div id="mySortArea" style="height:100%; width:100%; overflow:auto"" class="list-group" ></div>';
-  $("#mySpace").html(body);
+  $("#mySpace").html(SORTAREA);
   sortable = new Sortable(mySortArea, {
     multiDrag: true, // Enable multi-drag
     selectedClass: 'w3-gray', // The class applied to the selected items
     fallbackTolerance: 3, // So that we can select items on mobile
     animation: 150
   });
-  body = `<a data-type="${PT_TEMP}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature value</a>`;
-  body += `<a data-type="${PT_TEMPT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature to another</a>`;
-  body += `<a data-type="${PT_LOGIC}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> logic</a>`;
-  body += `<a data-type="${PT_OUT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> output</a>`;
-  body += `<a class="mySaveButton"><i class="fa-regular fa-floppy-disk"></i> save</a>`;
-  $("#myAddon").append(body);
+  $("#myAddon").append(BARBUTTONS);
   setAtt();
   loadJSON();
 }
