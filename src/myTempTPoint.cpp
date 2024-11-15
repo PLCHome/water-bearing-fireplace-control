@@ -33,61 +33,83 @@ myTempTPoint::myTempTPoint(JsonVariant json, myPoint *next) : myPoint(json, next
     }
 }
 
-/**
- * @brief Calculate the state of the temperature point based on the current temperatures.
+/*
+ * @brief Calculates the state of the temperature-dependent point based on two temperature inputs.
  *
- * This method compares the temperature values at the given positions and calculates
- * whether the point should be in the on or off state based on the configured thresholds.
- * If the state changes, the object is serialized into JSON and sent to the clients.
+ * This method updates the state of a temperature point (`on` or `off`) based on two temperature inputs (`t` and `t2`) 
+ * and their corresponding thresholds (`t2plus`, `t2minus`). The logic supports both standard and inverted threshold configurations.
  *
+ * Logic:
+ * - The upper threshold (`t2p`) is calculated as `t2 + t2plus`.
+ * - The lower threshold (`t2m`) is calculated as `t2 + t2minus`.
+ * - If `t2m <= t2p` (standard logic):
+ *     - The point turns **on** if `t >= t2p`.
+ *     - The point turns **off** if `t <= t2m`.
+ * - If `t2m > t2p` (inverted logic):
+ *     - The point turns **on** if `t <= t2p`.
+ *     - The point turns **off** if `t >= t2m`.
+ *
+ * Behavior Table:
+ *
+ * | t  (Temperature) | t2 (Reference Temp) | t2plus | t2minus | t2p (t2 + t2plus) | t2m (t2 + t2minus) | this->on Before | this->on After | Notes                                   |
+ * |------------------|---------------------|--------|---------|-------------------|--------------------|-----------------|----------------|-----------------------------------------|
+ * | 2000             | 1500               | 500    | -500    | 2000              | 1000               | TP_OFF          | TP_ON          | t >= t2p, turns on                     |
+ * | 2000             | 1500               | 500    | -500    | 2000              | 1000               | TP_ON           | TP_ON          | State remains on                       |
+ * | 2000             | 1500               | -500   | 500     | 1000              | 2000               | TP_OFF          | TP_OFF         | t <= t2m, stays off                    |
+ * | 2000             | 1500               | -500   | 500     | 1000              | 2000               | TP_ON           | TP_OFF         | t >= t2m, turns off                    |
+ * | -2000            | -1500              | 500    | -500    | -1000             | -2000              | TP_OFF          | TP_ON          | Negative temp: t >= t2p, turns on      |
+ * | -2000            | -1500              | 500    | -500    | -1000             | -2000              | TP_ON           | TP_ON          | Negative temp: State remains on        |
+ * | -2000            | -1500              | -500   | 500     | -2000             | -1000              | TP_OFF          | TP_OFF         | Negative temp: t <= t2m, stays off     |
+ * | -2000            | -1500              | -500   | 500     | -2000             | -1000              | TP_ON           | TP_OFF         | Negative temp: t >= t2m, turns off     |
  */
+
 void myTempTPoint::calcVal()
 {
-
     ergPoint calc = this->on; ///< Store the current state (on or off)
 
     // Check if the temperature positions are valid indices in the tempHoldingReg array
     if (this->tpos >= 0 && this->tpos < TEMPHOLDINGREG && this->tpos2 >= 0 && this->tpos2 < TEMPHOLDINGREG)
     {
         // Retrieve the temperature values from the tempHoldingReg array
-        int16_t t = tempHoldingReg[this->tpos];
-        int16_t t2 = tempHoldingReg[this->tpos2];
+        int16_t t = tempHoldingReg[this->tpos];     ///< Current temperature at tpos
+        int16_t t2 = tempHoldingReg[this->tpos2];   ///< Reference temperature at tpos2
 
-        // Calculate the adjusted temperature values using t2plus and t2minus
-        int16_t t2p = t2 + this->t2plus;
-        int16_t t2m = t2 + this->t2minus;
+        // Calculate the adjusted temperature thresholds
+        int16_t t2p = t2 + this->t2plus; ///< Upper threshold: t2 + t2plus
+        int16_t t2m = t2 + this->t2minus; ///< Lower threshold: t2 + t2minus
 
-        if ((t2m) <= (t2p))
+        // Determine the state based on thresholds
+        if (t2m <= t2p) ///< Standard logic: t2m is less than or equal to t2p
         {
-            if (this->on != TP_ON && t >= (t2p))
+            if (this->on != TP_ON && t >= t2p)
             {
-                calc = TP_ON;
+                calc = TP_ON; ///< Turn on if temperature is greater than or equal to t2p
             }
-            else if (this->on != TP_OFF && t <= (t2m))
+            else if (this->on != TP_OFF && t <= t2m)
             {
-                calc = TP_OFF;
+                calc = TP_OFF; ///< Turn off if temperature is less than or equal to t2m
             }
         }
-        else
+        else ///< Inverted logic: t2m is greater than t2p
         {
-            if (this->on != TP_ON && t <= (t2p))
+            if (this->on != TP_ON && t <= t2p)
             {
-                calc = TP_ON;
+                calc = TP_ON; ///< Turn on if temperature is less than or equal to t2p
             }
-            else if (this->on != TP_OFF && t >= (t2m))
+            else if (this->on != TP_OFF && t >= t2m)
             {
-                calc = TP_OFF;
+                calc = TP_OFF; ///< Turn off if temperature is greater than or equal to t2m
             }
         }
     }
 
-    // If the state has changed, update it and notify clients
+    // If the calculated state differs from the current state, update and notify
     if (calc != this->on)
     {
-        this->on = calc;      ///< Update the state (on or off)
-        String o = getJson(); ///< Get the JSON representation of the object
-        Serial.println(o);    ///< Print the JSON to the serial monitor for debugging
-        notifyClients(o);     ///< Notify the clients with the updated JSON data
+        this->on = calc; ///< Update the state to the new value
+        String o = getJson(); ///< Generate the JSON representation of the state
+        Serial.println(o); ///< Output the state to the serial monitor for debugging
+        notifyClients(o); ///< Notify connected clients with the updated state
     }
 }
 

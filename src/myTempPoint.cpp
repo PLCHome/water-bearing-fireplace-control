@@ -35,45 +35,85 @@ myTempPoint::myTempPoint(JsonVariant json, myPoint *next) : myPoint(json, next) 
 }
 
 /**
- * @brief Calculates the current on/off state based on temperature thresholds.
+ * @brief Calculates the current state (on/off) for a temperature point based on thresholds.
  *
+ * This method checks the current temperature at a specified position in the holding register 
+ * and updates the state (on/off) based on the thresholds `ton` and `toff`.
  * 
+ * Normal Logic (toff <= ton):
+ *   Positive: Turns on if t >= ton, off if t <= toff.
+ *   Negative: Mirrors the same logic with negative thresholds.
+ * Inverted Logic (toff > ton):
+ *   Positive: Turns on if t <= ton, off if t >= toff.
+ *   Negative: Mirrors the same logic with negative thresholds.
  */
 void myTempPoint::calcVal()
 {
-    ergPoint calc = this->on; // Start with the current "on" state
+/*
+ * Table of possible states for `myTempPoint::calcVal()`:
+ *
+ * | t (Temperature) | toff (Off Threshold) | ton (On Threshold) | this->on Before | this->on After | Notes                                   |
+ * |-----------------|----------------------|--------------------|-----------------|----------------|-----------------------------------------|
+ * | t (Temperature) | toff (Off Threshold) | ton (On Threshold) | this->on Before | this->on After | Notes                                   |
+ * |-----------------|----------------------|--------------------|-----------------|----------------|-----------------------------------------|
+ * | 2000            | 1950                | 2050               | TP_OFF          | TP_OFF         | t <= toff, stays off                   |
+ * | 2000            | 1950                | 2050               | TP_ON           | TP_ON          | t >= ton, stays on                     |
+ * | 2000            | 2050                | 1950               | TP_OFF          | TP_ON          | Inverted logic: t <= ton, turns on     |
+ * | 2000            | 2050                | 1950               | TP_ON           | TP_OFF         | Inverted logic: t >= toff, turns off   |
+ * | 2100            | 2050                | 2150               | TP_OFF          | TP_OFF         | Normal logic: t <= toff, stays off     |
+ * | 2100            | 2050                | 2150               | TP_ON           | TP_ON          | Normal logic: t >= ton, stays on       |
+ * | 1900            | 1950                | 2000               | TP_OFF          | TP_OFF         | Normal logic: t <= toff, stays off     |
+ * | 1900            | 1950                | 2000               | TP_ON           | TP_ON          | Normal logic: t >= ton, stays on       |
+ * | 2050            | 2000                | 2100               | TP_OFF          | TP_ON          | Normal logic: t >= ton, turns on       |
+ * | 2000            | 2050                | 2000               | TP_OFF          | TP_ON          | Inverted logic: t <= ton, turns on     |
+ * | 2200            | 2000                | 2100               | TP_ON           | TP_OFF         | Normal logic: t >= toff, turns off     |
+ * | -2000           | -1950               | -2050              | TP_OFF          | TP_OFF         | t <= toff, stays off                   |
+ * | -2000           | -1950               | -2050              | TP_ON           | TP_ON          | t >= ton, stays on                     |
+ * | -2000           | -2050               | -1950              | TP_OFF          | TP_ON          | Inverted logic: t <= ton, turns on     |
+ * | -2000           | -2050               | -1950              | TP_ON           | TP_OFF         | Inverted logic: t >= toff, turns off   |
+ * | -2100           | -2050               | -2150              | TP_OFF          | TP_OFF         | Normal logic: t <= toff, stays off     |
+ * | -2100           | -2050               | -2150              | TP_ON           | TP_ON          | Normal logic: t >= ton, stays on       |
+ * | -1900           | -1950               | -2000              | TP_OFF          | TP_OFF         | Normal logic: t <= toff, stays off     |
+ * | -1900           | -1950               | -2000              | TP_ON           | TP_ON          | Normal logic: t >= ton, stays on       |
+ * | -2050           | -2000               | -2100              | TP_OFF          | TP_ON          | Normal logic: t >= ton, turns on       |
+ * | -2000           | -2050               | -2000              | TP_OFF          | TP_ON          | Inverted logic: t <= ton, turns on     |
+ * | -2200           | -2000               | -2100              | TP_ON           | TP_OFF         | Normal logic: t >= toff, turns off     |
+ */
+    ergPoint calc = this->on; // Start with the current state (on/off)
 
     // Ensure that tpos is within valid bounds of the temperature holding register
     if (this->tpos >= 0 && this->tpos < TEMPHOLDINGREG)
     {
-        uint16_t t = tempHoldingReg[this->tpos]; // Retrieve temperature from the holding register at index tpos
+        uint16_t t = tempHoldingReg[this->tpos]; // Retrieve the current temperature at index tpos
 
-        if (this->toff <= this->ton) 
+        // Evaluate the thresholds to determine the state
+        if (this->toff <= this->ton) // Normal case: toff is less than or equal to ton
         {
-            if (this->on != TP_ON && t >= this->ton)
+            if (this->on != TP_ON && t >= this->ton) // Turn on if temperature >= ton
             {
                 calc = TP_ON;
             }
-            else if (this->on != TP_OFF && t <= this->toff)
+            else if (this->on != TP_OFF && t <= this->toff) // Turn off if temperature <= toff
             {
                 calc = TP_OFF;
             }
         }
-        else
+        else // Inverted case: toff is greater than ton
         {
-            if (this->on != TP_ON && t <= this->ton)
+            if (this->on != TP_ON && t <= this->ton) // Turn on if temperature <= ton
             {
                 calc = TP_ON;
             }
-            else if (this->on != TP_OFF && t >= this->toff)
+            else if (this->on != TP_OFF && t >= this->toff) // Turn off if temperature >= toff
             {
                 calc = TP_OFF;
             }
         }
     }
 
-    Serial.println(String("myTempPoint: ") + String(calc));
-    // Check if the calculated state is different from the current state
+    Serial.println(String("myTempPoint: ") + String(calc)); // Debug output to serial
+
+    // Check if the calculated state differs from the current state
     if (calc != this->on)
     {
         this->on = calc;      // Update the state to the new value
