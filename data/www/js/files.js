@@ -169,23 +169,11 @@ function doShow() {
     var filename = $(this).data('path'); // Get the filename from the data attribute
     if (!filename) return;  // If filename is not provided, exit
 
-    // Construct the URL for the /download route with the filename as a query parameter
-    var fileUrl = '/download?filename=' + encodeURIComponent(filename);
-    
-    // Load the file content via AJAX
-    $.ajax({
-        url: fileUrl, // The /download route
-        method: 'GET',
-        dataType: 'text', // Expect plain text content
-        success: function (data) {
-            $('#fileContent').text(data);  // Display file content in the popup
-            $('#filePopup').fadeIn();  // Show the popup
-            $('#filePopupOverlay').fadeIn();  // Show the overlay
-        },
-        error: function (xhr, status, error) {
-            alert("Error loading file: " + error);  // Handle error
-        }
-    });
+    downloadFileAsString(filename,function (data) {
+        $('#fileContent').text(data);  // Display file content in the popup
+        $('#filePopup').fadeIn();  // Show the popup
+        $('#filePopupOverlay').fadeIn();  // Show the overlay
+    })
 }
 
 // Function to build and display the file list
@@ -261,11 +249,11 @@ function buildFilelist() {
 
             if (textStatus === "timeout") {
                 // Timeout error message
-                $("#filetable").append('<tr><td colspan="4">Error: Timeout while loading data.</td></tr>');
+                $("#fileTab").html(`<div id="loading">Error: Timeout while loading data.</div>`);
                 console.error("Error: Timeout while loading data.");
             } else {
                 // General error message for other issues (e.g., network errors)
-                $("#filetable").append(`<tr><td colspan="4">Error: ${textStatus} - ${error}</td></tr>`);
+                $("#fileTab").html(`<div id="loading">Error: ${textStatus} - ${error}</div>`);
                 console.error(`Error loading JSON data: ${textStatus}, ${error}`);
             }
         }

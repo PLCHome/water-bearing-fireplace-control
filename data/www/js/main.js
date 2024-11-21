@@ -3,7 +3,7 @@ for (let i = 0; i < 24; i++) {
   temperaturNames[i] = `Measurement ${i + 1}`;
 }
 var outputNames = [];
-for (let i = 0; i < 12; i++) {
+for (let i = 0; i < 13; i++) {
   outputNames[i] = `Relays ${i + 1}`;
 }
 var inputNames = [];
@@ -19,7 +19,7 @@ function meineFunktion() {
   for (let i = 0; i < 8; i++) {
     body += `<tr><td id="name_inputintern${i}">${inputNames[i]}</td><td style="text-align: right;" id="inputintern${i}"> &nbsp; </td></tr>`;
   }
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 13; i++) {
     body += `<tr><td id="name_relay${i}">${outputNames[i]}</td><td style="text-align: right;" id="relays${i}" class="lightbulb"> &nbsp; </td></tr>`;
   }
   body += '</table></div>';
@@ -38,26 +38,36 @@ function getAnchor() {
   return (urlParts.length > 1) ? urlParts[1] : null;
 }
 
+let Pages={
+  "": {"func": function (){}},
+  "process": {"func": buildPageProcess},
+  "files" : {"func": buildPageFiles},
+  "setup" : {"func": buildPageSetup}
+};
 
 function doPage(e) {
   var anchor = getAnchor();
   console.log(anchor);
   $("#mySpace").empty();
   $("#myAddon").empty();
-  switch (anchor) {
-    case "": {
-      break;
+  if (Pages[anchor] && Pages[anchor].func) {
+    Pages[anchor].func();
+  } else {
+    switch (anchor) {
+      case "": {
+        break;
+      }
+      case "process": {
+        buildPageProcess();
+        break;
+      }
+      case "files": {
+        buildPageFiles();
+        break;
+      }
+      default:
+        buildPage(anchor);
     }
-    case "process": {
-      buildPageProcess();
-      break;
-    }
-    case "files": {
-      buildPageFiles();
-      break;
-    }
-    default:
-      buildPage(anchor);
   }
   getReadings();
 }

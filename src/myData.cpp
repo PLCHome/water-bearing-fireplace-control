@@ -9,8 +9,8 @@ ModbusRTUMaster modbus(MODBUS_SERIAL, RS485_DEFAULT_DE_PIN);
 int16_t temperatures[TEMPHOLDINGREG];
 
 // Arrays for controlling relays and storing their previous state.
-bool relays[RELAYS] = {false, false, false, false, false, false, false, false, false, false, false, false};
-bool relayLast[RELAYS] = {false, false, false, false, false, false, false, false, true, false, false, false};
+bool relays[RELAYS] = {false, false, false, false, false, false, false, false, false, false, false, false, false};
+bool relayLast[RELAYS] = {false, false, false, false, false, false, false, false, false, false, false, false, false};
 
 // Array for storing input values from PCF8574.
 input inputs[PCF8574_INPUTS] = {in_off, in_off, in_off, in_off, in_off, in_off, in_off, in_off};
@@ -53,41 +53,6 @@ void setDATAchanged(void (*_dadaChanged)(change))
 }
 
 /**
- * @brief Initialize the necessary hardware and communication settings.
- * This function sets up Modbus, PCF8574 I/O devices, and the RGB LED.
- */
-void DATAsetup()
-{
-    MODBUS_SERIAL.begin(MODBUS_BUAD, MODBUS_CONFIG, RS485_DEFAULT_RX_PIN, RS485_DEFAULT_TX_PIN);
-    modbus.begin(MODBUS_BUAD, MODBUS_CONFIG);
-
-    pinMode(BEEP_PIN, OUTPUT);
-    digitalWrite(BEEP_PIN, LOW);
-
-    rgb_display.begin();
-    setPixel(INIT_PIXELCOLOR, INIT_PIXELBRIGHTNESS);
-
-    // Set PCF8574 pin modes for output and input.
-    for (int i = 0; i < PCF8574_OUTPUTS; i++)
-    {
-        pcf8574_R1.pinMode(i, OUTPUT);
-    }
-    for (int i = 0; i < PCF8574_INPUTS; i++)
-    {
-        pcf8574_I1.pinMode(i, INPUT);
-    }
-
-    pcf8574_R1.begin();
-    pcf8574_I1.begin();
-
-    // Set all PCF8574 output pins to HIGH initially.
-    for (int i = 0; i < PCF8574_OUTPUTS; i++)
-    {
-        pcf8574_R1.digitalWrite(i, HIGH);
-    }
-}
-
-/**
  * @brief Clean up the Modbus communication.
  * This function ensures that any available data is cleared from the serial buffer.
  */
@@ -101,56 +66,16 @@ void ModbusCleanup()
 }
 
 /**
- * @brief Convert an array of integers to a JSON string.
+ * @brief Convert an array to a JSON string.
  *
+ * @tparam T The type of elements in the array.
  * @param name The name of the JSON key.
- * @param buf The array of integers.
+ * @param buf The array of elements.
  * @param count The number of elements in the array.
  * @return A string containing the JSON representation of the array.
  */
-String jsonArray(String name, int16_t buf[], int count)
-{
-    JsonDocument doc;
-    JsonArray data = doc[name].to<JsonArray>();
-    for (int i = 0; i < count; i++)
-    {
-        data.add(buf[i]);
-    }
-    String out;
-    serializeJson(doc, out);
-    return out;
-}
-
-/**
- * @brief Convert an array of booleans to a JSON string.
- *
- * @param name The name of the JSON key.
- * @param buf The array of booleans.
- * @param count The number of elements in the array.
- * @return A string containing the JSON representation of the array.
- */
-String jsonArray(String name, bool buf[], int count)
-{
-    JsonDocument doc;
-    JsonArray data = doc[name].to<JsonArray>();
-    for (int i = 0; i < count; i++)
-    {
-        data.add(buf[i]);
-    }
-    String out;
-    serializeJson(doc, out);
-    return out;
-}
-
-/**
- * @brief Convert an array of input values to a JSON string.
- *
- * @param name The name of the JSON key.
- * @param buf The array of input values.
- * @param count The number of elements in the array.
- * @return A string containing the JSON representation of the array.
- */
-String jsonArray(String name, input buf[], int count)
+template <typename T>
+String jsonArray(String name, T buf[], int count)
 {
     JsonDocument doc;
     JsonArray data = doc[name].to<JsonArray>();
@@ -228,13 +153,13 @@ bool readModbusTemps()
 void writeModbusRelays()
 {
     ModbusRTUMasterError ModbusErr;
-    if (memcmp(&relayLast[PCF8574_OUTPUTS], &relays[PCF8574_OUTPUTS], RELAYCOILS) != 0)
+    if (memcmp(&relayLast[START_RELAYCOILS], &relays[START_RELAYCOILS], RELAYCOILS) != 0)
     {
         ModbusCleanup();
-        ModbusErr = modbus.writeMultipleCoils(2, 0x0000, &relays[PCF8574_OUTPUTS], RELAYCOILS);
+        ModbusErr = modbus.writeMultipleCoils(2, 0x0000, &relays[START_RELAYCOILS], RELAYCOILS);
         if (ModbusErr == MODBUS_RTU_MASTER_SUCCESS)
         {
-            memcpy(&relayLast[PCF8574_OUTPUTS], &relays[PCF8574_OUTPUTS], RELAYCOILS);
+            memcpy(&relayLast[START_RELAYCOILS], &relays[START_RELAYCOILS], RELAYCOILS);
             if (dadaChanged)
                 (*dadaChanged)(ch_relay);
             Serial.println("Relays written: " + String(ModbusErr));
@@ -243,6 +168,17 @@ void writeModbusRelays()
         {
             Serial.println("Write relays modbus error: " + String(ModbusErr));
         }
+    }
+}
+
+void writeBeebs()
+{
+    if (memcmp(&relayLast[START_BEEBS], &relays[START_BEEBS], BEEBS) != 0)
+    {
+        digitalWrite(BEEP_PIN, relays[START_BEEBS]); 
+        memcpy(&relayLast[START_BEEBS], &relays[START_BEEBS], BEEBS);
+        if (dadaChanged)
+            (*dadaChanged)(ch_relay);
     }
 }
 
@@ -319,26 +255,91 @@ void writePCF8574_outputs()
     }
 }
 
-// Timing variables for the main loop.
-unsigned long currentTime = millis();
-unsigned long previousTime = 0;
 const long timeoutTime = 500;
 
 /**
  * @brief Main loop for reading data and updating the system.
  * This function reads Modbus temperatures, PCF8574 inputs, and writes relays.
  */
-void DATAloop()
+void DATAloop(void *pvParameters)
 {
-    currentTime = millis();
-    if (currentTime - previousTime >= timeoutTime)
-    {
-        previousTime = currentTime;
+    while(true) {
         if (readModbusTemps() | readPCF8574_inputs())
         {
             mypoints.calcVal();
         }
+        writeModbusRelays();
+        writePCF8574_outputs();
+        writeBeebs();
+        vTaskDelay(timeoutTime / portTICK_PERIOD_MS);
     }
-    writeModbusRelays();
-    writePCF8574_outputs();
+}
+
+TaskHandle_t taskDataLoop;
+void printWatermark(void *pvParameters){
+    while(1){
+        delay(2000);
+        Serial.print("TASK: ");
+        Serial.print(pcTaskGetName(taskDataLoop)); // Get task name with handler
+        Serial.print(", High Watermark: ");
+        Serial.print(uxTaskGetStackHighWaterMark(taskDataLoop));
+        Serial.println();
+    }
+}
+
+
+
+/**
+ * @brief Initialize the necessary hardware and communication settings.
+ * This function sets up Modbus, PCF8574 I/O devices, and the RGB LED.
+ */
+void DATAsetup()
+{
+    MODBUS_SERIAL.begin(MODBUS_BUAD, MODBUS_CONFIG, RS485_DEFAULT_RX_PIN, RS485_DEFAULT_TX_PIN);
+    modbus.begin(MODBUS_BUAD, MODBUS_CONFIG);
+
+    pinMode(BEEP_PIN, OUTPUT);
+    digitalWrite(BEEP_PIN, LOW);
+
+    rgb_display.begin();
+    setPixel(INIT_PIXELCOLOR, INIT_PIXELBRIGHTNESS);
+
+    // Set PCF8574 pin modes for output and input.
+    for (int i = 0; i < PCF8574_OUTPUTS; i++)
+    {
+        pcf8574_R1.pinMode(i, OUTPUT);
+    }
+    for (int i = 0; i < PCF8574_INPUTS; i++)
+    {
+        pcf8574_I1.pinMode(i, INPUT);
+    }
+
+    pcf8574_R1.begin();
+    pcf8574_I1.begin();
+
+    // Set all PCF8574 output pins to HIGH initially.
+    for (int i = 0; i < PCF8574_OUTPUTS; i++)
+    {
+        pcf8574_R1.digitalWrite(i, HIGH);
+    }
+
+//    xTaskCreatePinnedToCore(
+    xTaskCreate(
+        DATAloop,      // Function name of the task
+        "DATAloop",   // Name of the task (e.g. for debugging)
+        2048,        // Stack size (bytes)
+        NULL,        // Parameter to pass
+        1,           // Task priority
+        &taskDataLoop//,    // Task handle
+//        1           // run on Core 1
+    );
+
+    xTaskCreate(
+        printWatermark,     // Function name of the task
+        "Print Watermark",  // Name of the task (e.g. for debugging)
+        2048,        // Stack size (bytes)
+        NULL,       // Parameter to pass
+        1,          // Task priority
+        NULL        // Task handle
+    );
 }

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Connect WiFi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/w3.css">
+    <link rel="stylesheet" href="css/w3-theme-black.css">
+    <script language='javascript' type="text/javascript" src="js/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+
+    <div class="w3-container w3-gray">
+        <h2>Setup Wifi</h2>
+    </div>
+
+    <form class="w3-container " method="POST" action="/setWifi">
+        <p>
+            <label for="wifi">WiFi</label>
+            <input class="w3-input" id="wifi" name="wifi" type="text">
+        </p>
+        <p>
+            <label for>Password</label>
+            <input class="w3-input" id="password" name="password" type="password">
+        </p>
+        <p>
+            <button type="submit">Connect to network</button>
+        </p>
+    </form>
+    <div class="w3-container">
+        <table class="w3-table-all w3-hoverable " id="wifilist">
+        </table>
+        </p>
+        <script>
+            var gateway = `${(window.location.protocol == "https:" ? "wss" : "ws")}://${window.location.hostname}/ws`;
+            if (gateway.indexOf('localhost') != -1) {
+                gateway = gateway.replace('localhost', '192.168.2.178');
+            }
+            var websocket;
+            // Init web socket when the page loads
+            $(window).on('load', onload);
+
+            function onload(event) {
+                initWebSocket();
+            }
+
+            function initWebSocket() {
+                console.log('Trying to open a WebSocket connection…');
+                websocket = new WebSocket(gateway);
+                websocket.onopen = onOpen;
+                websocket.onclose = onClose;
+                websocket.onmessage = onMessage;
+            }
+            var toGetWiFi;
+            function getWiFi() {
+                clearTimeout(toGetWiFi);
+                toGetWiFi = setTimeout(function () {
+                    if (websocket)
+                        websocket.send("wifilist");
+                }, 1000)
+            }
+
+            // When websocket is established, call the getReadings() function
+            function onOpen(event) {
+                console.log('Connection opened');
+                getWiFi();
+            }
+
+            function onClose(event) {
+                console.log('Connection closed');
+                setTimeout(initWebSocket, 2000);
+            }
+
+            // Function that receives the message from the ESP32 with the readings
+            function onMessage(event) {
+                console.log(event);
+                var myObj = JSON.parse(event.data);
+                if (myObj["wifilist"]) {
+                    const wifiList = myObj["wifilist"];
+                    const select = $("#wifilist");
+
+                    // Leere die Dropdown-Liste
+                    select.empty();
+                    const head = $("<tr/>");
+                    head.append("<th>WiFi</th>")
+                    head.append("<th>rssi</th>")
+                    head.append("<th>channel</th>")
+                    head.append("<th>secure</th>")
+                    head.append("<th>bssid</th>")
+                    select.append(head);
+
+                    // Füge die Optionen hinzu
+                    wifiList.forEach(wifi => {
+                        const WIFI_AUTH = {
+                            "0": "open",
+                            "1": "WEP",
+                            "2": "WPA_PSK",
+                            "3": "WPA2_PSK",
+                            "4": "WPA_WPA2_PSK",
+                            "5": "WiFi EAP security",
+                            "6": "WPA3_PSK",
+                            "7": "WPA2_WPA3_PSK",
+                            "8": "WAPI_PSK",
+                            "9": "WPA3_ENT_SUITE_B_192_BIT",
+                            "10": "MAX"
+                        }
+
+                        const row = $(`<tr/>`);
+                        row.append(`<td>${wifi.ssid}</td>`)
+                        row.append(`<td>${wifi.rssi}</td>`)
+                        row.append(`<td>${wifi.channel}</td>`)
+                        row.append(`<td>${WIFI_AUTH[String(wifi.secure)]}</td>`)
+                        row.append(`<td>${wifi.bssid}</td>`)
+                        row.data("ssid",wifi.ssid)
+                        row.on('click',function (){
+                            console.log($(this).data("ssid"));
+                            $("#wifi").val( $(this).data("ssid"));
+                        })
+                        select.append(row);
+                    });
+                }
+            }
+
+
+
+        </script>
+</body>
+
+</html>

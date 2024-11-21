@@ -1,0 +1,589 @@
+{
+    "mqtt": {
+        "text": "Mqtt settings",
+        "paras": {
+            "active": {
+                "text": "MQTT active",
+                "type": "boolean",
+                "default": false
+            },
+            "server": {
+                "text": "MQTT server",
+                "type": "string"
+            },
+            "port": {
+                "text": "MQTT server port",
+                "type": "integer",
+                "default": 1880,
+                "min": 0,
+                "max": 65535
+            },
+            "lastwilltop": {
+                "text": "Last will topic",
+                "default": "myofen/condition",
+                "type": "string"
+            },
+            "lastwillval": {
+                "text": "Last will value",
+                "default": "off",
+                "type": "string"
+            },
+            "lastwillqos": {
+                "text": "Last will QoS",
+                "type": "select",
+                "valtyp": "sinteger",
+                "default": 0,
+                "values": {
+                    "0": "0 -> At most once",
+                    "1": "1 -> At least once",
+                    "2": "2 -> Exactly once"
+                }
+            },
+            "lastwillretain": {
+                "text": "Last will retain",
+                "type": "boolean",
+                "default": true
+            },
+            "connecttop": {
+                "text": "Connect topic",
+                "type": "string",
+                "default": "myofen/condition"
+            },
+            "connectval": {
+                "text": "Connect value",
+                "default": "on",
+                "type": "string"
+            },
+            "connectqos": {
+                "text": "Connect QoS",
+                "type": "select",
+                "valtyp": "sinteger",
+                "default": 0,
+                "values": {
+                    "0": "0 -> At most once",
+                    "1": "1 -> At least once",
+                    "2": "2 -> Exactly once"
+                }
+            },
+            "connectretain": {
+                "text": "Connect retain",
+                "type": "boolean",
+                "default": true
+            },
+            "puplishtopic": {
+                "text": "Value puplish topic",
+                "type": "string",
+                "default": "myofen/values"
+            },
+            "puplishqos": {
+                "text": "Value puplish QoS",
+                "type": "select",
+                "valtyp": "sinteger",
+                "default": 0,
+                "values": {
+                    "0": "0 -> At most once",
+                    "1": "1 -> At least once",
+                    "2": "2 -> Exactly once"
+                }
+            },
+            "puplishretain": {
+                "text": "Value puplish retain",
+                "type": "boolean",
+                "default": false
+            },
+            "subscribetopic": {
+                "text": "Subscribe topic",
+                "type": "string",
+                "default": "myofen/command"
+            },
+            "subscribeqos": {
+                "text": "Subscribe QoS",
+                "type": "select",
+                "valtyp": "sinteger",
+                "default": 0,
+                "values": {
+                    "0": "0 -> At most once",
+                    "1": "1 -> At least once",
+                    "2": "2 -> Exactly once"
+                }
+            }
+        }
+    },
+    "wifi": {
+        "text": "WiFi settings",
+        "paras": {
+            "active": {
+                "text": "WiFi active",
+                "type": "boolean",
+                "default": false
+            },
+            "aptime": {
+                "text": "Seconds the AP is active when no WiFi connect",
+                "type": "integer",
+                "default": 600,
+                "min": 0,
+                "max": 60000
+            },
+            "hostname": {
+                "text": "WiFi hostname",
+                "type": "string",
+                "default": "myofen_wifi"
+            }
+        }
+    },
+    "lan": {
+        "text": "LAN settings",
+        "paras": {
+            "active": {
+                "text": "LAN active",
+                "type": "boolean",
+                "default": true
+            },
+            "hostname": {
+                "text": "LAN hostname",
+                "type": "string",
+                "default": "myofen_lan"
+            },
+            "type": {
+                "text": "LAN type",
+                "type": "select",
+                "valtyp": "sinteger",
+                "default": 0,
+                "values": {
+                    "0": "LAN8720",
+                    "1": "TLK110 or IP101",
+                    "2": "RTL8201",
+                    "3": "DP83848",
+                    "4": "DM9051",
+                    "5": "KSZ8041",
+                    "6": "KSZ8081"
+                }
+            },
+            "clk_mode": {
+                "text": "LAN clock mode",
+                "type": "select",
+                "valtyp": "sinteger",
+                "default": 3,
+                "values": {
+                    "0": "GPIO0 IN",
+                    "1": "GPIO0 OUT",
+                    "2": "GPIO16 OUT",
+                    "3": "GPIO17 OUT"
+                }
+            },
+            "phy_mdc": {
+                "text": "LAN MDC pin",
+                "type": "integer",
+                "default": 23,
+                "min": -1,
+                "max": 255
+            },
+            "phy_mdio": {
+                "text": "LAN MDIO pin",
+                "type": "integer",
+                "default": 18,
+                "min": -1,
+                "max": 255
+            },
+            "phy_power": {
+                "text": "LAN power pin",
+                "type": "integer",
+                "default": -1,
+                "min": -1,
+                "max": 255
+            }
+        }
+    },
+    "modbus": {
+        "text": "Modbus settings",
+        "paras": {
+            "active": {
+                "text": "Modbus active",
+                "type": "boolean",
+                "default": true
+            },
+            "serial": {
+                "text": "Modbus serial",
+                "type": "select",
+                "valtyp": "sinteger",
+                "default": 1,
+                "values": {
+                    "1": "HW SERIAL 1",
+                    "2": "HW SERIAL 2"
+                }
+            },
+            "buad": {
+                "text": "Modbus buad rate",
+                "type": "integer",
+                "default": 9600,
+                "min": 0,
+                "max": 18446744073709551615
+            },
+            "config": {
+                "text": "Modbus config",
+                "type": "select",
+                "valtyp": "sinteger",
+                "default": 134217779,
+                "values": {
+                    "134217791": "SERIAL_5N1",
+                    "134217787": "SERIAL_6N1",
+                    "134217783": "SERIAL_7N1",
+                    "134217779": "SERIAL_8N1",
+                    "134217759": "SERIAL_5N2",
+                    "134217755": "SERIAL_6N2",
+                    "134217751": "SERIAL_7N2",
+                    "134217747": "SERIAL_8N2",
+                    "134217790": "SERIAL_5E1",
+                    "134217786": "SERIAL_6E1",
+                    "134217782": "SERIAL_7E1",
+                    "134217778": "SERIAL_8E1",
+                    "134217758": "SERIAL_5E2",
+                    "134217754": "SERIAL_6E2",
+                    "134217750": "SERIAL_7E2",
+                    "134217746": "SERIAL_8E2",
+                    "134217788": "SERIAL_5O1",
+                    "134217784": "SERIAL_6O1",
+                    "134217780": "SERIAL_7O1",
+                    "134217776": "SERIAL_8O1",
+                    "134217756": "SERIAL_5O2",
+                    "134217752": "SERIAL_6O2",
+                    "134217748": "SERIAL_7O2",
+                    "134217744": "SERIAL_8O2"
+                }
+            },
+            "rs485_tx_pin": {
+                "text": "RS485 TX pin",
+                "type": "integer",
+                "default": 33,
+                "min": -1,
+                "max": 255
+            },
+            "rs485_rx_pin": {
+                "text": "RS485 RX pin",
+                "type": "integer",
+                "default": 32,
+                "min": -1,
+                "max": 255
+            },
+            "rs485_de_pin": {
+                "text": "RS485 DE pin",
+                "type": "integer",
+                "default": -1,
+                "min": -1,
+                "max": 255
+            }
+        },
+        "addablecards": {
+            "temperatures": {
+                "text": "Temperatures",
+                "paras": {
+                    "typ": {
+                        "text": "Modbus communication type",
+                        "type": "select",
+                        "valtyp": "sinteger",
+                        "default": 0,
+                        "values": {
+                            "0": "Holding register"
+                        }
+                    },
+                    "id": {
+                        "text": "Modbus module id",
+                        "type": "integer",
+                        "default": 1,
+                        "min": 1,
+                        "max": 255
+                    },
+                    "adress": {
+                        "text": "Modbus adresse",
+                        "type": "integer",
+                        "default": 0,
+                        "min": 0,
+                        "max": 65535
+                    },
+                    "values": {
+                        "text": "Modbus quantity of values to read",
+                        "type": "integer",
+                        "default": 1,
+                        "min": 1,
+                        "max": 65535
+                    },
+                    "decimals": {
+                        "text": "Temperatures decimals",
+                        "type": "integer",
+                        "default": 2,
+                        "min": 0,
+                        "max": 2
+                    }
+                }
+            },
+            "outputs": {
+                "text": "Outputs",
+                "paras": {
+                    "typ": {
+                        "text": "Modbus communication type",
+                        "type": "select",
+                        "valtyp": "sinteger",
+                        "default": 0,
+                        "values": {
+                            "0": "Output coils"
+                        }
+                    },
+                    "id": {
+                        "text": "Modbus module id",
+                        "type": "integer",
+                        "default": 1,
+                        "min": 1,
+                        "max": 255
+                    },
+                    "adress": {
+                        "text": "Modbus adresse",
+                        "type": "integer",
+                        "default": 0,
+                        "min": 0,
+                        "max": 65535
+                    },
+                    "values": {
+                        "text": "Modbus quantity of values to write",
+                        "type": "integer",
+                        "default": 1,
+                        "min": 1,
+                        "max": 65535
+                    }
+                }
+            }
+        },
+        "carddefaulds": [
+            {
+                "card": "temperatures",
+                "typ": 0,
+                "id": 1,
+                "adress": 0,
+                "values": 24,
+                "decimals": 2
+            },
+            {
+                "card": "outputs",
+                "typ": 0,
+                "id": 2,
+                "adress": 0,
+                "values": 4
+            }
+        ]
+    },
+    "beeb": {
+        "text": "Beeb settings",
+        "paras": {
+            "active": {
+                "text": "Beeb active",
+                "type": "boolean",
+                "default": true
+            },
+            "pin": {
+                "text": "Beeb pin",
+                "type": "integer",
+                "default": 2,
+                "min": -1,
+                "max": 255
+            }
+        }
+    },
+    "ws2812led": {
+        "text": "LED WS2812 settings",
+        "paras": {
+            "active": {
+                "text": "LED active",
+                "type": "boolean",
+                "default": true
+            },
+            "pin": {
+                "text": "LED pin",
+                "type": "integer",
+                "default": 12,
+                "min": -1,
+                "max": 255
+            },
+            "length": {
+                "text": "LED length",
+                "type": "integer",
+                "default": 1,
+                "min": 1,
+                "max": 255
+            },
+            "pixel": {
+                "text": "LED use pixel",
+                "type": "integer",
+                "default": 0,
+                "min": 0,
+                "max": 255
+            }
+        }
+    },
+    "i2c": {
+        "text": "I2C settings",
+        "paras": {
+            "active": {
+                "text": "I2C active",
+                "type": "boolean",
+                "default": true
+            },
+            "sda": {
+                "text": "SDA",
+                "type": "integer",
+                "default": 4,
+                "min": 0,
+                "max": 255
+            },
+            "sdl": {
+                "text": "SDL",
+                "type": "integer",
+                "default": 5,
+                "min": 0,
+                "max": 255
+            }
+        },
+        "addablecards": {
+            "pcf8574": {
+                "text": "PCF8574",
+                "paras": {
+                    "adress": {
+                        "text": "PCF8574 adress",
+                        "type": "select",
+                        "valtyp": "sinteger",
+                        "default": 32,
+                        "values": {
+                            "32": "0x20",
+                            "33": "0x21",
+                            "34": "0x22",
+                            "35": "0x23",
+                            "36": "0x24",
+                            "37": "0x25",
+                            "38": "0x26",
+                            "39": "0x27",
+                            "56": "0x38",
+                            "57": "0x39",
+                            "58": "0x3A",
+                            "59": "0x3B",
+                            "60": "0x3C",
+                            "70": "0x3E",
+                            "71": "0x3F"
+                        }
+                    },
+                    "dirb0": {
+                        "text": "PCF8574 direction bit 0",
+                        "type": "select",
+                        "valtyp": "sinteger",
+                        "default": 0,
+                        "values": {
+                            "0": "NA",
+                            "1": "INPUT",
+                            "2": "OUTPUT"
+                        }
+                    },
+                    "dirb1": {
+                        "text": "PCF8574 direction bit 1",
+                        "type": "select",
+                        "valtyp": "sinteger",
+                        "default": 0,
+                        "values": {
+                            "0": "NA",
+                            "1": "INPUT",
+                            "2": "OUTPUT"
+                        }
+                    },
+                    "dirb2": {
+                        "text": "PCF8574 direction bit 2",
+                        "type": "select",
+                        "valtyp": "sinteger",
+                        "default": 0,
+                        "values": {
+                            "0": "NA",
+                            "1": "INPUT",
+                            "2": "OUTPUT"
+                        }
+                    },
+                    "dirb3": {
+                        "text": "PCF8574 direction bit 3",
+                        "type": "select",
+                        "valtyp": "sinteger",
+                        "default": 0,
+                        "values": {
+                            "0": "NA",
+                            "1": "INPUT",
+                            "2": "OUTPUT"
+                        }
+                    },
+                    "dirb4": {
+                        "text": "PCF8574 direction bit 4",
+                        "type": "select",
+                        "valtyp": "sinteger",
+                        "default": 0,
+                        "values": {
+                            "0": "NA",
+                            "1": "INPUT",
+                            "2": "OUTPUT"
+                        }
+                    },
+                    "dirb5": {
+                        "text": "PCF8574 direction bit 5",
+                        "type": "select",
+                        "valtyp": "sinteger",
+                        "default": 0,
+                        "values": {
+                            "0": "NA",
+                            "1": "INPUT",
+                            "2": "OUTPUT"
+                        }
+                    },
+                    "dirb6": {
+                        "text": "PCF8574 direction bit 6",
+                        "type": "select",
+                        "valtyp": "sinteger",
+                        "default": 0,
+                        "values": {
+                            "0": "NA",
+                            "1": "INPUT",
+                            "2": "OUTPUT"
+                        }
+                    },
+                    "dirb7": {
+                        "text": "PCF8574 direction bit 7",
+                        "type": "select",
+                        "valtyp": "sinteger",
+                        "default": 0,
+                        "values": {
+                            "0": "NA",
+                            "1": "INPUT",
+                            "2": "OUTPUT"
+                        }
+                    }
+                }
+            }
+        },
+        "carddefaulds": [
+            {
+                "card": "pcf8574",
+                "adress": 34,
+                "dirb0": 1,
+                "dirb1": 1,
+                "dirb2": 1,
+                "dirb3": 1,
+                "dirb4": 1,
+                "dirb5": 1,
+                "dirb6": 1,
+                "dirb7": 1
+            },
+            {
+                "card": "pcf8574",
+                "adress": 36,
+                "dirb0": 2,
+                "dirb1": 2,
+                "dirb2": 2,
+                "dirb3": 2,
+                "dirb4": 2,
+                "dirb5": 2,
+                "dirb6": 2,
+                "dirb7": 2
+            }
+        ]
+    }
+}

@@ -3,11 +3,14 @@
 
 #define _ASYNC_WEBSERVER_LOGLEVEL_ 0
 
+#include <WiFi.h>
 #include <AsyncTCP.h>
 #include <WebServer_WT32_ETH01.h>
 #include <WebServer_WT32_ETH01_Debug.h>
 #include <ESPAsyncWebServer.h>
 #include "myPoints.h"
+#include <DNSServer.h>
+#include <Preferences.h>
 
 /// Filesystem object, set to SPIFFS.
 FS *filesystem = &SPIFFS;
@@ -20,6 +23,11 @@ AsyncWebSocket ws("/ws");
 
 /// File handle for uploading files to the filesystem.
 File fsUploadFile;
+
+Preferences preferences;
+IPAddress apIP(192, 168, 4, 1); // Statische IP für den Access Point
+DNSServer dnsServer;
+bool dnsServerStartet = false;
 
 /**
  * @brief Converts bytes to a human-readable string format (B, KB, MB, or GB).
@@ -176,7 +184,16 @@ void handleRestart(AsyncWebServerRequest *request)
  */
 void handleForwardIndex(AsyncWebServerRequest *request)
 {
-    request->redirect("/index.html");
+    IPAddress clientIP = request->client()->getLocalAddress();
+    Serial.println("Webserver:" + clientIP.toString());
+    if (WiFi.softAPIP() == clientIP)
+    {
+        request->redirect("/wifi.html");
+    }
+    else
+    {
+        request->redirect("/index.html");
+    }
 }
 
 /**
@@ -277,6 +294,53 @@ void handleDownload(AsyncWebServerRequest *request)
     request->send(SPIFFS, filename);
 }
 
+void setWifi(AsyncWebServerRequest *request)
+{
+    if (request->hasParam("wifi", true))
+    {
+        String ssid = request->getParam("wifi", true)->value();
+        String password = request->hasParam("password", true) ? request->getParam("password", true)->value() : "";
+
+        Serial.printf("Versuche mit SSID: %s, Passwort: %s zu verbinden...\n", ssid.c_str(), password.c_str());
+
+        WiFi.begin(ssid.c_str(), password.c_str()); // Mit dem angegebenen Netzwerk verbinden
+        request->send(200, "text/plain", "Attempting to connect. Please wait...");
+        preferences.putString("ssid", ssid);         // Save SSID
+        preferences.putString("password", password); // Save Password
+        /*/
+        unsigned long startAttemptTime = millis();
+        bool connected = false;
+
+        // Versuchen, sich zu verbinden
+        while (WiFi.status() != WL_CONNECTED)
+        {
+            if (millis() - startAttemptTime > 10000)
+            { // 10 Sekunden Timeout
+                break;
+            }
+            delay(100);
+        }
+
+        if (WiFi.status() == WL_CONNECTED)
+        {
+            connected = true;
+            String ip = WiFi.localIP().toString(); // IP-Adresse des ESP32 abrufen
+            Serial.println("Verbindung erfolgreich!");
+            request->send(200, "text/plain", "Verbindung erfolgreich! IP-Adresse: " + ip);
+        }
+        else
+        {
+            Serial.println("Verbindung fehlgeschlagen.");
+            request->send(400, "text/plain", "Verbindung fehlgeschlagen!");
+        }
+        */
+    }
+    else
+    {
+        request->send(400, "text/plain", "Fehlende Parameter!");
+    }
+};
+
 /**
  * @brief Initializes the web server with defined routes and handlers.
  */
@@ -286,11 +350,13 @@ void initWebserver()
     server.on("/upload", HTTP_POST, handleOK, handleUpload);
     server.on("/delete-file", HTTP_GET, handleFileDelete);
     server.on("/reboot", HTTP_GET, handleRestart);
+    server.on("/setWifi", HTTP_POST, setWifi);
     server.on("/", HTTP_GET, handleForwardIndex);
     server.on("/index", HTTP_GET, handleForwardIndex);
     server.on("/download", HTTP_GET, handleDownload);
     server.serveStatic("/", SPIFFS, "/www/");
     server.serveStatic("/config/", SPIFFS, "/config/");
+    server.onNotFound(handleForwardIndex);
     server.begin();
 }
 
@@ -326,6 +392,42 @@ void dadaChanged(change dataChange)
     }
 }
 
+String wifiList()
+{
+    String json = "{\"wifilist\":[";
+    int n = WiFi.scanNetworks(); // WLAN-Netzwerke scannen
+    for (int i = 0; i < n; ++i)
+    {
+        if (i)
+            json += ",";
+        json += "{";
+        json += "\"rssi\":" + String(WiFi.RSSI(i));
+        json += ",\"ssid\":\"" + WiFi.SSID(i) + "\"";
+        json += ",\"bssid\":\"" + WiFi.BSSIDstr(i) + "\"";
+        json += ",\"channel\":" + String(WiFi.channel(i));
+        json += ",\"secure\":" + String(WiFi.encryptionType(i));
+        json += "}";
+    }
+    json += "]}";
+    WiFi.scanDelete();
+    return json;
+}
+
+bool WiFiScanTaskRunning = false;
+void sendWifiList()
+{
+    if (!WiFiScanTaskRunning)
+    {
+        WiFiScanTaskRunning = true;
+        xTaskCreate([](void *) { // vTaskDelay(1000 / portTICK_PERIOD_MS);
+            notifyClients(wifiList());
+            WiFiScanTaskRunning = false;
+            vTaskDelete(NULL);
+        },
+                    "WiFiScanTask", 2048, NULL, 1, NULL);
+    }
+}
+
 /**
  * @brief Handles WebSocket messages and triggers updates or actions.
  */
@@ -352,6 +454,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
             else if (strcmp((char *)data, "reboot") == 0)
             {
                 ESP.restart();
+            }
+            else if (strcmp((char *)data, "wifilist") == 0)
+            {
+                sendWifiList();
             }
         }
         else
@@ -406,6 +512,36 @@ void initWebSocket()
     server.addHandler(&ws);
 }
 
+// Dynamische SSID und Passwort basierend auf Seriennummer
+String getDynamicSSID() {
+    uint64_t chipId = ESP.getEfuseMac(); // Seriennummer (MAC-Adresse)
+    // Extrahiere die letzten 6 Ziffern der MAC-Adresse in Hex-Format
+    String lastSix = String((uint32_t)chipId, HEX).substring(2); 
+    return "myESP_" + lastSix;
+}
+
+String getDynamicPassword()
+{
+    uint64_t chipId = ESP.getEfuseMac(); // Seriennummer (MAC-Adresse)
+    String lastSix = String((uint32_t)chipId, HEX).substring(2); 
+    return "config_" + lastSix;
+}
+
+void startAccessPoint()
+{
+    // Access Point starten
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(getDynamicSSID().c_str(), getDynamicPassword().c_str());
+    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+
+    // DNS-Server starten, alle Domains auf apIP umleiten
+    dnsServer.start(53, "*", apIP);
+    dnsServerStartet = true;
+
+    Serial.print("AP gestartet. IP-Adresse: ");
+    Serial.println(WiFi.softAPIP());
+}
+
 /**
  * @brief Configures and initializes the web server, WebSocket, and Ethernet.
  */
@@ -420,6 +556,44 @@ void WEBsetup()
     initWebSocket();
     initWebserver();
     setDATAchanged(dadaChanged);
+    preferences.begin("wifi", false);
+
+    // Versuche, mit gespeicherten Zugangsdaten zu verbinden
+    String savedSSID = preferences.getString("ssid", "");
+    String savedPassword = preferences.getString("password", "");
+
+    if (savedSSID != "" && savedPassword != "")
+    {
+        Serial.println("Trying to connect with saved network...");
+        WiFi.begin(savedSSID.c_str(), savedPassword.c_str());
+
+        unsigned long startAttemptTime = millis();
+        while (WiFi.status() != WL_CONNECTED)
+        {
+            if (millis() - startAttemptTime > 10000)
+            { // 10 Sekunden Timeout
+                break;
+            }
+            delay(100);
+        }
+        if (WiFi.status() == WL_CONNECTED)
+        {
+            Serial.println("Successfully connected to saved network!");
+            Serial.print("IP Address: ");
+            Serial.println(WiFi.localIP());
+        }
+        else
+        {
+            Serial.println("Failed to connect to saved network.");
+        }
+    }
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        Serial.println("Starting Access Point...");
+        String ssid = getDynamicSSID();
+        String password = getDynamicPassword();
+        startAccessPoint();
+    }
 }
 
 /**
@@ -428,4 +602,6 @@ void WEBsetup()
 void WEBloop()
 {
     ws.cleanupClients();
+    if (dnsServerStartet)
+        dnsServer.processNextRequest();
 }

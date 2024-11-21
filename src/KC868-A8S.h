@@ -39,7 +39,7 @@
 #define WS2812_LENGTH 1
 #define WS2812_PIXEL 0
 
-//WS2812 Analog pin
+//Analog pin
 #define ANALOG_A1_PIN   36
 #define ANALOG_A2_PIN   39
 #define ANALOG_A3_PIN   34

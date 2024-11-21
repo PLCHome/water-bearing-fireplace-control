@@ -32,7 +32,7 @@ public:
                    void (*newVauf)(bool), void (*newVzu)(bool));
 
     // Loop-Methode für die Regelung
-    void loop(float currentT1, float currentT2, bool einFlag);
+    void loop(float currentT1, bool einFlag);
 };
 
 #endif // MISCHER_H

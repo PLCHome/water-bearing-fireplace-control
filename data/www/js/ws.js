@@ -182,6 +182,23 @@ function downloadFile(fileUrl, fileName) {
     document.body.removeChild(a);
 }
 
+// Function to download a file
+function downloadFileAsString(filename, cb) {
+    // Construct the URL for the /download route with the filename as a query parameter
+    var fileUrl = '/download?filename=' + encodeURIComponent(filename);
+    
+    // Load the file content via AJAX
+    $.ajax({
+        url: fileUrl, // The /download route
+        method: 'GET',
+        dataType: 'text', // Expect plain text content
+        success: cb,
+        error: function (xhr, status, error) {
+            alert("Error loading file: " + error);  // Handle error
+        }
+    });
+}
+
 function deleteFile(filename, Callback) {
     cb = Callback;
     $.ajax({

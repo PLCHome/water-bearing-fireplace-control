@@ -10,6 +10,7 @@
 // Define constants
 #define TEMPHOLDINGREG 24          // Number of temperature holding registers
 #define RELAYCOILS 4               // Number of relay coils
+#define BEEBS 1
 
 // Default pixel color and brightness for the RGB LED
 #define INIT_PIXELCOLOR 0xff0000   // Red color (RGB Hex)
@@ -34,9 +35,14 @@ enum input
 
 // Declare external variables for temperature holding registers and relays states
 extern int16_t temperatures[TEMPHOLDINGREG];      // Array for temperature holding registers
-#define RELAYS PCF8574_OUTPUTS + RELAYCOILS           // Total number of relays
+#define RELAYS PCF8574_OUTPUTS + RELAYCOILS + BEEBS    // Total number of relays
 extern bool relays[RELAYS];                           // Array for relays states
 extern input inputs[PCF8574_INPUTS];           // Array for internal input states
+
+#define START_PCF8574_OUTPUTS   0
+#define START_RELAYCOILS        PCF8574_OUTPUTS
+#define START_BEEBS             PCF8574_OUTPUTS+RELAYCOILS
+
 
 /**
  * @brief Set the color and brightness for the RGB LED.
@@ -54,34 +60,16 @@ void setPixel(uint32_t pixelColor, uint8_t pixelBrightness);
 void setDATAchanged(void (*_dadaChanged)(change));
 
 /**
- * @brief Convert an array of integers to a JSON-formatted string.
+ * @brief Convert an array to a JSON string.
  *
+ * @tparam T The type of elements in the array.
  * @param name The name of the JSON key.
- * @param buf The array of integers.
+ * @param buf The array of elements.
  * @param count The number of elements in the array.
- * @return A JSON string containing the array values.
+ * @return A string containing the JSON representation of the array.
  */
-String jsonArray(String name, int16_t buf[], int count);
-
-/**
- * @brief Convert an array of booleans to a JSON-formatted string.
- *
- * @param name The name of the JSON key.
- * @param buf The array of booleans.
- * @param count The number of elements in the array.
- * @return A JSON string containing the array values.
- */
-String jsonArray(String name, bool buf[], int count);
-
-/**
- * @brief Convert an array of input states to a JSON-formatted string.
- *
- * @param name The name of the JSON key.
- * @param buf The array of input states.
- * @param count The number of elements in the array.
- * @return A JSON string containing the array values.
- */
-String jsonArray(String name, input buf[], int count);
+template <typename T>
+String jsonArray(String name, T buf[], int count);
 
 /**
  * @brief Generate a JSON string representing the internal input states.
