@@ -7,6 +7,11 @@
                 "type": "boolean",
                 "default": false
             },
+            "clientid": {
+                "text": "MQTT client id",
+                "type": "string",
+                "default": "myOfen"
+            },
             "server": {
                 "text": "MQTT server",
                 "type": "string"
@@ -14,7 +19,22 @@
             "port": {
                 "text": "MQTT server port",
                 "type": "integer",
-                "default": 1880,
+                "default": 1883,
+                "min": 0,
+                "max": 65535
+            },
+            "user": {
+                "text": "MQTT server user",
+                "type": "string"
+            },
+            "password": {
+                "text": "MQTT server password",
+                "type": "password"
+            },
+            "connecttime": {
+                "text": "Seconds between two connection attempts",
+                "type": "integer",
+                "default": 5,
                 "min": 0,
                 "max": 65535
             },
@@ -23,8 +43,8 @@
                 "default": "myofen/condition",
                 "type": "string"
             },
-            "lastwillval": {
-                "text": "Last will value",
+            "lastwillmes": {
+                "text": "Last will message payload",
                 "default": "off",
                 "type": "string"
             },
@@ -49,21 +69,10 @@
                 "type": "string",
                 "default": "myofen/condition"
             },
-            "connectval": {
-                "text": "Connect value",
+            "connectmes": {
+                "text": "Connect message payload",
                 "default": "on",
                 "type": "string"
-            },
-            "connectqos": {
-                "text": "Connect QoS",
-                "type": "select",
-                "valtype": "sinteger",
-                "default": 0,
-                "values": {
-                    "0": "0 -> At most once",
-                    "1": "1 -> At least once",
-                    "2": "2 -> Exactly once"
-                }
             },
             "connectretain": {
                 "text": "Connect retain",
@@ -74,17 +83,6 @@
                 "text": "Value puplish topic",
                 "type": "string",
                 "default": "myofen/values"
-            },
-            "puplishqos": {
-                "text": "Value puplish QoS",
-                "type": "select",
-                "valtype": "sinteger",
-                "default": 0,
-                "values": {
-                    "0": "0 -> At most once",
-                    "1": "1 -> At least once",
-                    "2": "2 -> Exactly once"
-                }
             },
             "puplishretain": {
                 "text": "Value puplish retain",

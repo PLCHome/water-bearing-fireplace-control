@@ -5,25 +5,35 @@
 #include <SPIFFS.h>
 #include <ArduinoJson.h>
 
-#define CONFIGFILENAME "config/setup.json"
+#define CONFIGFILENAME "/config/setup.json"
 
 class mySetup
 {
 private:
-    File file = (File) NULL;
+    File file = (File)NULL;
     JsonDocument doc;
-    JsonDocument section;
+    JsonVariant section;
     bool setupOK = false;
+
 public:
     mySetup();
     ~mySetup();
     void resetSection();
     void setNextSection(String);
-    template <typename ValueTyp>
-    ValueTyp getSectionValue(String name, ValueTyp defaultval);
+    bool hasSectionValue(String name);
+    const char *cstrPersists(String val);
+    const char *cstrPersistsNull(String val);
     void close();
-};
 
-mySetup mysetup;
+    template <typename ValueTyp>
+    ValueTyp getSectionValue(String name, ValueTyp defaultval)
+    {
+        if (setupOK && !this->section[name].isNull())
+            return this->section[name].as<ValueTyp>();
+        else
+            return defaultval;
+    }
+};
+extern mySetup *mysetup;
 
 #endif /* MYSETUP_H_ */

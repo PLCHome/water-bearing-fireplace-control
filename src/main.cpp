@@ -7,6 +7,7 @@
 #include "myServer.h"
 #include "mySetup.h"
 #include "myData.h"
+#include "myMQTT.h"
 #include "points/myPoints.h"
 
 void setup()
@@ -21,17 +22,21 @@ void setup()
   while (!Serial)
     ;
 
-  mysetup = mySetup();
+  mysetup = new mySetup();
 
   DATAsetup();
   WEBsetup();
+  mymqtt->init();
   mypoints.build();
-
+  
+  delete mysetup;
+  mysetup = nullptr;
 }
 
 void loop()
 {
   // WiFiClient client = server.available();   // Listen for incoming clients
+  mymqtt->loop();
   mypoints.loop();
   //DATAloop();
   WEBloop();

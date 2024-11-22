@@ -1,8 +1,11 @@
 #include "mySetup.h"
 
+mySetup *mysetup = nullptr;
 
-mySetup::mySetup(){
-    if (!this->file) {
+mySetup::mySetup()
+{
+    if (!this->file)
+    {
         this->file = SPIFFS.open(CONFIGFILENAME, FILE_READ);
         if (!this->file)
         {
@@ -18,39 +21,58 @@ mySetup::mySetup(){
             }
             else
             {
-                this->setupOK=true;
-                this->section=this->doc;
+                this->setupOK = true;
+                this->resetSection();
+                serializeJson(this->section, Serial);
             }
         }
     }
 }
 
-mySetup::~mySetup(){
+mySetup::~mySetup()
+{
     this->close();
 }
 
-void mySetup::resetSection() {
-    this->section=this->doc;
+void mySetup::resetSection()
+{
+    this->section = this->doc.as<JsonVariant>();
 }
 
-void mySetup::setNextSection(String path) {
-    this->section=this->section[path];
+void mySetup::setNextSection(String path)
+{
+    this->section = this->section[path];
 }
 
-template <typename ValueTyp>
-ValueTyp mySetup::getSectionValue(String name, ValueTyp defaultval){
-    if (setupOK && !this->section[name].isNull())
-        return this->section[name].to<ValueTyp>;
-    else 
-        return defaultval;
+bool mySetup::hasSectionValue(String name)
+{
+    return (setupOK && !this->section[name].isNull());
 }
 
-void mySetup::close(){
+const char *mySetup::cstrPersists(String val)
+{
+
+    const char *cstr = (const char *)malloc(val.length() + 1);
+    strcpy((char *)cstr, val.c_str());
+    return cstr;
+}
+
+const char *mySetup::cstrPersistsNull(String val)
+{
+    if (val.isEmpty())
+        return nullptr;
+    else
+        return this->cstrPersists(val);
+}
+
+void mySetup::close()
+{
     Serial.println("mySetup close called.");
-    if (this->file) {
+    if (this->file)
+    {
         this->file.close();
-        this->file = (File) NULL;
+        this->file = (File)NULL;
         this->doc.clear();
-        this->setupOK=false;
+        this->setupOK = false;
     }
 }

@@ -40,7 +40,7 @@ const FILEROW = `
         <a class="filebtn upload" title="upload the on the top selected file"><i class="fa-solid fa-upload" aria-hidden="true"></i></a>
         <a class="filebtn download" title="save the file on this computer"><i class="fa-solid fa-download" aria-hidden="true"></i></a>
         <a class="filebtn delete" title="delete the file"><i class="fa-solid fa-trash-arrow-up" aria-hidden="true"></i></a>
-        <a class="filebtn show" title="show the file"><i class="fa-solid fa-magnifying-glass"></i></i></a>
+        <a class="filebtn show" title="show the file"><i class="fa-solid fa-magnifying-glass"></i></a>
     </td>
     <td class="path">&nbsp;</td>
     <td class="size">&nbsp;</td>

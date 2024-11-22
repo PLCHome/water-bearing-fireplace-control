@@ -204,9 +204,10 @@ void myPoints::build()
                 serializeJson(array, Serial); // Zeigt das Array zur Überprüfung an
                 Serial.println();
                 Serial.println(String("Prüfe Typ: ") + String(array[2]["type"].as<String>())); // Überprüft und gibt den Typ des dritten Elements aus
-                for (auto value : array) // Iteriert durch alle Elemente im Array
+                for (int i = array.size() - 1; i >= 0; --i) // Iteriert durch alle Elemente im Array
                 {
-                    serializeJson(array, Serial); // Zeigt jedes Array-Element an
+                    JsonVariant value = array[i];
+                    serializeJson(value, Serial); // Zeigt jedes Array-Element an
                     Serial.println();
                     myPoint *next = NULL; // Zeiger auf den nächsten Punkt
                     Serial.println(String("Prüfe Typ: ") + String(value["type"].is<pointTyp>())); // Gibt den Typ des Punktes aus

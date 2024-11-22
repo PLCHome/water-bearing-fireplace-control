@@ -31,6 +31,36 @@ function buildParas(paras, key, dest) {
                     edt.prop("checked", para.default);
                 edt.trigger('change');
                 break;
+            case "password": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type= "${para.type}" type="password" class="w3-input configedit"/>`);
+                if (typeof para.default !== 'undefined')
+                    edt.val(para.default);
+                edt.trigger('change');
+                edt.css({ "display": "unset" })
+                .css({ "width": "90%" })
+                showPw =$(`<button type="button"><i class="fa fa-eye" id="toggleIcon"></i></button>`);
+                showPw.css({ "width": "3em" })
+                showPw.css({ "float": "right" })
+                showPw.data({ "field": `${key}.${paraskey}` })
+                showPw.on('click',function (){
+                    let field = $(this).data("field");
+                    let pw = getByID(field);
+                    if (pw.attr('type') === "password") {
+                        pw.attr('type',"text");
+                        $(this).find(`i`)
+                        .removeClass("fa-eye")
+                        .addClass("fa-eye-slash");
+                    } else {
+                        pw.attr('type',"password");
+                        $(this).find(`i`)
+                        .removeClass("fa-eye-slash")
+                        .addClass("fa-eye");
+                    }
+                });
+                ed = edt;
+                edt = $(`<div/>`)
+                edt.append(showPw);
+                edt.append(ed);
+                break;
             case "string": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type= "${para.type}" type="text" class="w3-input configedit"/>`);
                 if (typeof para.default !== 'undefined')
                     edt.val(para.default);
@@ -166,6 +196,7 @@ function setSetupValue(input, value) {
             case "sinteger":
                 input.find(`option[value=${value}]`).attr('selected', 'selected');
                 break
+            case "password":
             case "string":
             case "number":
             case "integer":
@@ -190,6 +221,7 @@ function getSetupValue(input) {
             case "sstring":
             case "snumber":
             case "sinteger":
+            case "password":
             case "string":
             case "number":
             case "integer":
@@ -208,6 +240,7 @@ function getSetupValue(input) {
             case "integer":
                 value = parseInt(value);
                 break
+            case "password":
             case "sstring":
             case "string":
             default:

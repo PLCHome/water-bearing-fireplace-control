@@ -29,6 +29,9 @@ IPAddress apIP(192, 168, 4, 1); // Statische IP für den Access Point
 DNSServer dnsServer;
 bool accesspointActive = false;
 bool WiFiScanTaskRunning = false;
+unsigned long WiFiAptime = 600000;
+unsigned long WiFiApstarttime = 0;
+bool WiFiActive = true;
 
 
 /**
@@ -296,6 +299,45 @@ void handleDownload(AsyncWebServerRequest *request)
     request->send(SPIFFS, filename);
 }
 
+void handleGetMem(AsyncWebServerRequest *request)
+{
+   String json = "{";
+        json += "\"heapsize\":" + String(ESP.getHeapSize());
+        json += ",\"heapfree\":" + String(ESP.getFreeHeap());
+        json += ",\"heapmin\":" + String(ESP.getMinFreeHeap());
+        json += ",\"heapmax\":" + String(ESP.getMaxAllocHeap());
+        json += ",\"sketchsize\":" + String(ESP.getSketchSize());
+        json += ",\"flashsize\":" + String(ESP.getFlashChipSize());
+        json += ",\"spiffstotal\":" + String(SPIFFS.totalBytes());
+        json += ",\"spiffsunused\":" + String(SPIFFS.usedBytes());
+        json += "}";
+    
+
+    request->send(200, "text/json", json);
+}
+
+String wifiList()
+{
+    String json = "{\"wifilist\":[";
+    int n = WiFi.scanNetworks(); // WLAN-Netzwerke scannen
+    for (int i = 0; i < n; ++i)
+    {
+        if (i)
+            json += ",";
+        json += "{";
+        json += "\"rssi\":" + String(WiFi.RSSI(i));
+        json += ",\"ssid\":\"" + WiFi.SSID(i) + "\"";
+        json += ",\"bssid\":\"" + WiFi.BSSIDstr(i) + "\"";
+        json += ",\"channel\":" + String(WiFi.channel(i));
+        json += ",\"secure\":" + String(WiFi.encryptionType(i));
+        json += "}";
+    }
+    json += "]}";
+    WiFi.scanDelete();
+    return json;
+}
+
+
 void setWifi(AsyncWebServerRequest *request)
 {
     if (request->hasParam("wifi", true))
@@ -309,33 +351,7 @@ void setWifi(AsyncWebServerRequest *request)
         request->send(200, "text/plain", "Attempting to connect. Please wait...");
         preferences.putString("ssid", ssid);         // Save SSID
         preferences.putString("password", password); // Save Password
-        /*/
-        unsigned long startAttemptTime = millis();
-        bool connected = false;
 
-        // Versuchen, sich zu verbinden
-        while (WiFi.status() != WL_CONNECTED)
-        {
-            if (millis() - startAttemptTime > 10000)
-            { // 10 Sekunden Timeout
-                break;
-            }
-            delay(100);
-        }
-
-        if (WiFi.status() == WL_CONNECTED)
-        {
-            connected = true;
-            String ip = WiFi.localIP().toString(); // IP-Adresse des ESP32 abrufen
-            Serial.println("Verbindung erfolgreich!");
-            request->send(200, "text/plain", "Verbindung erfolgreich! IP-Adresse: " + ip);
-        }
-        else
-        {
-            Serial.println("Verbindung fehlgeschlagen.");
-            request->send(400, "text/plain", "Verbindung fehlgeschlagen!");
-        }
-        */
     }
     else
     {
@@ -353,6 +369,7 @@ void initWebserver()
     server.on("/delete-file", HTTP_GET, handleFileDelete);
     server.on("/reboot", HTTP_GET, handleRestart);
     server.on("/setWifi", HTTP_POST, setWifi);
+    server.on("/getmem", HTTP_GET, handleGetMem);
     server.on("/", HTTP_GET, handleForwardIndex);
     server.on("/index", HTTP_GET, handleForwardIndex);
     server.on("/download", HTTP_GET, handleDownload);
@@ -392,27 +409,6 @@ void dadaChanged(change dataChange)
         notifyClients(jsonTempHoldingReg());
         break;
     }
-}
-
-String wifiList()
-{
-    String json = "{\"wifilist\":[";
-    int n = WiFi.scanNetworks(); // WLAN-Netzwerke scannen
-    for (int i = 0; i < n; ++i)
-    {
-        if (i)
-            json += ",";
-        json += "{";
-        json += "\"rssi\":" + String(WiFi.RSSI(i));
-        json += ",\"ssid\":\"" + WiFi.SSID(i) + "\"";
-        json += ",\"bssid\":\"" + WiFi.BSSIDstr(i) + "\"";
-        json += ",\"channel\":" + String(WiFi.channel(i));
-        json += ",\"secure\":" + String(WiFi.encryptionType(i));
-        json += "}";
-    }
-    json += "]}";
-    WiFi.scanDelete();
-    return json;
 }
 
 void sendWifiList()
@@ -539,8 +535,9 @@ void startAccessPoint()
 
     // DNS-Server starten, alle Domains auf apIP umleiten
     dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-    dnsServer.start(53, "*", apIP);
+    WiFiApstarttime = 0;
     accesspointActive = true;
+    dnsServer.start(53, "*", apIP);
 
     Serial.print("AP gestartet. IP-Adresse: ");
     Serial.println(WiFi.softAPIP());
@@ -552,14 +549,10 @@ void stopAccessPoint()
     WiFi.persistent(false);
     WiFi.softAPdisconnect(true); 
     dnsServer.stop();
+    WiFiApstarttime = 0;
     accesspointActive = false;
     WiFi.mode(WIFI_OFF);
     Serial.print("AP gestoppt.");
-}
-
-void getConfig() {
-    mysetup.resetSection();
-    mysetup.setNextSection("wifi");
 }
 
 /**
@@ -567,54 +560,79 @@ void getConfig() {
  */
 void WEBsetup()
 {
-    getConfig();
+    setDATAchanged(dadaChanged);
 
-    Serial.print("\nStarting WebServer on " + String(ARDUINO_BOARD));
-    Serial.println(" with " + String(SHIELD_TYPE));
-    Serial.println(WEBSERVER_WT32_ETH01_VERSION);
-
+    mysetup->resetSection();
+    mysetup->setNextSection("lan");
     WT32_ETH01_onEvent();
-    ETH.begin(ETH_PHY_ADDR, ETH_PHY_POWER, ETH_PHY_MDC, ETH_PHY_MDIO, ETH_PHY_TYPE, ETH_CLK_MODE);
+    String lanHostname = mysetup->getSectionValue<String>("hostname", "");
+    if (!lanHostname.isEmpty()) {
+        ETH.setHostname(mysetup->cstrPersists(lanHostname));
+    }
+    if (mysetup->getSectionValue<bool>("active", false)) {
+        Serial.print("\nStarting WebServer on " + String(ARDUINO_BOARD));
+        Serial.println(WEBSERVER_WT32_ETH01_VERSION);
+
+        ETH.begin(
+            ETH_PHY_ADDR, 
+            mysetup->getSectionValue<int>("phy_power", ETH_PHY_POWER),
+            mysetup->getSectionValue<int>("phy_mdc", ETH_PHY_MDC),
+            mysetup->getSectionValue<int>("phy_mdio", ETH_PHY_MDIO),
+            mysetup->getSectionValue<eth_phy_type_t>("type", ETH_PHY_TYPE),
+            mysetup->getSectionValue<eth_clock_mode_t>("clk_mode", ETH_CLK_MODE)
+        );
+    }
     initWebSocket();
     initWebserver();
-    setDATAchanged(dadaChanged);
-    preferences.begin("wifi", false);
 
-    // Versuche, mit gespeicherten Zugangsdaten zu verbinden
-    String savedSSID = preferences.getString("ssid", "");
-    String savedPassword = preferences.getString("password", "");
-
-    if (savedSSID != "" && savedPassword != "")
-    {
-        Serial.println("Trying to connect with saved network...");
-        WiFi.begin(savedSSID.c_str(), savedPassword.c_str());
-
-        unsigned long startAttemptTime = millis();
-        while (WiFi.status() != WL_CONNECTED)
-        {
-            if (millis() - startAttemptTime > 10000)
-            { // 10 Sekunden Timeout
-                break;
-            }
-            delay(100);
-        }
-        if (WiFi.status() == WL_CONNECTED)
-        {
-            Serial.println("Successfully connected to saved network!");
-            Serial.print("IP Address: ");
-            Serial.println(WiFi.localIP());
-        }
-        else
-        {
-            Serial.println("Failed to connect to saved network.");
-        }
+    mysetup->resetSection();
+    mysetup->setNextSection("wifi");
+    WiFiActive=mysetup->getSectionValue<bool>("active", WiFiActive);
+    WiFiAptime=mysetup->getSectionValue<uint16_t>("aptime", WiFiAptime/1000)*1000;
+    String wifiHostname = mysetup->getSectionValue<String>("hostname", "");
+    if (!wifiHostname.isEmpty()) {
+        ETH.setHostname(mysetup->cstrPersists(wifiHostname));
     }
-    if (WiFi.status() != WL_CONNECTED)
-    {
-        Serial.println("Starting Access Point...");
-        String ssid = getDynamicSSID();
-        String password = getDynamicPassword();
-        startAccessPoint();
+    if (WiFiActive) {
+        preferences.begin("wifi", false);
+
+        // Versuche, mit gespeicherten Zugangsdaten zu verbinden
+        String savedSSID = preferences.getString("ssid", "");
+        String savedPassword = preferences.getString("password", "");
+
+        if (savedSSID != "" && savedPassword != "")
+        {
+            Serial.println("Trying to connect with saved network...");
+            WiFi.mode(WIFI_STA);
+            WiFi.begin(savedSSID.c_str(), savedPassword.c_str());
+
+            unsigned long startAttemptTime = millis();
+            while (WiFi.status() != WL_CONNECTED)
+            {
+                if (millis() - startAttemptTime > 10000)
+                { // 10 Sekunden Timeout
+                    break;
+                }
+                delay(100);
+            }
+            if (WiFi.status() == WL_CONNECTED)
+            {
+                Serial.println("Successfully connected to saved network!");
+                Serial.print("IP Address: ");
+                Serial.println(WiFi.localIP());
+            }
+            else
+            {
+                Serial.println("Failed to connect to saved network.");
+            }
+        }
+        if (WiFi.status() != WL_CONNECTED && WiFiAptime>0)
+        {
+            Serial.println("Starting Access Point...");
+            String ssid = getDynamicSSID();
+            String password = getDynamicPassword();
+            startAccessPoint();
+        }
     }
 }
 
@@ -624,6 +642,12 @@ void WEBsetup()
 void WEBloop()
 {
     ws.cleanupClients();
-    if (accesspointActive)
+    if (accesspointActive) {
         dnsServer.processNextRequest();
+        if (WiFiApstarttime == 0) WiFiApstarttime=millis();
+        if (millis()-WiFiApstarttime > (WiFiAptime*1000)) {
+            Serial.println("Ap wegen Zeitablauf gestoppt:"+String(WiFiAptime)+" < "+String(millis()-WiFiApstarttime));
+            stopAccessPoint();
+        }
+    }
 }
