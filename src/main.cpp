@@ -5,8 +5,9 @@
 // Debug Level from 0 to 4
 #define _ETHERNET_WEBSERVER_LOGLEVEL_ 3
 #include "myServer.h"
+#include "mySetup.h"
 #include "myData.h"
-#include "myPoints.h"
+#include "points/myPoints.h"
 
 void setup()
 {
@@ -20,9 +21,12 @@ void setup()
   while (!Serial)
     ;
 
+  mysetup = mySetup();
+
   DATAsetup();
   WEBsetup();
   mypoints.build();
+
 }
 
 void loop()

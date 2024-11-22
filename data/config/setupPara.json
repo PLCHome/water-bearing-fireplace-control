@@ -31,7 +31,7 @@
             "lastwillqos": {
                 "text": "Last will QoS",
                 "type": "select",
-                "valtyp": "sinteger",
+                "valtype": "sinteger",
                 "default": 0,
                 "values": {
                     "0": "0 -> At most once",
@@ -57,7 +57,7 @@
             "connectqos": {
                 "text": "Connect QoS",
                 "type": "select",
-                "valtyp": "sinteger",
+                "valtype": "sinteger",
                 "default": 0,
                 "values": {
                     "0": "0 -> At most once",
@@ -78,7 +78,7 @@
             "puplishqos": {
                 "text": "Value puplish QoS",
                 "type": "select",
-                "valtyp": "sinteger",
+                "valtype": "sinteger",
                 "default": 0,
                 "values": {
                     "0": "0 -> At most once",
@@ -99,7 +99,7 @@
             "subscribeqos": {
                 "text": "Subscribe QoS",
                 "type": "select",
-                "valtyp": "sinteger",
+                "valtype": "sinteger",
                 "default": 0,
                 "values": {
                     "0": "0 -> At most once",
@@ -147,7 +147,7 @@
             "type": {
                 "text": "LAN type",
                 "type": "select",
-                "valtyp": "sinteger",
+                "valtype": "sinteger",
                 "default": 0,
                 "values": {
                     "0": "LAN8720",
@@ -162,7 +162,7 @@
             "clk_mode": {
                 "text": "LAN clock mode",
                 "type": "select",
-                "valtyp": "sinteger",
+                "valtype": "sinteger",
                 "default": 3,
                 "values": {
                     "0": "GPIO0 IN",
@@ -205,7 +205,7 @@
             "serial": {
                 "text": "Modbus serial",
                 "type": "select",
-                "valtyp": "sinteger",
+                "valtype": "sinteger",
                 "default": 1,
                 "values": {
                     "1": "HW SERIAL 1",
@@ -222,7 +222,7 @@
             "config": {
                 "text": "Modbus config",
                 "type": "select",
-                "valtyp": "sinteger",
+                "valtype": "sinteger",
                 "default": 134217779,
                 "values": {
                     "134217791": "SERIAL_5N1",
@@ -280,7 +280,7 @@
                     "typ": {
                         "text": "Modbus communication type",
                         "type": "select",
-                        "valtyp": "sinteger",
+                        "valtype": "sinteger",
                         "default": 0,
                         "values": {
                             "0": "Holding register"
@@ -322,7 +322,7 @@
                     "typ": {
                         "text": "Modbus communication type",
                         "type": "select",
-                        "valtyp": "sinteger",
+                        "valtype": "sinteger",
                         "default": 0,
                         "values": {
                             "0": "Output coils"
@@ -448,7 +448,7 @@
                     "adress": {
                         "text": "PCF8574 adress",
                         "type": "select",
-                        "valtyp": "sinteger",
+                        "valtype": "sinteger",
                         "default": 32,
                         "values": {
                             "32": "0x20",
@@ -471,7 +471,7 @@
                     "dirb0": {
                         "text": "PCF8574 direction bit 0",
                         "type": "select",
-                        "valtyp": "sinteger",
+                        "valtype": "sinteger",
                         "default": 0,
                         "values": {
                             "0": "NA",
@@ -482,7 +482,7 @@
                     "dirb1": {
                         "text": "PCF8574 direction bit 1",
                         "type": "select",
-                        "valtyp": "sinteger",
+                        "valtype": "sinteger",
                         "default": 0,
                         "values": {
                             "0": "NA",
@@ -493,7 +493,7 @@
                     "dirb2": {
                         "text": "PCF8574 direction bit 2",
                         "type": "select",
-                        "valtyp": "sinteger",
+                        "valtype": "sinteger",
                         "default": 0,
                         "values": {
                             "0": "NA",
@@ -504,7 +504,7 @@
                     "dirb3": {
                         "text": "PCF8574 direction bit 3",
                         "type": "select",
-                        "valtyp": "sinteger",
+                        "valtype": "sinteger",
                         "default": 0,
                         "values": {
                             "0": "NA",
@@ -515,7 +515,7 @@
                     "dirb4": {
                         "text": "PCF8574 direction bit 4",
                         "type": "select",
-                        "valtyp": "sinteger",
+                        "valtype": "sinteger",
                         "default": 0,
                         "values": {
                             "0": "NA",
@@ -526,7 +526,7 @@
                     "dirb5": {
                         "text": "PCF8574 direction bit 5",
                         "type": "select",
-                        "valtyp": "sinteger",
+                        "valtype": "sinteger",
                         "default": 0,
                         "values": {
                             "0": "NA",
@@ -537,7 +537,7 @@
                     "dirb6": {
                         "text": "PCF8574 direction bit 6",
                         "type": "select",
-                        "valtyp": "sinteger",
+                        "valtype": "sinteger",
                         "default": 0,
                         "values": {
                             "0": "NA",
@@ -548,7 +548,7 @@
                     "dirb7": {
                         "text": "PCF8574 direction bit 7",
                         "type": "select",
-                        "valtyp": "sinteger",
+                        "valtype": "sinteger",
                         "default": 0,
                         "values": {
                             "0": "NA",

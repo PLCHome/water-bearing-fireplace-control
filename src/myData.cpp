@@ -1,5 +1,5 @@
 #include "myData.h"
-#include "myPoints.h"
+#include "points/myPoints.h"
 #include <ArduinoJson.h>
 
 // Initialize Modbus RTU master instance with the defined serial and RS485 settings.
@@ -297,6 +297,7 @@ void DATAsetup()
 {
     MODBUS_SERIAL.begin(MODBUS_BUAD, MODBUS_CONFIG, RS485_DEFAULT_RX_PIN, RS485_DEFAULT_TX_PIN);
     modbus.begin(MODBUS_BUAD, MODBUS_CONFIG);
+    modbus.setTimeout(5000);
 
     pinMode(BEEP_PIN, OUTPUT);
     digitalWrite(BEEP_PIN, LOW);
@@ -327,7 +328,7 @@ void DATAsetup()
     xTaskCreate(
         DATAloop,      // Function name of the task
         "DATAloop",   // Name of the task (e.g. for debugging)
-        2048,        // Stack size (bytes)
+        2248,        // Stack size (bytes)
         NULL,        // Parameter to pass
         1,           // Task priority
         &taskDataLoop//,    // Task handle

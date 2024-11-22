@@ -8,7 +8,7 @@
 #include <WebServer_WT32_ETH01.h>
 #include <WebServer_WT32_ETH01_Debug.h>
 #include <ESPAsyncWebServer.h>
-#include "myPoints.h"
+#include "points/myPoints.h"
 #include <DNSServer.h>
 #include <Preferences.h>
 
@@ -27,7 +27,9 @@ File fsUploadFile;
 Preferences preferences;
 IPAddress apIP(192, 168, 4, 1); // Statische IP für den Access Point
 DNSServer dnsServer;
-bool dnsServerStartet = false;
+bool accesspointActive = false;
+bool WiFiScanTaskRunning = false;
+
 
 /**
  * @brief Converts bytes to a human-readable string format (B, KB, MB, or GB).
@@ -188,7 +190,7 @@ void handleForwardIndex(AsyncWebServerRequest *request)
     Serial.println("Webserver:" + clientIP.toString());
     if (WiFi.softAPIP() == clientIP)
     {
-        request->redirect("/wifi.html");
+        request->redirect("http://"+apIP.toString()+"/wifi.html");
     }
     else
     {
@@ -413,7 +415,6 @@ String wifiList()
     return json;
 }
 
-bool WiFiScanTaskRunning = false;
 void sendWifiList()
 {
     if (!WiFiScanTaskRunning)
@@ -530,16 +531,35 @@ String getDynamicPassword()
 void startAccessPoint()
 {
     // Access Point starten
+    WiFi.persistent(false);
+    WiFi.disconnect(true); 
     WiFi.mode(WIFI_AP);
-    WiFi.softAP(getDynamicSSID().c_str(), getDynamicPassword().c_str());
     WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+    WiFi.softAP(getDynamicSSID().c_str(), getDynamicPassword().c_str());
 
     // DNS-Server starten, alle Domains auf apIP umleiten
+    dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     dnsServer.start(53, "*", apIP);
-    dnsServerStartet = true;
+    accesspointActive = true;
 
     Serial.print("AP gestartet. IP-Adresse: ");
     Serial.println(WiFi.softAPIP());
+}
+
+void stopAccessPoint()
+{
+    // Access Point starten
+    WiFi.persistent(false);
+    WiFi.softAPdisconnect(true); 
+    dnsServer.stop();
+    accesspointActive = false;
+    WiFi.mode(WIFI_OFF);
+    Serial.print("AP gestoppt.");
+}
+
+void getConfig() {
+    mysetup.resetSection();
+    mysetup.setNextSection("wifi");
 }
 
 /**
@@ -547,6 +567,8 @@ void startAccessPoint()
  */
 void WEBsetup()
 {
+    getConfig();
+
     Serial.print("\nStarting WebServer on " + String(ARDUINO_BOARD));
     Serial.println(" with " + String(SHIELD_TYPE));
     Serial.println(WEBSERVER_WT32_ETH01_VERSION);
@@ -602,6 +624,6 @@ void WEBsetup()
 void WEBloop()
 {
     ws.cleanupClients();
-    if (dnsServerStartet)
+    if (accesspointActive)
         dnsServer.processNextRequest();
 }

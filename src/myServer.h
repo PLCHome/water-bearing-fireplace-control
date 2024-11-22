@@ -4,6 +4,7 @@
 // Include necessary libraries for the KC868-A8S device and data handling.
 #include "KC868-A8S.h"
 #include "myData.h"
+#include "mySetup.h"
 
 // Define the heartbeat interval in milliseconds. This is used to periodically print a heartbeat message.
 #define HEARTBEAT_INTERVAL 10000L
@@ -14,6 +15,8 @@
 
 // Set up the filesystem to use SPIFFS for file storage.
 #define FileFS SPIFFS
+
+
 
 /**
  * @brief Initializes the web server and related components.

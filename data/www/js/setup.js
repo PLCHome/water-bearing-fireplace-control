@@ -14,6 +14,8 @@ const SETUPTAB = `
 <table id="setuptable" class="w3-table-all w3-hoverable"/>
 `;
 
+const SETUPBARBUTTONS = `
+<a class="mySetupSaveButton"><i class="fa-regular fa-floppy-disk"></i> save</a>`;
 
 
 function buildParas(paras, key, dest) {
@@ -24,17 +26,17 @@ function buildParas(paras, key, dest) {
         let row = $(`<tr><td style="vertical-align: middle; text-align: right; width: 50%" >${para.text}</td></tr>`)
         let edt = `<p>type ${para.type} is unknown!</p>`
         switch (para.type) {
-            case "boolean": edt = $(`<input id="${key}.${paraskey}" data-type= "${para.type}" type="checkbox" class="w3-check configedit"/>`);
+            case "boolean": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type= "${para.type}" type="checkbox" class="w3-check configedit"/>`);
                 if (typeof para.default !== 'undefined')
                     edt.prop("checked", para.default);
                 edt.trigger('change');
                 break;
-            case "string": edt = $(`<input id="${key}.${paraskey}" data-type= "${para.type}" type="text" class="w3-input configedit"/>`);
+            case "string": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type= "${para.type}" type="text" class="w3-input configedit"/>`);
                 if (typeof para.default !== 'undefined')
                     edt.val(para.default);
                 edt.trigger('change');
                 break;
-            case "select": edt = $(`<select id="${key}.${paraskey}" data-type= "${para.valtype}" type="text" class="w3-input configedit"/>`);
+            case "select": edt = $(`<select id="${key}.${paraskey}" data-key="${paraskey}" data-type= "${para.valtype}" type="text" class="w3-input configedit"/>`);
                 if (typeof para.values !== 'undefined') {
                     valkeys = Object.keys(para.values);
                     for (let v = 0; v < valkeys.length; v++) {
@@ -46,7 +48,7 @@ function buildParas(paras, key, dest) {
                 edt.trigger('change');
                 break;
             case "integer": para.step = 1;
-            case "number": edt = $(`<input id="${key}.${paraskey}" data-type= "${para.type}" type="number" class="w3-input configedit"/>`);
+            case "number": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type= "${para.type}" type="number" class="w3-input configedit"/>`);
                 edt.on("change", function () {
                     var curr_val = parseFloat($(this).val());
                     var min = $(this).attr('min');
@@ -93,11 +95,15 @@ function addNewCard(btn) {
     let paras = JSON.parse(btn.data('params'));
     let sortareaid = btn.data('sortareaid');
     let count = btn.data('count') || 0;
-    let key = `${btn.attr('id')}.${count}`;
+    let btnid = `${btn.attr('id')}`;
+    let key = `${btnid}.${count}`;
     btn.data('count', count + 1)
     let dest = $(`#${sortareaid}`)
     let table = $(`<table id="${key}" style="width:100%" class="w3-table-all w3-hoverable"/>`)
-    dest.append($('<div class="w3-light-grey w3-row w3-border w3-round" style="width:100%" />').append(table));
+    dest.append($('<div class="w3-light-grey w3-row w3-border w3-round" style="width:100%" />')
+        .attr('data-id', key)
+        .attr('data-key', btnid)
+        .append(table));
     buildParas(paras, key, table)
     let del = $(`<div class="edit-btn process-del"><i class="fa-solid fa-trash-can"></i></div>`);
     del.addClass("w3-button")
@@ -228,6 +234,39 @@ function setcarddefaulds(carddefaulds, key) {
     }
 }
 
+function loadSetupData() {
+    $.getJSON(GETSETUP, function (data) {
+        function traverseObject(obj, prefix = '', callback) {
+            Object.keys(obj).forEach((key) => {
+                const value = obj[key];
+                const path = prefix ? `${prefix}.${key}` : key; // Erstelle den vollständigen Pfad
+
+                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                    // Rekursion für verschachtelte Objekte
+                    traverseObject(value, path, callback);
+                } else if (Array.isArray(value)) {
+                    // Durchlaufe Arrays und füge den Index zum Pfad hinzu
+                    value.forEach((item, index) => {
+                        const arrayPath = `${path}.${index}`;
+                        if (typeof item === 'object' && item !== null) {
+                            traverseObject(item, arrayPath, callback);
+                        } else {
+                            callback(arrayPath, item); // Einfacher Wert im Array
+                        }
+                    });
+                } else {
+                    // Einfacher Schlüssel-Wert, Callback aufrufen
+                    callback(path, value);
+                }
+            });
+        }
+        traverseObject(data, '', setSetupValue);
+
+    }).fail(function (jqxhr, textStatus, error) {
+        console.log("Fehler beim Laden der JSON-Daten:", textStatus, error);
+    });
+
+}
 
 function buildSetup() {
     $("#setupTab").html('<div id="loading">Loading config...</div>');
@@ -240,6 +279,7 @@ function buildSetup() {
         success: function (data) {
             // Remove loading indicator once data is loaded
             $("#setupTab").html(SETUPTAB);
+            sortablearray = [];
             const keys = Object.keys(data);
             for (let i = 0; i < keys.length; i++) {
                 const key = keys[i];
@@ -255,6 +295,15 @@ function buildSetup() {
                 if (carddefaulds)
                     setcarddefaulds(carddefaulds, key);
             }
+            let button = $(SETUPBARBUTTONS)
+            $("#myAddon").append(button);
+            $(".mySetupSaveButton")
+                .addClass("w3-button")
+                .off("click")
+                .on("click", function () {
+                    saveSetupJSON();
+                });
+            loadSetupData();
         },
         error: function (jqxhr, textStatus, error) {
             // Remove loading indicator and show error message
@@ -270,6 +319,55 @@ function buildSetup() {
                 console.error(`Error loading JSON data: ${textStatus}, ${error}`);
             }
         }
+    });
+}
+
+function setNestedValue(obj, path, value) {
+    const keys = path.split('.'); // Pfad in Schlüssel aufteilen
+    let current = obj; // Referenz auf das Objekt
+    let last = obj; // Referenz auf das Objekt
+
+    keys.forEach((key, index) => {
+        if (index === keys.length - 1) {
+            current[key] = value;
+        } else {
+            const isNumber = !isNaN(Number(keys[index + 1]));
+            // Stelle sicher, dass Zwischenschlüssel existieren und Objekte sind
+            if (!(key in current)) {
+                if (isNumber) {
+                    current[key] = [];
+                } else {
+                    current[key] = {};
+                }
+            }
+            current = current[key]; // Weiter zum nächsten Objekt
+        }
+    });
+}
+
+function saveSetupJSON() {
+
+    sortablearray.forEach(function (sortable, index) {
+        let array = sortable.toArray();
+        for (let i = 0; i < array.length; i++) {
+            let card = $(`[data-id="${array[i]}"]`)
+            let newid = `${card.data('key')}.${i}`;
+            if (newid !== array[i]) {
+                card.find(`[data-key]`).each(function () {
+                    $(this).attr('id', `${newid}.${$(this).data('key')}`)
+                })
+            }
+        }
+    });
+    obj = {};
+    $("[data-type]").each(function () {
+        let id = $(this).attr('id');
+        setNestedValue(obj, id, getSetupValue($(this)));
+    })
+    let json = JSON.stringify(obj);
+    console.log(json);
+    uploadString(GETSETUP, json, function () {
+        //sendData('reloadPoints');
     });
 }
 
