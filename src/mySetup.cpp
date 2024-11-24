@@ -24,6 +24,7 @@ mySetup::mySetup()
                 this->setupOK = true;
                 this->resetSection();
                 serializeJson(this->section, Serial);
+                Serial.println();
             }
         }
     }
@@ -37,14 +38,54 @@ mySetup::~mySetup()
 void mySetup::resetSection()
 {
     this->section = this->doc.as<JsonVariant>();
+    this->arrayelement.clear(); 
 }
 
 void mySetup::setNextSection(String path)
 {
     this->section = this->section[path];
+    this->arrayelement.clear(); 
 }
 
 bool mySetup::hasSectionValue(String name)
+{
+    return (setupOK && !this->section[name].isNull());
+}
+
+bool mySetup::isArrySection()
+{
+    return (setupOK && this->section.is<JsonArray>());
+}
+
+uint16_t mySetup::getArrayLength()
+{
+    if (isArrySection())
+    {
+        return this->section.as<JsonArray>().size();
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+bool mySetup::setArrayElement(int16_t pos)
+{
+    if (isArrySection())
+    {
+        JsonArray array = this->section.as<JsonArray>();
+        if (pos >= 0 && pos < array.size())
+        {
+            this->arrayelement = array[pos].as<JsonVariant>();
+            Serial.println("Arrayset "+String(pos));
+            return true;
+        }
+    }
+    this->arrayelement.clear(); 
+    return false;
+}
+
+bool mySetup::hasArrayElementValue(String name)
 {
     return (setupOK && !this->section[name].isNull());
 }

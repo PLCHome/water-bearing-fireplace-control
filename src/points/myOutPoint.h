@@ -5,7 +5,6 @@
 #include <ArduinoJson.h>    // JSON-Verarbeitung
 #include "myPoints.h"       // Basis für Punktverwaltungsfunktionen
 #include "myPoint.h"        // Basis für Punktobjekte
-#include "myData.h"         // Weitere Datenstrukturen, die möglicherweise verwendet werden
 #include "myServer.h"       // Serverkommunikation (z.B. für Benachrichtigungen)
 
 /**

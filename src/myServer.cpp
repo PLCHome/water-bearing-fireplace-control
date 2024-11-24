@@ -8,9 +8,12 @@
 #include <WebServer_WT32_ETH01.h>
 #include <WebServer_WT32_ETH01_Debug.h>
 #include <ESPAsyncWebServer.h>
+#include <Update.h>
 #include "points/myPoints.h"
 #include <DNSServer.h>
 #include <Preferences.h>
+#include <MessageDispatcher.h>
+#include <data/DataCare.h>
 
 /// Filesystem object, set to SPIFFS.
 FS *filesystem = &SPIFFS;
@@ -32,7 +35,6 @@ bool WiFiScanTaskRunning = false;
 unsigned long WiFiAptime = 600000;
 unsigned long WiFiApstarttime = 0;
 bool WiFiActive = true;
-
 
 /**
  * @brief Converts bytes to a human-readable string format (B, KB, MB, or GB).
@@ -193,7 +195,7 @@ void handleForwardIndex(AsyncWebServerRequest *request)
     Serial.println("Webserver:" + clientIP.toString());
     if (WiFi.softAPIP() == clientIP)
     {
-        request->redirect("http://"+apIP.toString()+"/wifi.html");
+        request->redirect("http://" + apIP.toString() + "/wifi.html");
     }
     else
     {
@@ -301,17 +303,25 @@ void handleDownload(AsyncWebServerRequest *request)
 
 void handleGetMem(AsyncWebServerRequest *request)
 {
-   String json = "{";
-        json += "\"heapsize\":" + String(ESP.getHeapSize());
-        json += ",\"heapfree\":" + String(ESP.getFreeHeap());
-        json += ",\"heapmin\":" + String(ESP.getMinFreeHeap());
-        json += ",\"heapmax\":" + String(ESP.getMaxAllocHeap());
-        json += ",\"sketchsize\":" + String(ESP.getSketchSize());
-        json += ",\"flashsize\":" + String(ESP.getFlashChipSize());
-        json += ",\"spiffstotal\":" + String(SPIFFS.totalBytes());
-        json += ",\"spiffsunused\":" + String(SPIFFS.usedBytes());
-        json += "}";
-    
+    String json = "{";
+    json += "\"heapsize\":" + String(ESP.getHeapSize());
+    json += ",\"heapfree\":" + String(ESP.getFreeHeap());
+    json += ",\"heapmin\":" + String(ESP.getMinFreeHeap());
+    json += ",\"heapmax\":" + String(ESP.getMaxAllocHeap());
+    json += ",\"sketchsize\":" + String(ESP.getSketchSize());
+    json += ",\"freesketchspace\":" + String(ESP.getFreeSketchSpace());
+    json += ",\"flashsize\":" + String(ESP.getFlashChipSize());
+    json += ",\"flashsize\":" + String(ESP.getFlashChipMode());
+    json += ",\"flashsize\":" + String(ESP.getFlashChipSpeed());
+    json += ",\"spiffstotal\":" + String(SPIFFS.totalBytes());
+    json += ",\"spiffsunused\":" + String(SPIFFS.usedBytes());
+    json += ",\"chipcores\":" + String(ESP.getChipCores());
+    json += ",\"chipmodel\":\"" + String(ESP.getChipModel()) + "\"";
+    json += ",\"chiprevision\":" + String(ESP.getChipRevision());
+    json += ",\"cpufreqmhz\":" + String(ESP.getCpuFreqMHz());
+    json += ",\"cyclecount\":" + String(ESP.getCycleCount());
+    json += ",\"efusemac\":" + String(ESP.getEfuseMac());
+    json += "}";
 
     request->send(200, "text/json", json);
 }
@@ -337,7 +347,6 @@ String wifiList()
     return json;
 }
 
-
 void setWifi(AsyncWebServerRequest *request)
 {
     if (request->hasParam("wifi", true))
@@ -351,11 +360,46 @@ void setWifi(AsyncWebServerRequest *request)
         request->send(200, "text/plain", "Attempting to connect. Please wait...");
         preferences.putString("ssid", ssid);         // Save SSID
         preferences.putString("password", password); // Save Password
-
     }
     else
     {
         request->send(400, "text/plain", "Fehlende Parameter!");
+    }
+};
+
+void onUpdateStart(AsyncWebServerRequest *request)
+{
+    bool updateSuccess = !Update.hasError();
+    AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", updateSuccess ? "Update erfolgreich!" : "Update fehlgeschlagen!");
+    response->addHeader("Connection", "close");
+    request->send(response);
+    ESP.restart();
+}
+
+void onUpdateDo(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
+{
+    if (!index)
+    {
+        Serial.printf("Update gestartet: %s\n", filename.c_str());
+        if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000))
+        {
+            Update.printError(Serial);
+        }
+    }
+    if (Update.write(data, len) != len)
+    {
+        Update.printError(Serial);
+    }
+    if (final)
+    {
+        if (Update.end(true))
+        {
+            Serial.printf("Update erfolgreich: %u Bytes\n", index + len);
+        }
+        else
+        {
+            Update.printError(Serial);
+        }
     }
 };
 
@@ -373,6 +417,7 @@ void initWebserver()
     server.on("/", HTTP_GET, handleForwardIndex);
     server.on("/index", HTTP_GET, handleForwardIndex);
     server.on("/download", HTTP_GET, handleDownload);
+    server.on("/update", HTTP_POST, onUpdateStart, onUpdateDo);
     server.serveStatic("/", SPIFFS, "/www/");
     server.serveStatic("/config/", SPIFFS, "/config/");
     server.onNotFound(handleForwardIndex);
@@ -393,21 +438,28 @@ void notifyClients(String sensorReadings)
 /**
  * @brief Called when specific data changes; sends updates to WebSocket clients.
  *
- * @param dataChange Enum value indicating the type of data change.
+ * @param dataChange Bit value indicating the type of data change.
  */
-void dadaChanged(change dataChange)
+void webDataChanged(uint32_t dataChange)
 {
-    switch (dataChange)
+    if ((dataChange & (CHANGE_TEMP + WSGET_DATA)) != 0)
     {
-    case ch_inputintern:
-        notifyClients(jsonInputIntern());
-        break;
-    case ch_relay:
-        notifyClients(jsonRelay());
-        break;
-    case ch_tempholdingreg:
-        notifyClients(jsonTempHoldingReg());
-        break;
+        notifyClients(datacare.jsonTemeratures());
+    }
+    if ((dataChange & (CHANGE_DI + WSGET_DATA)) != 0)
+    {
+        notifyClients(datacare.jsonDI());
+    }
+    if ((dataChange & (CHANGE_DO + WSGET_DATA)) != 0)
+    {
+        notifyClients(datacare.jsonDO());
+    }
+    // if (dataChange & (CHANGE_LED|WSGET_DATA) != 0) {
+    //     notifyClients(datacare.jsonLED());
+    // }
+    if ((dataChange & (CHANGE_POINTS + WSGET_DATA)) != 0)
+    {
+        notifyClients(mypoints.getJSONValue());
     }
 }
 
@@ -440,9 +492,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
         {
             if (strcmp((char *)data, "getReadings") == 0)
             {
-                dadaChanged(ch_inputintern);
-                dadaChanged(ch_relay);
-                dadaChanged(ch_tempholdingreg);
+                messagedispatcher.notify(WSGET_DATA);
             }
             else if (strcmp((char *)data, "reloadPoints") == 0)
             {
@@ -468,9 +518,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
                 if (key.startsWith("relays"))
                 {
                     int pos = key.substring(6).toInt();
-                    if (pos >= 0 && pos < RELAYS)
+                    if (pos >= 0 && pos < datacare.getLenOutputs())
                     {
-                        relays[pos] = kv.value().as<bool>();
+                        datacare.getOutputs()[pos] = kv.value().as<bool>();
                     }
                 }
             }
@@ -510,17 +560,18 @@ void initWebSocket()
 }
 
 // Dynamische SSID und Passwort basierend auf Seriennummer
-String getDynamicSSID() {
+String getDynamicSSID()
+{
     uint64_t chipId = ESP.getEfuseMac(); // Seriennummer (MAC-Adresse)
     // Extrahiere die letzten 6 Ziffern der MAC-Adresse in Hex-Format
-    String lastSix = String((uint32_t)chipId, HEX).substring(2); 
+    String lastSix = String((uint32_t)chipId, HEX).substring(2);
     return "myESP_" + lastSix;
 }
 
 String getDynamicPassword()
 {
     uint64_t chipId = ESP.getEfuseMac(); // Seriennummer (MAC-Adresse)
-    String lastSix = String((uint32_t)chipId, HEX).substring(2); 
+    String lastSix = String((uint32_t)chipId, HEX).substring(2);
     return "config_" + lastSix;
 }
 
@@ -528,7 +579,7 @@ void startAccessPoint()
 {
     // Access Point starten
     WiFi.persistent(false);
-    WiFi.disconnect(true); 
+    WiFi.disconnect(true);
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
     WiFi.softAP(getDynamicSSID().c_str(), getDynamicPassword().c_str());
@@ -547,7 +598,7 @@ void stopAccessPoint()
 {
     // Access Point starten
     WiFi.persistent(false);
-    WiFi.softAPdisconnect(true); 
+    WiFi.softAPdisconnect(true);
     dnsServer.stop();
     WiFiApstarttime = 0;
     accesspointActive = false;
@@ -560,40 +611,43 @@ void stopAccessPoint()
  */
 void WEBsetup()
 {
-    setDATAchanged(dadaChanged);
+    messagedispatcher.registerCallback(webDataChanged);
 
     mysetup->resetSection();
     mysetup->setNextSection("lan");
     WT32_ETH01_onEvent();
     String lanHostname = mysetup->getSectionValue<String>("hostname", "");
-    if (!lanHostname.isEmpty()) {
+    if (!lanHostname.isEmpty())
+    {
         ETH.setHostname(mysetup->cstrPersists(lanHostname));
     }
-    if (mysetup->getSectionValue<bool>("active", false)) {
+    if (mysetup->getSectionValue<bool>("active", false))
+    {
         Serial.print("\nStarting WebServer on " + String(ARDUINO_BOARD));
         Serial.println(WEBSERVER_WT32_ETH01_VERSION);
 
         ETH.begin(
-            ETH_PHY_ADDR, 
+            ETH_PHY_ADDR,
             mysetup->getSectionValue<int>("phy_power", ETH_PHY_POWER),
             mysetup->getSectionValue<int>("phy_mdc", ETH_PHY_MDC),
             mysetup->getSectionValue<int>("phy_mdio", ETH_PHY_MDIO),
             mysetup->getSectionValue<eth_phy_type_t>("type", ETH_PHY_TYPE),
-            mysetup->getSectionValue<eth_clock_mode_t>("clk_mode", ETH_CLK_MODE)
-        );
+            mysetup->getSectionValue<eth_clock_mode_t>("clk_mode", ETH_CLK_MODE));
     }
     initWebSocket();
     initWebserver();
 
     mysetup->resetSection();
     mysetup->setNextSection("wifi");
-    WiFiActive=mysetup->getSectionValue<bool>("active", WiFiActive);
-    WiFiAptime=mysetup->getSectionValue<uint16_t>("aptime", WiFiAptime/1000)*1000;
+    WiFiActive = mysetup->getSectionValue<bool>("active", WiFiActive);
+    WiFiAptime = mysetup->getSectionValue<uint16_t>("aptime", WiFiAptime / 1000) * 1000;
     String wifiHostname = mysetup->getSectionValue<String>("hostname", "");
-    if (!wifiHostname.isEmpty()) {
+    if (!wifiHostname.isEmpty())
+    {
         ETH.setHostname(mysetup->cstrPersists(wifiHostname));
     }
-    if (WiFiActive) {
+    if (WiFiActive)
+    {
         preferences.begin("wifi", false);
 
         // Versuche, mit gespeicherten Zugangsdaten zu verbinden
@@ -626,7 +680,7 @@ void WEBsetup()
                 Serial.println("Failed to connect to saved network.");
             }
         }
-        if (WiFi.status() != WL_CONNECTED && WiFiAptime>0)
+        if (WiFi.status() != WL_CONNECTED && WiFiAptime > 0)
         {
             Serial.println("Starting Access Point...");
             String ssid = getDynamicSSID();
@@ -642,11 +696,14 @@ void WEBsetup()
 void WEBloop()
 {
     ws.cleanupClients();
-    if (accesspointActive) {
+    if (accesspointActive)
+    {
         dnsServer.processNextRequest();
-        if (WiFiApstarttime == 0) WiFiApstarttime=millis();
-        if (millis()-WiFiApstarttime > (WiFiAptime*1000)) {
-            Serial.println("Ap wegen Zeitablauf gestoppt:"+String(WiFiAptime)+" < "+String(millis()-WiFiApstarttime));
+        if (WiFiApstarttime == 0)
+            WiFiApstarttime = millis();
+        if (millis() - WiFiApstarttime > (WiFiAptime * 1000))
+        {
+            Serial.println("Ap wegen Zeitablauf gestoppt:" + String(WiFiAptime) + " < " + String(millis() - WiFiApstarttime));
             stopAccessPoint();
         }
     }

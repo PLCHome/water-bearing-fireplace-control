@@ -6,8 +6,9 @@
 #define _ETHERNET_WEBSERVER_LOGLEVEL_ 3
 #include "myServer.h"
 #include "mySetup.h"
-#include "myData.h"
 #include "myMQTT.h"
+#include "data/DataCare.h"
+#include "MessageDispatcher.h"
 #include "points/myPoints.h"
 
 void setup()
@@ -24,11 +25,13 @@ void setup()
 
   mysetup = new mySetup();
 
-  DATAsetup();
+  datacare.init();
   WEBsetup();
   mymqtt->init();
-  mypoints.build();
+
+  mypoints.init();
   
+  messagedispatcher.startTask("DispatcherTask", 2048, 1);
   delete mysetup;
   mysetup = nullptr;
 }

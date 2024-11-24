@@ -13,6 +13,7 @@ private:
     File file = (File)NULL;
     JsonDocument doc;
     JsonVariant section;
+    JsonVariant arrayelement;
     bool setupOK = false;
 
 public:
@@ -21,6 +22,10 @@ public:
     void resetSection();
     void setNextSection(String);
     bool hasSectionValue(String name);
+    bool isArrySection();
+    uint16_t getArrayLength();
+    bool setArrayElement(int16_t);
+    bool hasArrayElementValue(String name);
     const char *cstrPersists(String val);
     const char *cstrPersistsNull(String val);
     void close();
@@ -30,6 +35,14 @@ public:
     {
         if (setupOK && !this->section[name].isNull())
             return this->section[name].as<ValueTyp>();
+        else
+            return defaultval;
+    }
+    template <typename ValueTyp>
+    ValueTyp getArrayElementValue(String name, ValueTyp defaultval)
+    {
+        if (setupOK && !this->arrayelement[name].isNull())
+            return this->arrayelement[name].as<ValueTyp>();
         else
             return defaultval;
     }

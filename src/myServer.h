@@ -3,7 +3,6 @@
 
 // Include necessary libraries for the KC868-A8S device and data handling.
 #include "KC868-A8S.h"
-#include "myData.h"
 #include "mySetup.h"
 
 // Define the heartbeat interval in milliseconds. This is used to periodically print a heartbeat message.

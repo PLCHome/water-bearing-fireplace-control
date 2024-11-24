@@ -3,10 +3,18 @@
 
 #include <Arduino.h>
 
-#include "datatool.h"
+#include "Datatool.h"
+#include "DataCare.h"
 
-class beebDOut : protected datatool
+class beebDOut : public Datatool
 {
+private:
+    bool active = false;
+    int8_t pin;
+public:
+    bool init(DataCare *master) override;
+    uint16_t getDOVals() override;
+    bool processDoValues() override;
 };
 
 #endif /* BEEBDOUT_H_ */

@@ -1,4 +1,5 @@
 #include "myTempPoint.h"
+#include "../data/DataCare.h"
 
 /**
  * @brief Constructor for myTempPoint.
@@ -79,9 +80,9 @@ void myTempPoint::calcVal()
     ergPoint calc = this->on; // Start with the current state (on/off)
 
     // Ensure that tpos is within valid bounds of the temperature holding register
-    if (this->tpos >= 0 && this->tpos < TEMPHOLDINGREG)
+    if (this->tpos >= 0 && this->tpos < datacare.getLenTemeratures())
     {
-        uint16_t t = temperatures[this->tpos]; // Retrieve the current temperature at index tpos
+        uint16_t t = datacare.getTemeratures()[this->tpos]; // Retrieve the current temperature at index tpos
 
         // Evaluate the thresholds to determine the state
         if (this->toff <= this->ton) // Normal case: toff is less than or equal to ton

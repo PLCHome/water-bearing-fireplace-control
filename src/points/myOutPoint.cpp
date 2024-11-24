@@ -1,5 +1,5 @@
 #include "myOutPoint.h"  // Einbinden der Header-Datei
-
+#include "../data/DataCare.h"
 /**
  * @brief Konstruktor der Klasse myOutPoint.
  * @param json JSON-Objekt mit den Initialwerten für ida, opos und op.
@@ -55,7 +55,7 @@ void myOutPoint::calcVal()
     ergPoint calc = TP_ERR;  // Initialisiere die berechnete Ergebnis-Variable als Fehlerwert
 
     // Überprüfe, ob die Position des OutPoints im gültigen Bereich (Relays) liegt
-    if (this->opos >= 0 && this->opos < RELAYS)
+    if (this->opos >= 0 && this->opos < datacare.getLenOutputs())
     {
         ergPoint pointA = mypoints.getVal(this->ida);  // Hole den Wert des referenzierten Punktes
         if (pointA != TP_ERR)  // Wenn der Wert des referenzierten Punktes gültig ist
@@ -81,7 +81,7 @@ void myOutPoint::calcVal()
         if (this->on != TP_ERR)
         {
             // Schalte das Relay entsprechend dem berechneten Wert
-            relays[this->opos] = (this->on == TP_ON);
+            datacare.getOutputs()[this->opos] = (this->on == TP_ON);
         }
 
         mypoints.setChanged();

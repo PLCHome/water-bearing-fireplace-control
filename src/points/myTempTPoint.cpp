@@ -1,4 +1,5 @@
-#include "myTempTPoint.h" ///< Includes the header file for myTempTPoint
+#include "myTempTPoint.h"
+#include "../data/DataCare.h"
 
 /**
  * @brief Construct a new myTempTPoint object.
@@ -68,11 +69,11 @@ void myTempTPoint::calcVal()
     ergPoint calc = this->on; ///< Store the current state (on or off)
 
     // Check if the temperature positions are valid indices in the tempHoldingReg array
-    if (this->tpos >= 0 && this->tpos < TEMPHOLDINGREG && this->tpos2 >= 0 && this->tpos2 < TEMPHOLDINGREG)
+    if (this->tpos >= 0 && this->tpos < datacare.getLenTemeratures() && this->tpos2 >= 0 && this->tpos2 < datacare.getLenTemeratures())
     {
         // Retrieve the temperature values from the tempHoldingReg array
-        int16_t t = temperatures[this->tpos];     ///< Current temperature at tpos
-        int16_t t2 = temperatures[this->tpos2];   ///< Reference temperature at tpos2
+        int16_t t = datacare.getTemeratures()[this->tpos];     ///< Current temperature at tpos
+        int16_t t2 = datacare.getTemeratures()[this->tpos2];   ///< Reference temperature at tpos2
 
         // Calculate the adjusted temperature thresholds
         int16_t t2p = t2 + this->t2plus; ///< Upper threshold: t2 + t2plus

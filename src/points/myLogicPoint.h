@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include "myPoint.h"
-#include "myData.h"
 #include "myServer.h"
 #include "myPoints.h"
 

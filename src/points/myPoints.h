@@ -36,6 +36,8 @@ public:
    * @brief Cleans up resources related to points.
    */
   void cleanUp();
+  
+  void init();
 
   /**
    * @brief Builds the collection of points.
@@ -50,7 +52,7 @@ public:
   /**
    * @brief Calculates and updates the values of points.
    */
-  void calcVal();
+  void calcVal(uint32_t change);
 
   void setChanged();
 
