@@ -62,10 +62,11 @@ public:
     DataCare();
     void init();
     void DATAloop(void *pvParameters);
-    
-    String jsonTemeratures();
-    String jsonDI();
-    String jsonDO();
+    void notifyLoop();
+
+    String jsonTemeratures(bool obj);
+    String jsonDI(bool obj);
+    String jsonDO(bool obj);
 
     Modbus *getModbus();
     I2C *getI2C();

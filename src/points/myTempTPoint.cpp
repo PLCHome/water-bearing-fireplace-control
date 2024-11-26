@@ -1,5 +1,6 @@
 #include "myTempTPoint.h"
 #include "../data/DataCare.h"
+#include "myPoints.h"
 
 /**
  * @brief Construct a new myTempTPoint object.
@@ -10,7 +11,7 @@
  * @param json JSON data containing the temperature point configuration.
  * @param next Pointer to the next myPoint object.
  */
-myTempTPoint::myTempTPoint(JsonVariant json, myPoint *next) : myPoint(json, next)
+myTempTPoint::myTempTPoint(JsonVariant json, pointTyp type) : myPoint(json, type)
 {
     // Check if the JSON contains valid data for tpos and assign it if valid
     if (json["tpos"].is<int>())
@@ -120,16 +121,12 @@ void myTempTPoint::calcVal()
  *
  * @return A string containing the serialized JSON representation of the object.
  */
-String myTempTPoint::getJson()
+JsonVariant myTempTPoint::getJson()
 {
-    JsonDocument doc; ///< Create a new JSON document
-
-    // Fill the document with the current object's data
+    JsonVariant doc = JsonVariant();
     doc["id"] = this->id;
     doc["name"] = this->name;
     doc["val"] = this->on;
-
-    String out;              ///< Variable to hold the serialized JSON string
-    serializeJson(doc, out); ///< Serialize the document into a string
-    return out;              ///< Return the JSON string
+    doc["type"] = this->type;
+    return doc;
 }

@@ -1,3 +1,4 @@
+#include "FreeRTOSConfig.h"
 #include <Arduino.h>
 
 #define DEBUG_ETHERNET_WEBSERVER_PORT Serial
@@ -10,6 +11,7 @@
 #include "data/DataCare.h"
 #include "MessageDispatcher.h"
 #include "points/myPoints.h"
+#include "timer/myTimer.h"
 
 void setup()
 {
@@ -32,6 +34,7 @@ void setup()
   mypoints.init();
   
   messagedispatcher.startTask("DispatcherTask", 2048, 1);
+  mytimer.start();
   delete mysetup;
   mysetup = nullptr;
 }
@@ -40,7 +43,5 @@ void loop()
 {
   // WiFiClient client = server.available();   // Listen for incoming clients
   mymqtt->loop();
-  mypoints.loop();
-  //DATAloop();
   WEBloop();
 }

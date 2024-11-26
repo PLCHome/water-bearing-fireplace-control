@@ -43,6 +43,7 @@ private:
 
     // Callback function for received myMQTT messages
     static void callback(char *topic, byte *payload, unsigned int length);
+    void onMessage(uint32_t change);
 
 public:
     myMQTT();                                   // Constructor

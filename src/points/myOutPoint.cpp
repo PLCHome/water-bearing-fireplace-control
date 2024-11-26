@@ -1,86 +1,50 @@
 #include "myOutPoint.h"  // Einbinden der Header-Datei
+#include "myPoints.h"
+#include "pointtyp.h"
 #include "../data/DataCare.h"
-/**
- * @brief Konstruktor der Klasse myOutPoint.
- * @param json JSON-Objekt mit den Initialwerten für ida, opos und op.
- * @param next Zeiger auf das nächste Punktobjekt, das von myPoint erbt.
- * Dieser Konstruktor initialisiert die Werte des OutPoints basierend auf den übergebenen JSON-Daten.
- */
-myOutPoint::myOutPoint(JsonVariant json, myPoint* next) : myPoint(json, next)  // Aufruf des Konstruktors der Basisklasse
+
+myOutPoint::myOutPoint(JsonVariant json, pointTyp type) : myPoint(json, type)
 {
-    // Überprüfen, ob die entsprechenden Felder im JSON-Objekt existieren und den richtigen Typ haben
     if (json["ida"].is<int>())
     {
-        this->ida = json["ida"].as<int>();  // Setzen der ID des OutPoints
-    }
-    if (json["opos"].is<int>())
-    {
-        this->opos = json["opos"].as<int>();  // Setzen der Position des OutPoints
+        this->ida = json["ida"].as<int>();
     }
     if (json["op"].is<outPoint>())
     {
-        this->op = json["op"].as<outPoint>();  // Setzen des Zustands des OutPoints (normal oder negativ)
+        this->op = json["op"].as<outPoint>();
+    }
+    if (json["opos"].is<int>())
+    {
+        this->opos = json["opos"].as<int>();
+    }
+    if (this->opos < 0 || this->opos >= datacare.getLenOutputs()){
+        this->opos = -1;
     }
 }
 
-/**
- * @brief Berechnet den aktuellen Wert des OutPoints basierend auf dem Zustand und den Relays.
- * Wenn der berechnete Wert vom aktuellen Zustand abweicht, wird der Relay-Status aktualisiert und die
- * Änderung wird an die Clients weitergegeben.
- */
 void myOutPoint::calcVal()
 {
-    /*
-    | `mypoints.getVal(this->ida)` | `this->on` before the run | `this->op` | `this->on` after the run | Description/Logic |
-    |------------------------------|---------------------------|------------|--------------------------|-------------------|
-    | TP_ERR                       | TP_ERR                    | O_NORM     | TP_ERR                   | No change, error value |
-    | TP_ERR                       | TP_ON                     | O_NORM     | TP_ON                    | No change, error value |
-    | TP_ERR                       | TP_OFF                    | O_NORM     | TP_OFF                   | No change, error value |
-    | TP_ON                        | TP_ERR                    | O_NORM     | TP_ERR                   | No change, error value |
-    | TP_ON                        | TP_ON                     | O_NORM     | TP_ON                    | op == O_NORM, no change |
-    | TP_ON                        | TP_OFF                    | O_NORM     | TP_OFF                   | op == O_NORM, no change |
-    | TP_OFF                       | TP_ERR                    | O_NORM     | TP_ERR                   | No change, error value |
-    | TP_OFF                       | TP_ON                     | O_NORM     | TP_ON                    | op == O_NORM, no change |
-    | TP_OFF                       | TP_OFF                    | O_NORM     | TP_OFF                   | op == O_NORM, no change |
-    | TP_ERR                       | TP_ERR                    | O_NEG      | TP_ERR                   | No change, error value |
-    | TP_ERR                       | TP_ON                     | O_NEG      | TP_ON                    | No change, error value |
-    | TP_ERR                       | TP_OFF                    | O_NEG      | TP_OFF                   | No change, error value |
-    | TP_ON                        | TP_ERR                    | O_NEG      | TP_OFF                   | Inverted value, op == O_NEG |
-    | TP_ON                        | TP_ON                     | O_NEG      | TP_OFF                   | op == O_NEG, value is inverted |
-    | TP_ON                        | TP_OFF                    | O_NEG      | TP_ON                    | op == O_NEG, value is inverted |
-    | TP_OFF                       | TP_ERR                    | O_NEG      | TP_ERR                   | No change, error value |
-    | TP_OFF                       | TP_ON                     | O_NEG      | TP_OFF                   | op == O_NEG, value is inverted |
-    | TP_OFF                       | TP_OFF                    | O_NEG      | TP_ON                    | op == O_NEG, value is inverted |
-    */
-    ergPoint calc = TP_ERR;  // Initialisiere die berechnete Ergebnis-Variable als Fehlerwert
-
-    // Überprüfe, ob die Position des OutPoints im gültigen Bereich (Relays) liegt
-    if (this->opos >= 0 && this->opos < datacare.getLenOutputs())
+    ergPoint calc = TP_ERR;
+    if (this->opos >= 0)
     {
-        ergPoint pointA = mypoints.getVal(this->ida);  // Hole den Wert des referenzierten Punktes
-        if (pointA != TP_ERR)  // Wenn der Wert des referenzierten Punktes gültig ist
+        ergPoint pointA = mypoints.getVal(this->ida);
+        if (pointA != TP_ERR)
         {
-            // Berechnung basierend auf dem Zustand des OutPoints
-            if (this->op == O_NEG)  // Wenn der Zustand "negativ" ist, toggeln
+            if (this->op == O_NEG)
             {
-                calc = (pointA == TP_ON) ? TP_OFF : TP_ON;  // Wenn der Wert an "TP_ON" ist, setze "TP_OFF", sonst umgekehrt
+                calc = (pointA == TP_ON) ? TP_OFF : TP_ON;
             }
             else
             {
-                calc = pointA;  // Ansonsten den Wert des Punktes übernehmen
+                calc = pointA;
             }
         }
     }
-
-    // Wenn sich der berechnete Wert vom aktuellen Wert unterscheidet, aktualisiere den Status
     if (calc != this->on)
     {
-        this->on = calc;  // Aktualisiere den Wert des OutPoints
-
-        // Wenn der berechnete Wert gültig ist (kein Fehlerwert)
+        this->on = calc;
         if (this->on != TP_ERR)
         {
-            // Schalte das Relay entsprechend dem berechneten Wert
             datacare.getOutputs()[this->opos] = (this->on == TP_ON);
         }
 
@@ -88,18 +52,12 @@ void myOutPoint::calcVal()
     }
 }
 
-/**
- * @brief Gibt die JSON-Darstellung des OutPoints zurück.
- * @return JSON-String, der den aktuellen Zustand des OutPoints repräsentiert.
- */
-String myOutPoint::getJson()
+JsonVariant myOutPoint::getJson()
 {
-    JsonDocument doc;  // Erstelle ein JSON-Dokument
-    doc["id"] = this->id;     // Füge die ID des OutPoints hinzu
-    doc["name"] = this->name; // Füge den Namen des OutPoints hinzu
-    doc["val"] = this->on;    // Füge den aktuellen Wert (Zustand) des OutPoints hinzu
-
-    String out;
-    serializeJson(doc, out);  // Serialisiere das JSON-Dokument zu einem String
-    return out;               // Gebe den JSON-String zurück
+    JsonVariant doc = JsonVariant();
+    doc["id"] = this->id;
+    doc["name"] = this->name;
+    doc["val"] = this->on;
+    doc["type"] = this->type;
+    return doc;
 }

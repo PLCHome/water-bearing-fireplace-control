@@ -1,4 +1,5 @@
 #include "myLogicPoint.h"
+#include "myPoints.h"
 
 /**
  * @brief Constructs a myLogicPoint object from JSON data and initializes the logical operation.
@@ -9,7 +10,7 @@
  * @param json JSON variant containing initialization data.
  * @param next Pointer to the next myPoint object in the chain.
  */
-myLogicPoint::myLogicPoint(JsonVariant json, myPoint *next) : myPoint(json, next)
+myLogicPoint::myLogicPoint(JsonVariant json, pointTyp type) : myPoint(json, type)
 {
     // Set the ID of the first point if available in JSON
     if (json["ida"].is<int>())
@@ -108,13 +109,12 @@ void myLogicPoint::calcVal()
  *
  * @return String A JSON string representing the current state.
  */
-String myLogicPoint::getJson()
+JsonVariant myLogicPoint::getJson()
 {
-    JsonDocument doc;
-    doc["id"] = this->id;     // Add ID to JSON
-    doc["name"] = this->name; // Add name to JSON
-    doc["val"] = this->on;    // Add current state value to JSON
-    String out;
-    serializeJson(doc, out); // Serialize JSON to a string
-    return out;              // Return the JSON string
+    JsonVariant doc = JsonVariant();
+    doc["id"] = this->id;
+    doc["name"] = this->name;
+    doc["val"] = this->on;
+    doc["type"] = this->type;
+    return doc;
 }

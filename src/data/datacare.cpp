@@ -91,9 +91,15 @@ void DataCare::DATAloop(void *pvParameters)
         if (change != 0)
             messagedispatcher.notify(change);
 
-        vTaskDelay(this->loopTime / portTICK_PERIOD_MS);
+        uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, this->loopTime / portTICK_PERIOD_MS);
     }
 }
+
+void DataCare::notifyLoop()
+{
+    xTaskNotifyGive(this->taskDataLoop);
+}
+
 
 void DataCare::createSingle(String e1, String e2, std::function<Datatool *()> callback)
 {
@@ -263,7 +269,8 @@ template <typename T>
 String DataCare::jsonArray(String name, T buf[], int count)
 {
     JsonDocument doc;
-    JsonArray data = doc[name].to<JsonArray>();
+    JsonArray data = (!name.isEmpty()) ? doc[name].to<JsonArray>() : doc.to<JsonArray>();
+
     for (int i = 0; i < count; i++)
     {
         data.add(buf[i]);
@@ -273,19 +280,19 @@ String DataCare::jsonArray(String name, T buf[], int count)
     return out;
 }
 
-String DataCare::jsonTemeratures()
+String DataCare::jsonTemeratures(bool obj)
 {
-    return this->jsonArray("tempholdingreg", this->temeratures, this->lenTemeratures);
+    return this->jsonArray(obj?"tempholdingreg":"", this->temeratures, this->lenTemeratures);
 }
 
-String DataCare::jsonDI()
+String DataCare::jsonDI(bool obj)
 {
-    return this->jsonArray("inputintern", this->inputs, this->lenInputs);
+    return this->jsonArray(obj?"inputintern":"", this->inputs, this->lenInputs);
 }
 
-String DataCare::jsonDO()
+String DataCare::jsonDO(bool obj)
 {
-    return this->jsonArray("relays", this->outputs, this->lenOutputs);
+    return this->jsonArray(obj?"relays":"", this->outputs, this->lenOutputs);
 }
 
 Modbus *DataCare::getModbus()

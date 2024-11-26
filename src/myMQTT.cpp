@@ -1,4 +1,7 @@
 #include "myMQTT.h"
+#include "MessageDispatcher.h"
+#include "data/DataCare.h"
+#include "points/myPoints.h"
 
 myMQTT *mymqtt = new myMQTT();
 
@@ -46,6 +49,11 @@ void myMQTT::init()
     // Set the myMQTT server and port
     client.setServer(this->domain, this->port);
     client.setCallback(callback); // Set the callback for received messages
+
+    messagedispatcher.registerCallback([this](uint32_t message) {
+        this->onMessage(message);
+    });
+
 }
 
 String myMQTT::cleanSubscribTopic(String topic)
@@ -91,6 +99,7 @@ void myMQTT::reconnect()
         {
             client.subscribe(this->subscribeTopic, this->subscribeQos);
         }
+        messagedispatcher.notify(MQTTGET_DATA);
     }
     else
     {
@@ -131,3 +140,31 @@ void myMQTT::publish(String topic, String message)
         }
     }
 }
+
+void myMQTT::onMessage(uint32_t dataChange)
+{
+    if ((dataChange & (CHANGE_TEMP + MQTTGET_DATA)) != 0)
+    {
+        this->publish("temeratures",datacare.jsonTemeratures(false));
+    }
+    if ((dataChange & (CHANGE_DI + MQTTGET_DATA)) != 0)
+    {
+        this->publish("inputs",datacare.jsonDI(false));
+    }
+    if ((dataChange & (CHANGE_DO + MQTTGET_DATA)) != 0)
+    {
+        this->publish("outpus",datacare.jsonDO(false));
+    }
+    // if (dataChange & (CHANGE_LED|WSGET_DATA) != 0) {
+    //     notifyClients(datacare.jsonLED());
+    // }
+    if ((dataChange & (CHANGE_POINTS + MQTTGET_DATA)) != 0)
+    {
+        this->publish("points",mypoints.getJSONValue(false));
+    }
+    if ((dataChange & (CHANGE_MIXER)) != 0)
+    {
+        this->publish("points",mypoints.getJSONValueMixer());
+    }
+}
+

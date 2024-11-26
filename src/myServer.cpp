@@ -35,6 +35,7 @@ bool WiFiScanTaskRunning = false;
 unsigned long WiFiAptime = 600000;
 unsigned long WiFiApstarttime = 0;
 bool WiFiActive = true;
+bool LANActive = false;
 
 /**
  * @brief Converts bytes to a human-readable string format (B, KB, MB, or GB).
@@ -142,7 +143,9 @@ void handleFileList(AsyncWebServerRequest *request)
     File root = SPIFFS.open(path);
     path = String();
 
-    String output = "[";
+    JsonDocument doc;
+    JsonArray filelist = doc.to<JsonArray>();
+
 
     if (root.isDirectory())
     {
@@ -150,27 +153,20 @@ void handleFileList(AsyncWebServerRequest *request)
 
         while (file)
         {
-            if (output != "[")
-            {
-                output += ',';
-            }
-
-            output += "{\"type\":\"";
-            output += (file.isDirectory()) ? "dir" : "file";
-            output += "\",\"path\":\"";
-            output += String(file.path());
-            output += "\",\"size\":\"";
-            output += formatBytes(file.size());
-            output += "\"}";
+            JsonObject item = filelist.add<JsonObject>();
+            item["type"] = (file.isDirectory()) ? "dir" : "file";
+            item["path"] = String(file.path());
+            item["size"] = file.size();
             file = root.openNextFile();
         }
     }
     root.close();
-    output += "]";
+    String json;
+    serializeJson(doc, json);
 
-    Serial.println("handleFileList: " + output);
+    Serial.println("handleFileList: " + json);
 
-    request->send(200, "text/json", output);
+    request->send(200, "text/json", json);
 }
 
 /**
@@ -301,49 +297,61 @@ void handleDownload(AsyncWebServerRequest *request)
     request->send(SPIFFS, filename);
 }
 
-void handleGetMem(AsyncWebServerRequest *request)
+void handleSysinfo(AsyncWebServerRequest *request)
 {
-    String json = "{";
-    json += "\"heapsize\":" + String(ESP.getHeapSize());
-    json += ",\"heapfree\":" + String(ESP.getFreeHeap());
-    json += ",\"heapmin\":" + String(ESP.getMinFreeHeap());
-    json += ",\"heapmax\":" + String(ESP.getMaxAllocHeap());
-    json += ",\"sketchsize\":" + String(ESP.getSketchSize());
-    json += ",\"freesketchspace\":" + String(ESP.getFreeSketchSpace());
-    json += ",\"flashsize\":" + String(ESP.getFlashChipSize());
-    json += ",\"flashsize\":" + String(ESP.getFlashChipMode());
-    json += ",\"flashsize\":" + String(ESP.getFlashChipSpeed());
-    json += ",\"spiffstotal\":" + String(SPIFFS.totalBytes());
-    json += ",\"spiffsunused\":" + String(SPIFFS.usedBytes());
-    json += ",\"chipcores\":" + String(ESP.getChipCores());
-    json += ",\"chipmodel\":\"" + String(ESP.getChipModel()) + "\"";
-    json += ",\"chiprevision\":" + String(ESP.getChipRevision());
-    json += ",\"cpufreqmhz\":" + String(ESP.getCpuFreqMHz());
-    json += ",\"cyclecount\":" + String(ESP.getCycleCount());
-    json += ",\"efusemac\":" + String(ESP.getEfuseMac());
-    json += "}";
+    JsonDocument doc;
+    doc["heapsize"] = ESP.getHeapSize();
+    doc["freeheap"] = ESP.getFreeHeap();
+    doc["maxallocheap"] = ESP.getMaxAllocHeap();
+    doc["sketchsize"] = ESP.getSketchSize();
+    doc["freesketchspace"] = ESP.getFreeSketchSpace();
+    doc["flashchipsize"] = ESP.getFlashChipSize();
+    doc["flashchipmode"] = ESP.getFlashChipMode();
+    doc["flashchipspeed"] = ESP.getFlashChipSpeed();
+    doc["spiffstotalbytes"] = SPIFFS.totalBytes();
+    doc["spiffsusedbytes"] = SPIFFS.usedBytes();
+    doc["chipcores"] = ESP.getChipCores();
+    doc["chipmodel"] = ESP.getChipModel();
+    doc["chiprevision"] = ESP.getChipRevision();
+    doc["cpufreqmhz"] = ESP.getCpuFreqMHz();
+    doc["cyclecount"] = ESP.getCycleCount();
+    doc["efusemac"] = String(ESP.getEfuseMac(), HEX);
+
+    doc["accesspointActive"] = accesspointActive;
+    doc["wifiaptime"] = WiFiAptime;
+    doc["lanactive"] = LANActive;
+    doc["lanhostname"] = LANActive?ETH.getHostname():"";
+    doc["wifiactive"] = WiFiActive;
+    doc["wifimode"] = WiFi.getMode();
+    doc["wifihostname"] = WiFi.getHostname();
+
+    doc["freeheapsize"] = xPortGetFreeHeapSize();
+    doc["minimumeverfreeheapsize"] = xPortGetMinimumEverFreeHeapSize();
+
+    String json;
+    serializeJson(doc, json);
 
     request->send(200, "text/json", json);
 }
 
 String wifiList()
 {
-    String json = "{\"wifilist\":[";
+    JsonDocument doc;
+    JsonArray wifilist = doc["wifilist"].to<JsonArray>();
     int n = WiFi.scanNetworks(); // WLAN-Netzwerke scannen
     for (int i = 0; i < n; ++i)
     {
-        if (i)
-            json += ",";
-        json += "{";
-        json += "\"rssi\":" + String(WiFi.RSSI(i));
-        json += ",\"ssid\":\"" + WiFi.SSID(i) + "\"";
-        json += ",\"bssid\":\"" + WiFi.BSSIDstr(i) + "\"";
-        json += ",\"channel\":" + String(WiFi.channel(i));
-        json += ",\"secure\":" + String(WiFi.encryptionType(i));
-        json += "}";
+        JsonObject item = wifilist.add<JsonObject>();
+        item["rssi"] = WiFi.RSSI(i);
+        item["ssid"] = WiFi.SSID(i);
+        item["bssid"] = WiFi.BSSIDstr(i);
+        item["channel"] = WiFi.channel(i);
+        item["secure"] = WiFi.encryptionType(i);
     }
-    json += "]}";
     WiFi.scanDelete();
+    
+    String json;
+    serializeJson(doc, json);
     return json;
 }
 
@@ -413,7 +421,7 @@ void initWebserver()
     server.on("/delete-file", HTTP_GET, handleFileDelete);
     server.on("/reboot", HTTP_GET, handleRestart);
     server.on("/setWifi", HTTP_POST, setWifi);
-    server.on("/getmem", HTTP_GET, handleGetMem);
+    server.on("/sysinfo", HTTP_GET, handleSysinfo);
     server.on("/", HTTP_GET, handleForwardIndex);
     server.on("/index", HTTP_GET, handleForwardIndex);
     server.on("/download", HTTP_GET, handleDownload);
@@ -444,22 +452,26 @@ void webDataChanged(uint32_t dataChange)
 {
     if ((dataChange & (CHANGE_TEMP + WSGET_DATA)) != 0)
     {
-        notifyClients(datacare.jsonTemeratures());
+        notifyClients(datacare.jsonTemeratures(true));
     }
     if ((dataChange & (CHANGE_DI + WSGET_DATA)) != 0)
     {
-        notifyClients(datacare.jsonDI());
+        notifyClients(datacare.jsonDI(true));
     }
     if ((dataChange & (CHANGE_DO + WSGET_DATA)) != 0)
     {
-        notifyClients(datacare.jsonDO());
+        notifyClients(datacare.jsonDO(true));
     }
     // if (dataChange & (CHANGE_LED|WSGET_DATA) != 0) {
     //     notifyClients(datacare.jsonLED());
     // }
     if ((dataChange & (CHANGE_POINTS + WSGET_DATA)) != 0)
     {
-        notifyClients(mypoints.getJSONValue());
+        notifyClients(mypoints.getJSONValue(true));
+    }
+    if ((dataChange & (CHANGE_MIXER)) != 0)
+    {
+        notifyClients(mypoints.getJSONValueMixer());
     }
 }
 
@@ -621,7 +633,8 @@ void WEBsetup()
     {
         ETH.setHostname(mysetup->cstrPersists(lanHostname));
     }
-    if (mysetup->getSectionValue<bool>("active", false))
+    LANActive = mysetup->getSectionValue<bool>("active", false);
+    if (LANActive)
     {
         Serial.print("\nStarting WebServer on " + String(ARDUINO_BOARD));
         Serial.println(WEBSERVER_WT32_ETH01_VERSION);
@@ -644,7 +657,7 @@ void WEBsetup()
     String wifiHostname = mysetup->getSectionValue<String>("hostname", "");
     if (!wifiHostname.isEmpty())
     {
-        ETH.setHostname(mysetup->cstrPersists(wifiHostname));
+        WiFi.setHostname(mysetup->cstrPersists(wifiHostname));
     }
     if (WiFiActive)
     {

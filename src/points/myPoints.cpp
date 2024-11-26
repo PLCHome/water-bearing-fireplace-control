@@ -1,116 +1,71 @@
 #include "myPoints.h"
+#include "myTempPoint.h"
+#include "myTempTPoint.h"
+#include "myLogicPoint.h"
+#include "myOutPoint.h"
+#include "myMixerPoint.h"
+
 #include "MessageDispatcher.h"
 
-/**
- * @brief Objekt vom Typ myPoints erstellen.
- */
+
 myPoints mypoints = myPoints();
 
-/**
- * @brief Ruft einen Punkt anhand der ID ab.
- *
- * Diese Funktion durchsucht die Liste der Punkte nach der angegebenen ID.
- *
- * @param id Die ID des gesuchten Punktes.
- * @return Zeiger auf den gefundenen Punkt oder NULL, wenn der Punkt nicht gefunden wurde.
- */
 myPoint *myPoints::getPoint(int id)
 {
-    if (this->first != NULL) // Überprüft, ob der erste Punkt existiert
-    {
-        return this->first->getPoint(id); // Ruft den Punkt über die getPoint Methode des ersten Punkts ab
+    for (auto* point : vmypoint) {
+        myPoint* mypoint = point->getPoint(id);
+        if (mypoint) return mypoint;
     }
-    else
-    {
-        return NULL; // Gibt NULL zurück, wenn kein Punkt vorhanden
-    }
+    return NULL;
 }
 
-/**
- * @brief Ruft einen Punkt anhand des Namens ab.
- *
- * Diese Funktion durchsucht die Liste der Punkte nach dem angegebenen Namen.
- *
- * @param name Der Name des gesuchten Punktes.
- * @return Zeiger auf den gefundenen Punkt oder NULL, wenn der Punkt nicht gefunden wurde.
- */
 myPoint *myPoints::getPoint(String name)
 {
-    if (this->first != NULL) // Überprüft, ob der erste Punkt existiert
-    {
-        return this->first->getPoint(name); // Ruft den Punkt über die getPoint Methode des ersten Punkts ab
+    for (auto* point : vmypoint) {
+        myPoint* mypoint = point->getPoint(name);
+        if (mypoint) return mypoint;
     }
-    else
-    {
-        return NULL; // Gibt NULL zurück, wenn kein Punkt vorhanden
-    }
+    return NULL;
 }
 
-/**
- * @brief Ruft den Wert eines Punktes anhand der ID ab.
- *
- * Diese Funktion gibt den Wert des gesuchten Punktes zurück oder einen Fehlerwert,
- * wenn der Punkt nicht gefunden wurde.
- *
- * @param id Die ID des gesuchten Punktes.
- * @return Der Wert des Punktes oder TP_ERR, wenn der Punkt nicht gefunden wurde.
- */
 ergPoint myPoints::getVal(int id)
 {
-    myPoint *p = this->getPoint(id); // Holt den Punkt mit der angegebenen ID
-    if (p != NULL)                   // Überprüft, ob der Punkt existiert
+    myPoint *p = this->getPoint(id);
+    if (p != NULL)
     {
-        return p->getVal(); // Gibt den Wert des Punktes zurück
+        return p->getVal();
     }
     else
     {
-        return TP_ERR; // Gibt einen Fehlerwert zurück, wenn der Punkt nicht gefunden wurde
+        return TP_ERR;
     }
 }
 
-/**
- * @brief Ruft den Wert eines Punktes anhand des Namens ab.
- *
- * Diese Funktion gibt den Wert des gesuchten Punktes zurück oder einen Fehlerwert,
- * wenn der Punkt nicht gefunden wurde.
- *
- * @param name Der Name des gesuchten Punktes.
- * @return Der Wert des Punktes oder TP_ERR, wenn der Punkt nicht gefunden wurde.
- */
 ergPoint myPoints::getVal(String name)
 {
-    myPoint *p = this->getPoint(name); // Holt den Punkt mit dem angegebenen Namen
-    if (p != NULL)                     // Überprüft, ob der Punkt existiert
+    myPoint *p = this->getPoint(name);
+    if (p != NULL)
     {
-        return p->getVal(); // Gibt den Wert des Punktes zurück
+        return p->getVal();
     }
     else
     {
-        return TP_ERR; // Gibt einen Fehlerwert zurück, wenn der Punkt nicht gefunden wurde
+        return TP_ERR;
     }
 }
 
-/**
- * @brief Berechnet die Werte aller Punkte.
- *
- * Diese Funktion ruft für jeden Punkt in der Liste die getVal()-Methode auf,
- * um deren Werte zu berechnen und zu aktualisieren.
- */
 void myPoints::calcVal(uint32_t change)
 {
     if (change & (CHANGE_TEMP | CHANGE_DI) != 0)
     {
-        myPoint *p = this->first; // Startet mit dem ersten Punkt
-        this->changed = false;
-        if (p != NULL)
-        {
-            p->unsetCalculated(); // Setzt den berechneten Zustand des ersten Punktes zurück
+        for (auto* p : vmypoint) {
+            this->changed = false;
+            p->unsetCalculated();
         }
-        while (p != NULL) // Iteriert durch alle Punkte
-        {
-            p->getVal();      // Ruft den Wert des aktuellen Punktes ab
-            p = p->getNext(); // Geht zum nächsten Punkt
+        for (auto* p : vmypoint) {
+            p->getVal();
         }
+
         if (this->changed)
         {
             messagedispatcher.notify(CHANGE_POINTS);
@@ -118,31 +73,13 @@ void myPoints::calcVal(uint32_t change)
     }
 }
 
-/**
- * @brief Bereinigt die Punkteliste.
- *
- * Diese Funktion löscht den ersten Punkt der Liste und setzt die Liste auf den nächsten Punkt.
- */
 void myPoints::cleanUp()
 {
-    if (this->first != NULL) // Überprüft, ob der erste Punkt existiert
-    {
-        myPoint *del = this->first;           // Der erste Punkt wird zum Löschen gespeichert
-        this->first = this->first->getNext(); // Der erste Punkt wird auf den nächsten Punkt gesetzt
-        delete del;                           // Löscht den alten ersten Punkt
-    }
-}
+    auto temp = std::move(vmypoint);
+    vmypoint.clear();
 
-/**
- * @brief Called every cycle
- */
-void myPoints::loop()
-{
-    myPoint *loop = this->first;
-    while (loop != NULL) // Überprüft, ob der erste Punkt existiert
-    {
-        loop->loop();
-        loop = loop->getNext();
+    for (auto* p : temp) {
+        delete p;
     }
 }
 
@@ -151,23 +88,37 @@ void myPoints::setChanged()
     this->changed = true;
 }
 
-String myPoints::getJSONValue()
+String myPoints::getJSONValue(bool obj)
 {
-    JsonDocument doc; ///< Create a new JSON document
-    JsonObject data = doc["process"].to<JsonObject>();
+    JsonDocument doc;
+    JsonObject data = (obj) ? doc["process"].to<JsonObject>() : doc.to<JsonObject>();
 
-    // Fill the document with the current object's data
-    myPoint *loop = this->first;
-    while (loop != NULL) // Überprüft, ob der erste Punkt existiert
-    {
+    for (auto* loop : vmypoint) {
         data[String(loop->getId())] = loop->getOn();
-        loop->loop();
-        loop = loop->getNext();
     }
 
-    String out;              ///< Variable to hold the serialized JSON string
-    serializeJson(doc, out); ///< Serialize the document into a string
-    return out;              ///< Return the JSON string
+    String out;
+    serializeJson(doc, out);
+    return out;
+}
+
+String myPoints::getJSONValueMixer()
+{
+    JsonDocument doc;
+    JsonVariant data = doc.to<JsonVariant>();
+
+    for (auto* loop : vmypoint) {
+        if (loop->getTyp() == PT_MIXER) 
+        {
+            JsonDocument idoc =JsonDocument();
+            ((myMixerPoint*)loop)->getTest(idoc);
+            data[String(loop->getId())]=idoc.as<JsonObject>();
+        }
+    }
+
+    String out; 
+    serializeJson(doc, out);
+    return out;
 }
 
 void myPoints::init() {
@@ -177,78 +128,74 @@ void myPoints::init() {
     this->build();
 }
 
-/**
- * @brief Liest und baut die Punkteliste aus der Datei points.json.
- *
- * Diese Funktion öffnet die Datei points.json, deserialisiert sie und erstellt
- * entsprechend dem Punktetyp die jeweiligen Punktobjekte.
- */
 void myPoints::build()
 {
-    this->cleanUp();     // Bereinigt bestehende Punkte
-    if (!SPIFFS.begin()) // Versucht, SPIFFS zu initialisieren
+    this->cleanUp();
+    if (!SPIFFS.begin())
     {
-        Serial.println("Failed to mount SPIFFS"); // Fehler, wenn SPIFFS nicht gemountet werden konnte
+        Serial.println("Failed to mount SPIFFS");
     }
     else
     {
-        File file = SPIFFS.open(POINTSFILENAME, FILE_READ); // Öffnet die Datei points.json im Lesemodus
+        File file = SPIFFS.open(POINTSFILENAME, FILE_READ);
         if (!file)
         {
-            Serial.println("There was an error opening the file points.json"); // Fehler beim Öffnen der Datei
+            Serial.println("There was an error opening the file points.json");
             return;
         }
         else
         {
-            Serial.println("File points.json opened!");              // Erfolgreiches Öffnen der Datei
-            JsonDocument doc;                                        // JSON Dokument erstellen
-            DeserializationError error = deserializeJson(doc, file); // JSON deserialisieren
+            Serial.println("File points.json opened!");
+            JsonDocument doc;
+            DeserializationError error = deserializeJson(doc, file);
             if (error)
             {
-                Serial.println("deserializeJson points.json error..."); // Fehler beim Deserialisieren
+                Serial.println("deserializeJson points.json error...");
             }
             else
             {
-                serializeJson(doc, Serial); // Zeigt das deserialisierte JSON zur Überprüfung an
+                serializeJson(doc, Serial);
                 Serial.println();
-                JsonArray array = doc.as<JsonArray>(); // Wandelt das JSON-Dokument in ein Array um
-                serializeJson(array, Serial);          // Zeigt das Array zur Überprüfung an
+                JsonArray array = doc.as<JsonArray>();
+                serializeJson(array, Serial);
                 Serial.println();
-                Serial.println(String("Prüfe Typ: ") + String(array[2]["type"].as<String>())); // Überprüft und gibt den Typ des dritten Elements aus
-                for (int i = array.size() - 1; i >= 0; --i)                                    // Iteriert durch alle Elemente im Array
+                Serial.println(String("Prüfe Typ: ") + String(array[2]["type"].as<String>()));
+                for (auto value : array)
                 {
-                    JsonVariant value = array[i];
-                    serializeJson(value, Serial); // Zeigt jedes Array-Element an
+                    serializeJson(value, Serial);
                     Serial.println();
-                    myPoint *next = NULL;                                                         // Zeiger auf den nächsten Punkt
-                    Serial.println(String("Prüfe Typ: ") + String(value["type"].is<pointTyp>())); // Gibt den Typ des Punktes aus
-                    if (value["type"].is<pointTyp>())                                             // Überprüft, ob der Typ korrekt ist
+                    myPoint *next = NULL;
+                    Serial.println(String("Prüfe Typ: ") + String(value["type"].is<pointTyp>()));
+                    if (value["type"].is<pointTyp>())
                     {
-                        pointTyp typ = value["type"].as<pointTyp>();           // Holt den Typ des Punktes
-                        Serial.println(String("Erzeuge Typ: ") + String(typ)); // Gibt den erstellten Typ aus
-                        switch (typ)                                           // Je nach Typ wird der passende Punkt erstellt
+                        pointTyp typ = value["type"].as<pointTyp>();
+                        Serial.println(String("Erzeuge Typ: ") + String(typ));
+                        switch (typ)
                         {
                         case PT_TEMP:
-                            next = new myTempPoint(value, this->first); // Erzeugt einen Temperaturpunkt
+                            next = new myTempPoint(value,typ);
                             break;
                         case PT_TEMPT:
-                            next = new myTempTPoint(value, this->first); // Erzeugt einen weiteren Temperaturpunkt
+                            next = new myTempTPoint(value,typ);
                             break;
                         case PT_LOGIC:
-                            next = new myLogicPoint(value, this->first); // Erzeugt einen Logikpunkt
+                            next = new myLogicPoint(value,typ);
                             break;
                         case PT_OUT:
-                            next = new myOutPoint(value, this->first); // Erzeugt einen Ausgangspunkt
+                            next = new myOutPoint(value,typ);
+                            break;
+                        case PT_MIXER:
+                            next = new myMixerPoint(value,typ);
                             break;
                         }
                     }
                     if (next != NULL)
                     {
-                        this->first = next; // Setzt den neuen Punkt als ersten Punkt der Liste
+                        vmypoint.push_back(next); 
                     }
                 }
             }
-            file.close(); // Schließt die Datei nach der Verarbeitung
+            file.close();
         }
     }
 }

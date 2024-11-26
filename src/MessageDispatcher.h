@@ -13,6 +13,7 @@
 #define CHANGE_MQTT 32
 #define WSGET_DATA 64
 #define MQTTGET_DATA 128
+#define CHANGE_MIXER 256
 
 class MessageDispatcher {
 public:

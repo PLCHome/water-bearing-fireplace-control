@@ -11,7 +11,7 @@
  * @param json JSON variant with initialization data for tpos, toff, and ton.
  * @param next Pointer to the next myPoint object.
  */
-myTempPoint::myTempPoint(JsonVariant json, myPoint *next) : myPoint(json, next) // Initializes myTempPoint and calls the base class constructor
+myTempPoint::myTempPoint(JsonVariant json, pointTyp type) : myPoint(json, type)
 {
     // Check if the JSON contains an integer field for tpos and assign it to this->tpos if it exists
     if (json["tpos"].is<int>())
@@ -126,16 +126,12 @@ void myTempPoint::calcVal()
  *
  * @return String JSON representation of the object.
  */
-String myTempPoint::getJson()
+JsonVariant myTempPoint::getJson()
 {
-    JsonDocument doc; ///< Create a new JSON document
-
-    // Fill the document with the current object's data
-    doc["id"] = this->id;     // Populate the "id" field with the object's ID
-    doc["name"] = this->name; // Populate the "name" field with the object's name
-    doc["val"] = this->on;    // Populate the "val" field with the current state (on/off)
-
-    String out;
-    serializeJson(doc, out); // Serialize the JSON document to a string format
-    return out;              // Return the JSON string
+    JsonVariant doc = JsonVariant();
+    doc["id"] = this->id;
+    doc["name"] = this->name;
+    doc["val"] = this->on;
+    doc["type"] = this->type;
+    return doc;
 }
