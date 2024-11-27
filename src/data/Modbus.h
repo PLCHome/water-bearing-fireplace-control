@@ -3,19 +3,20 @@
 
 #include <Arduino.h>
 #include <ModbusRTUMaster.h>
+#include "Hardware.h"
 
 
-class Modbus
+class Modbus : public Hardware
 {
 private:
-    bool active = false;
     ModbusRTUMaster *modbusrtu;
     HardwareSerial *modbus_serial;
 
 public:
-    void init();
+    Modbus();
+    void init() override;
     void ModbusCleanup();
-    bool isActive();
+    bool isActive() const override;
     uint8_t readIntValues(uint8_t typ, uint8_t id, uint16_t startAddress, uint16_t buf[], uint16_t quantity);
     uint8_t writeBoolValues(uint8_t typ, uint8_t id, uint16_t startAddress, bool buf[], uint16_t quantity);
 };

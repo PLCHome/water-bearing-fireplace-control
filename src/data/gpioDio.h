@@ -1,25 +1,19 @@
-#ifndef PCF8574IO_H_
-#define PCF8574IO_H_
+#ifndef GPIODIO_H_
+#define GPIODIO_H_
 
 #include <Arduino.h>
 
 #include "Datatool.h"
 #include "DataCare.h"
-#include "PCF8574.h"
 #include "dirtyp.h"
 
-class DataCare;
-
-class pcf8574io : public Datatool
+class gpioDio : public Datatool
 {
 private:
-    dirtyp dirb[8];
-    PCF8574 *pcf8574 = nullptr;
-    uint8_t input = 0;
-    uint8_t output = 0;
-    uint8_t loinput = 0;
-    uint8_t looutput = 0;
-
+    dirtyp dir;
+    int8_t pin;
+    int8_t lo;
+    int8_t pu;
 public:
     bool init(DataCare *master) override;
     uint16_t getDOVals() override;
@@ -28,4 +22,4 @@ public:
     bool processDiValues() override;
 };
 
-#endif /* PCF8574IO_H_ */
+#endif /* GPIODIO_H_ */

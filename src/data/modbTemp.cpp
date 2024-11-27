@@ -10,8 +10,6 @@ bool modbTemp::init(DataCare *master)
     this->adress = mysetup->getArrayElementValue<uint16_t>("adress", 0);
     this->values = mysetup->getArrayElementValue<uint16_t>("values", 24);
     this->decimals = mysetup->getArrayElementValue<uint8_t>("decimals", 2);
-    Serial.print("Temp: ");
-    Serial.println(this->values);
     return true;
 }
 
@@ -45,7 +43,7 @@ bool modbTemp::processTempValues()
 {
     bool result = false;
     Modbus *modbus = this->master->getModbus();
-    if (modbus && modbus->isActive())
+    if (this->active && modbus && modbus->isActive())
     {
         uint8_t ModbusErr;
         int16_t *tempHoldingRegRead = master->getLastTemeratures(this->tempValsStart);

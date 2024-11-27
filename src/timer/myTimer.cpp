@@ -1,8 +1,10 @@
 #include "myTimer.h"
 #include "myTimerCycle.h"
 #include "myTimerWakeup.h"
+#include "myCycleMessageTimer.h"
 
 myTimer mytimer = myTimer();
+myCycleMessageTimer cyclemessagetimer = myCycleMessageTimer();
 
 void myTimer::registerCycle(myTimerCycle *instance)
 {

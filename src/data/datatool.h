@@ -13,6 +13,7 @@ protected:
     int16_t DOValsStart = -1;
     int16_t BeebValsStart = -1;
     int16_t LedValsStart = -1;
+    bool active = false;
     DataCare* master;
 public:
     virtual bool init(DataCare *master);

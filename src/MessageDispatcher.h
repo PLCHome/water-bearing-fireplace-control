@@ -5,15 +5,16 @@
 #include <functional>
 #include <vector>
 
-#define CHANGE_TEMP 1
-#define CHANGE_DI 2
-#define CHANGE_DO 4
-#define CHANGE_LED 8
-#define CHANGE_POINTS 16
-#define CHANGE_MQTT 32
-#define WSGET_DATA 64
-#define MQTTGET_DATA 128
-#define CHANGE_MIXER 256
+#define CHANGE_TEMP    (1 << 0)  // 0b0000'0000'0000'0001
+#define CHANGE_DI      (1 << 1)  // 0b0000'0000'0000'0010
+#define CHANGE_DO      (1 << 2)  // 0b0000'0000'0000'0100
+#define CHANGE_LED     (1 << 3)  // 0b0000'0000'0000'1000
+#define CHANGE_POINTS  (1 << 4)  // 0b0000'0000'0001'0000
+#define CHANGE_MQTT    (1 << 5)  // 0b0000'0000'0010'0000
+#define WSGET_DATA     (1 << 6)  // 0b0000'0000'0100'0000
+#define MQTTGET_DATA   (1 << 7)  // 0b0000'0000'1000'0000
+#define CHANGE_MIXER   (1 << 8)  // 0b0000'0001'0000'0000
+#define TIME_TRIGGER   (1 << 9)  // 0b0000'0010'0000'0000
 
 class MessageDispatcher {
 public:

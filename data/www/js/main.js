@@ -1,26 +1,39 @@
 var temperaturNames = [];
-for (let i = 0; i < 24; i++) {
-  temperaturNames[i] = `Measurement ${i + 1}`;
-}
 var outputNames = [];
-for (let i = 0; i < 13; i++) {
-  outputNames[i] = `Relays ${i + 1}`;
-}
 var inputNames = [];
-for (let i = 0; i < 8; i++) {
-  inputNames[i] = `Eingang ${i + 1}`;
-}
+
+var namesok = false;
+
+$.getJSON("/count", function (data) {
+  for (let i = 0; i < data.data.tmp; i++) {
+    temperaturNames[i] = `Measurement ${i + 1}`;
+  }
+  for (let i = 0; i < data.data.out; i++) {
+    outputNames[i] = `Relays ${i + 1}`;
+  }
+  for (let i = 0; i < data.data.in; i++) {
+    inputNames[i] = `Eingang ${i + 1}`;
+  }
+
+  namesok = true;
+
+}).fail(function (jqxhr, textStatus, error) {
+  console.log("Fehler beim Laden der JSON-Daten", textStatus, error);
+});
+
+
+
 
 function meineFunktion() {
   let body = '<div style="height:100%; width:100%; overflow:auto"><table class="w3-table-all w3-hoverable"><tr><th> Bezeichnung </th><th> Wert </th></tr>';
-  for (let i = 0; i < 24; i++) {
-    body += `<tr><td id="name_tempholdingreg${i}">${temperaturNames[i]}</td><td style="text-align: right;" id="tempholdingreg${i}" class="div100"> &nbsp; </td></tr>`;
+  for (let i = 0; i < temperaturNames.length; i++) {
+    body += `<tr><td data-update="name_tempholdingreg${i}">${temperaturNames[i]}</td><td style="text-align: right;" data-update="tempholdingreg${i}" class="div100"> &nbsp; </td></tr>`;
   }
-  for (let i = 0; i < 8; i++) {
-    body += `<tr><td id="name_inputintern${i}">${inputNames[i]}</td><td style="text-align: right;" id="inputintern${i}"> &nbsp; </td></tr>`;
+  for (let i = 0; i < inputNames.length; i++) {
+    body += `<tr><td data-update="name_inputintern${i}">${inputNames[i]}</td><td style="text-align: right;" data-update="inputintern${i}"> &nbsp; </td></tr>`;
   }
-  for (let i = 0; i < 13; i++) {
-    body += `<tr><td id="name_relay${i}">${outputNames[i]}</td><td style="text-align: right;" id="relays${i}" class="lightbulb"> &nbsp; </td></tr>`;
+  for (let i = 0; i < outputNames.length; i++) {
+    body += `<tr><td data-update="name_relay${i}">${outputNames[i]}</td><td style="text-align: right;" data-update="relays${i}" class="lightbulb"> &nbsp; </td></tr>`;
   }
   body += '</table></div>';
   $("#mySpace").html(body);
@@ -38,11 +51,23 @@ function getAnchor() {
   return (urlParts.length > 1) ? urlParts[1] : null;
 }
 
-let Pages={
-  "": {"func": function (){}},
-  "process": {"func": buildPageProcess},
-  "files" : {"func": buildPageFiles},
-  "setup" : {"func": buildPageSetup}
+function updateBuild() {
+  $("#mySpace").html(
+    `<h1 class="w3-container w3-gray">OTA Update</h1>
+    <form class="w3-container" method="POST" action="/update" enctype="multipart/form-data">
+      <input class="w3-input" type="file" name="update">
+      <input class="w3-input" type="submit" value="Upload">
+    </form>`
+  );
+}
+
+let Pages = {
+  "": { "func": function () { } },
+  "process": { "func": buildPageProcess },
+  "files": { "func": buildPageFiles },
+  "setup": { "func": buildPageSetup },
+  "info": { "func": infoBuild },
+  "update": { "func": updateBuild }
 };
 
 function doPage(e) {

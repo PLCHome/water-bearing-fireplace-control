@@ -20,7 +20,7 @@ class myOutPoint : public myPoint
 public:
     myOutPoint(JsonVariant json, pointTyp typ);
     void calcVal() override;
-    JsonVariant getJson() override;
+    void getJson(JsonObject &doc) override;
 };
 
 #endif /* MYOUTPOINT_H_ */

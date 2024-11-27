@@ -1,101 +1,126 @@
 {
-    "mqtt": {
+  "ntp": {
+    "server": "pool.ntp.org",
+    "tz": "CET-1CEST,M3.5.0,M10.5.0/3"
+  },
+  "mqtt": {
+    "active": true,
+    "clientid": "myOfen",
+    "server": "192.168.2.233",
+    "port": 1884,
+    "user": "iobroker_sub",
+    "password": "iobroker_sub",
+    "connecttime": 5,
+    "lastwilltop": "myofen/condition",
+    "lastwillmes": "off",
+    "lastwillqos": 0,
+    "lastwillretain": true,
+    "connecttop": "myofen/condition",
+    "connectmes": "on",
+    "connectretain": true,
+    "puplishtopic": "myofen/values",
+    "puplishretain": false,
+    "subscribetopic": "myofen/command",
+    "subscribeqos": 0
+  },
+  "wifi": {
+    "active": true,
+    "aptime": 600,
+    "hostname": "myofen_wifi"
+  },
+  "lan": {
+    "active": true,
+    "hostname": "myofen_lan",
+    "type": 0,
+    "clk_mode": 3,
+    "phy_mdc": 23,
+    "phy_mdio": 18,
+    "phy_power": -1
+  },
+  "modbus": {
+    "active": true,
+    "serial": 1,
+    "buad": 9600,
+    "config": 134217756,
+    "rs485_tx_pin": 33,
+    "rs485_rx_pin": 32,
+    "rs485_de_pin": -1
+  },
+  "beeb": {
+    "active": true
+  },
+  "ds18b20": {
+    "active": false,
+    "pin": 14
+  },
+  "gpio": {
+    "active": false
+  },
+  "ws2812led": {
+    "active": true,
+    "pin": 12,
+    "length": 1,
+    "pixel": 0
+  },
+  "i2c": {
+    "active": true,
+    "sda": 4,
+    "sdl": 5
+  },
+  "io": [
+    {
+      "card": "pcf8574",
       "active": true,
-      "clientid": "myOfen",
-      "server": "192.168.2.233",
-      "port": 1884,
-      "user": "iobroker_sub",
-      "password": "iobroker_sub",
-      "connecttime": 5,
-      "lastwilltop": "myofen/condition",
-      "lastwillmes": "off",
-      "lastwillqos": 0,
-      "lastwillretain": true,
-      "connecttop": "myofen/condition",
-      "connectmes": "on",
-      "connectretain": true,
-      "puplishtopic": "myofen/values",
-      "puplishretain": false,
-      "subscribetopic": "myofen/command",
-      "subscribeqos": 0
+      "adress": 34,
+      "loin": 1,
+      "loout": 1,
+      "dirb0": 1,
+      "dirb1": 1,
+      "dirb2": 1,
+      "dirb3": 1,
+      "dirb4": 1,
+      "dirb5": 1,
+      "dirb6": 1,
+      "dirb7": 1
     },
-    "wifi": {
+    {
+      "card": "pcf8574",
       "active": true,
-      "aptime": 600,
-      "hostname": "myofen_wifi"
+      "adress": 36,
+      "loin": 1,
+      "loout": 1,
+      "dirb0": 2,
+      "dirb1": 2,
+      "dirb2": 2,
+      "dirb3": 2,
+      "dirb4": 2,
+      "dirb5": 2,
+      "dirb6": 2,
+      "dirb7": 2
     },
-    "lan": {
+    {
+      "card": "temperatures",
       "active": true,
-      "hostname": "myofen_lan",
-      "type": 0,
-      "clk_mode": 3,
-      "phy_mdc": 23,
-      "phy_mdio": 18,
-      "phy_power": -1
+      "typ": 0,
+      "id": 1,
+      "adress": 0,
+      "values": 24,
+      "decimals": 2
     },
-    "modbus": {
+    {
+      "card": "outputs",
       "active": true,
-      "serial": 1,
-      "buad": 9600,
-      "config": 134217756,
-      "rs485_tx_pin": 33,
-      "rs485_rx_pin": 32,
-      "rs485_de_pin": -1,
-      "temperatures": [
-        {
-          "typ": 0,
-          "id": 1,
-          "adress": 0,
-          "values": 24,
-          "decimals": 2
-        }
-      ],
-      "outputs": [
-        {
-          "typ": 0,
-          "id": 2,
-          "adress": 0,
-          "values": 4
-        }
-      ]
+      "typ": 0,
+      "id": 2,
+      "adress": 0,
+      "values": 4,
+      "lo": 0
     },
-    "beeb": {
+    {
+      "card": "beeb",
       "active": true,
+      "lo": 0,
       "pin": 2
-    },
-    "ws2812led": {
-      "active": true,
-      "pin": 12,
-      "length": 1,
-      "pixel": 0
-    },
-    "i2c": {
-      "active": true,
-      "sda": 4,
-      "sdl": 5,
-      "pcf8574": [
-        {
-          "adress": 34,
-          "dirb0": 1,
-          "dirb1": 1,
-          "dirb2": 1,
-          "dirb3": 1,
-          "dirb4": 1,
-          "dirb5": 1,
-          "dirb6": 1,
-          "dirb7": 1
-        },
-        {
-          "adress": 36,
-          "dirb0": 2,
-          "dirb1": 2,
-          "dirb2": 2,
-          "dirb3": 2,
-          "dirb4": 2,
-          "dirb5": 2,
-          "dirb6": 2,
-          "dirb7": 2
-        }
-      ]
     }
-  }
+  ]
+}

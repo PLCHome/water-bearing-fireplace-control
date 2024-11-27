@@ -5,13 +5,13 @@ const GETSETUP = `/config/setup.json`;
 
 
 const SETUPAREA = `
-<div id="myArea" style="height:100%; width:100%; overflow:auto" class="list-group" >
+<div id="myArea" style="height:100%; max-width:55em; overflow:auto" class="list-group" >
 <div id="setupTab" />
 </div>
 `;
 
 const SETUPTAB = `
-<table id="setuptable" class="w3-table-all w3-hoverable"/>
+<table id="setuptable" class="w3-table-all w3-hoverable w3-small"/>
 `;
 
 const SETUPBARBUTTONS = `
@@ -26,12 +26,12 @@ function buildParas(paras, key, dest) {
         let row = $(`<tr><td style="vertical-align: middle; text-align: right; width: 50%" >${para.text}</td></tr>`)
         let edt = `<p>type ${para.type} is unknown!</p>`
         switch (para.type) {
-            case "boolean": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type= "${para.type}" type="checkbox" class="w3-check configedit"/>`);
+            case "boolean": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type="${para.type}" type="checkbox" class="w3-check configedit"/>`);
                 if (typeof para.default !== 'undefined')
                     edt.prop("checked", para.default);
                 edt.trigger('change');
                 break;
-            case "password": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type= "${para.type}" type="password" class="w3-input configedit"/>`);
+            case "password": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type="${para.type}" type="password" class="w3-input configedit"/>`);
                 if (typeof para.default !== 'undefined')
                     edt.val(para.default);
                 edt.trigger('change');
@@ -61,12 +61,12 @@ function buildParas(paras, key, dest) {
                 edt.append(showPw);
                 edt.append(ed);
                 break;
-            case "string": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type= "${para.type}" type="text" class="w3-input configedit"/>`);
+            case "string": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type="${para.type}" type="text" class="w3-input configedit"/>`);
                 if (typeof para.default !== 'undefined')
                     edt.val(para.default);
                 edt.trigger('change');
                 break;
-            case "select": edt = $(`<select id="${key}.${paraskey}" data-key="${paraskey}" data-type= "${para.valtype}" type="text" class="w3-input configedit"/>`);
+            case "select": edt = $(`<select id="${key}.${paraskey}" data-key="${paraskey}" data-type="${para.valtype}" type="text" class="w3-input configedit"/>`);
                 if (typeof para.values !== 'undefined') {
                     valkeys = Object.keys(para.values);
                     for (let v = 0; v < valkeys.length; v++) {
@@ -74,11 +74,11 @@ function buildParas(paras, key, dest) {
                     }
                 }
                 if (typeof para.default !== 'undefined')
-                    edt.find(`option[value=${para.default}]`).attr('selected', 'selected');
+                    edt.find(`option[value="${para.default}"]`).attr('selected', 'selected');
                 edt.trigger('change');
                 break;
             case "integer": para.step = 1;
-            case "number": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type= "${para.type}" type="number" class="w3-input configedit"/>`);
+            case "number": edt = $(`<input id="${key}.${paraskey}" data-key="${paraskey}" data-type="${para.type}" type="number" class="w3-input configedit"/>`);
                 edt.on("change", function () {
                     var curr_val = parseFloat($(this).val());
                     var min = $(this).attr('min');
@@ -101,7 +101,7 @@ function buildParas(paras, key, dest) {
                     $(this).val(curr_val.toFixed(getDecimalPlaces(step)));
                 })
                     .attr("autocomplete", "off")
-                    .css({ "text-align": "right" });
+                    /*.css({ "text-align": "right" })*/;
                 if (typeof para.min != 'undefined')
                     edt.attr("min", para.min)
                 if (typeof para.max != 'undefined')
@@ -126,13 +126,18 @@ function addNewCard(btn) {
     let sortareaid = btn.data('sortareaid');
     let count = btn.data('count') || 0;
     let btnid = `${btn.attr('id')}`;
-    let key = `${btnid}.${count}`;
+    let groupkey = btn.data('groupkey');
+    let thiskey = btn.data('thiskey');
+    let key = `${groupkey}.${count}.${thiskey}`;
     btn.data('count', count + 1)
     let dest = $(`#${sortareaid}`)
     let table = $(`<table id="${key}" style="width:100%" class="w3-table-all w3-hoverable"/>`)
     dest.append($('<div class="w3-light-grey w3-row w3-border w3-round" style="width:100%" />')
         .attr('data-id', key)
+        .data('groupkey', groupkey)
+        .data('thiskey', thiskey)
         .attr('data-key', btnid)
+        .attr('data-iscard', 1)
         .append(table));
     buildParas(paras, key, table)
     let del = $(`<div class="edit-btn process-del"><i class="fa-solid fa-trash-can"></i></div>`);
@@ -148,31 +153,33 @@ function addNewCard(btn) {
 let sortablearray = [];
 function addablecardsBTN(addablecards, key, dest) {
     const addablecardkeys = Object.keys(addablecards);
+    let sortareaid = "sortarea" + sortablearray.length;
+    bar = $('<div class="" style="width:100%" />');
     for (let p = 0; p < addablecardkeys.length; p++) {
-        let sortareaid = "sortarea" + sortablearray.length;
-        bar = $('<div class="" style="width:100%" />');
         const addablecardkey = addablecardkeys[p];
         const addablecard = addablecards[addablecardkey];
         let btn = $(`<a id="${key}.${addablecardkey}" class="w3-button w3-center" style="text-align: center"><i class="fa-solid fa-file-circle-plus"></i>${addablecard.text}</a>`);
         btn.data('params', JSON.stringify(addablecard.paras));
+        btn.data('groupkey', key);
+        btn.data('thiskey', addablecardkey);
         btn.data('sortareaid', sortareaid);
         btn.data('count', 0);
         btn.on("click", function () {
             addNewCard($(this));
         });
         bar.append(btn);
-        container = $(`<div class="card" style="width:100%"/>`);
-        container.append(bar);
-        let sortarea = $(`<div id="${sortareaid}" class="sortable" style="width:100%"/>`)
-        container.append(sortarea);
-        dest.append($('<tr/>').append($(`<td colspan="2"/>`).append(container)));
-        sortablearray.push(new Sortable(document.getElementById(sortareaid), {
-            multiDrag: true, // Enable multi-drag
-            selectedClass: 'w3-gray', // The class applied to the selected items
-            fallbackTolerance: 3, // So that we can select items on mobile
-            animation: 150
-        }));
     }
+    container = $(`<div class="card" style="width:100%"/>`);
+    container.append(bar);
+    let sortarea = $(`<div id="${sortareaid}" class="sortable" style="width:100%"/>`)
+    container.append(sortarea);
+    dest.append($('<tr class="addablecardsbtn"/>').append($(`<td colspan="2"/>`).append(container)));
+    sortablearray.push(new Sortable(document.getElementById(sortareaid), {
+        multiDrag: true, // Enable multi-drag
+        selectedClass: 'w3-gray', // The class applied to the selected items
+        fallbackTolerance: 3, // So that we can select items on mobile
+        animation: 150
+    }));
 }
 
 function getByID(id) {
@@ -194,7 +201,7 @@ function setSetupValue(input, value) {
             case "sstring":
             case "snumber":
             case "sinteger":
-                input.find(`option[value=${value}]`).attr('selected', 'selected');
+                input.find(`option[value="${value}"]`).attr('selected', 'selected');
                 break
             case "password":
             case "string":
@@ -280,12 +287,23 @@ function loadSetupData() {
                 } else if (Array.isArray(value)) {
                     // Durchlaufe Arrays und füge den Index zum Pfad hinzu
                     value.forEach((item, index) => {
-                        const arrayPath = `${path}.${index}`;
-                        if (typeof item === 'object' && item !== null) {
-                            traverseObject(item, arrayPath, callback);
-                        } else {
-                            callback(arrayPath, item); // Einfacher Wert im Array
+                        const card = item.card;
+                        let btn = getByID(`${key}.${card}`);
+                        let dest = addNewCard(btn);
+                        let desid = dest.attr('id');
+                        const valkeys = Object.keys(item);
+                        for (let i = 0; i < valkeys.length; i++) {
+                            let para = valkeys[i];
+                            let input = getByID(`${desid}.${para}`)
+                            setSetupValue(input, item[para]);
+                            console.log(getSetupValue(input));
                         }
+                        //const arrayPath = `${path}.${index}`;
+                        //if (typeof item === 'object' && item !== null) {
+                        //    traverseObject(item, arrayPath, callback);
+                        //} else {
+                        //    callback(arrayPath, item); // Einfacher Wert im Array
+                        //}
                     });
                 } else {
                     // Einfacher Schlüssel-Wert, Callback aufrufen
@@ -325,8 +343,8 @@ function buildSetup() {
                 if (addablecards)
                     addablecardsBTN(addablecards, key, table);
                 const carddefaulds = data[key].carddefaulds;
-                if (carddefaulds)
-                    setcarddefaulds(carddefaulds, key);
+                //if (carddefaulds)
+                    //setcarddefaulds(carddefaulds, key);
             }
             let button = $(SETUPBARBUTTONS)
             $("#myAddon").append(button);
@@ -380,11 +398,12 @@ function setNestedValue(obj, path, value) {
 
 function saveSetupJSON() {
 
+    /*
     sortablearray.forEach(function (sortable, index) {
         let array = sortable.toArray();
         for (let i = 0; i < array.length; i++) {
             let card = $(`[data-id="${array[i]}"]`)
-            let newid = `${card.data('key')}.${i}`;
+            let newid = `${card.data('groupkey')}.${i}.${card.data('thiskey')}`;
             if (newid !== array[i]) {
                 card.find(`[data-key]`).each(function () {
                     $(this).attr('id', `${newid}.${$(this).data('key')}`)
@@ -392,15 +411,31 @@ function saveSetupJSON() {
             }
         }
     });
+    */
     obj = {};
     $("[data-type]").each(function () {
-        let id = $(this).attr('id');
-        setNestedValue(obj, id, getSetupValue($(this)));
+        let a=$(this).parents("[data-iscard]");
+        if (a.length == 0) {
+            let id = $(this).attr("id");
+            setNestedValue(obj, id, getSetupValue($(this)));
+        }
     })
+    sortablearray.forEach(function (sortable, index) {
+        let array = sortable.toArray();
+        for (let i = 0; i < array.length; i++) {
+            let card = $(`[data-id="${array[i]}"]`)
+            let newid = `${card.data('groupkey')}.${i}`;
+            setNestedValue(obj, `${newid}.card`, card.data('thiskey'));
+            card.find(`[data-key]`).each(function () {
+                setNestedValue(obj, `${newid}.${$(this).data('key')}`, getSetupValue($(this)));
+            })
+        }
+    });
+
     let json = JSON.stringify(obj);
     console.log(json);
     uploadString(GETSETUP, json, function () {
-        //sendData('reloadPoints');
+        //--sendData('reloadPoints');
     });
 }
 

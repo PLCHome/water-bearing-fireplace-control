@@ -16,7 +16,7 @@ class myTempPoint : public myPoint
 public:
     myTempPoint(JsonVariant json, pointTyp typ);
     void calcVal() override; 
-    JsonVariant getJson() override;
+    void getJson(JsonObject &doc) override;
 };
 
 #endif /* MYTEMPPOINT_H_ */

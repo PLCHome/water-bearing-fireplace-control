@@ -146,7 +146,6 @@ void handleFileList(AsyncWebServerRequest *request)
     JsonDocument doc;
     JsonArray filelist = doc.to<JsonArray>();
 
-
     if (root.isDirectory())
     {
         File file = root.openNextFile();
@@ -187,16 +186,17 @@ void handleRestart(AsyncWebServerRequest *request)
  */
 void handleForwardIndex(AsyncWebServerRequest *request)
 {
-    IPAddress clientIP = request->client()->getLocalAddress();
-    Serial.println("Webserver:" + clientIP.toString());
-    if (WiFi.softAPIP() == clientIP)
+    if (request->client())
     {
-        request->redirect("http://" + apIP.toString() + "/wifi.html");
+        IPAddress clientIP = request->client()->getLocalAddress();
+        Serial.println("Webserver:" + clientIP.toString());
+        if (WiFi.softAPIP() == clientIP)
+        {
+            request->redirect("http://" + apIP.toString() + "/wifi.html");
+            return;
+        }
     }
-    else
-    {
-        request->redirect("/index.html");
-    }
+    request->redirect("/index.html");
 }
 
 /**
@@ -300,6 +300,8 @@ void handleDownload(AsyncWebServerRequest *request)
 void handleSysinfo(AsyncWebServerRequest *request)
 {
     JsonDocument doc;
+    doc["freeheapsize"] = xPortGetFreeHeapSize();
+    doc["minimumeverfreeheapsize"] = xPortGetMinimumEverFreeHeapSize();
     doc["heapsize"] = ESP.getHeapSize();
     doc["freeheap"] = ESP.getFreeHeap();
     doc["maxallocheap"] = ESP.getMaxAllocHeap();
@@ -320,13 +322,10 @@ void handleSysinfo(AsyncWebServerRequest *request)
     doc["accesspointActive"] = accesspointActive;
     doc["wifiaptime"] = WiFiAptime;
     doc["lanactive"] = LANActive;
-    doc["lanhostname"] = LANActive?ETH.getHostname():"";
+    doc["lanhostname"] = LANActive ? ETH.getHostname() : "";
     doc["wifiactive"] = WiFiActive;
     doc["wifimode"] = WiFi.getMode();
     doc["wifihostname"] = WiFi.getHostname();
-
-    doc["freeheapsize"] = xPortGetFreeHeapSize();
-    doc["minimumeverfreeheapsize"] = xPortGetMinimumEverFreeHeapSize();
 
     String json;
     serializeJson(doc, json);
@@ -349,10 +348,15 @@ String wifiList()
         item["secure"] = WiFi.encryptionType(i);
     }
     WiFi.scanDelete();
-    
+
     String json;
     serializeJson(doc, json);
     return json;
+}
+
+void handleCounts(AsyncWebServerRequest *request)
+{
+    request->send(200, "text/json", datacare.jsonCounts(true));
 }
 
 void setWifi(AsyncWebServerRequest *request)
@@ -422,6 +426,7 @@ void initWebserver()
     server.on("/reboot", HTTP_GET, handleRestart);
     server.on("/setWifi", HTTP_POST, setWifi);
     server.on("/sysinfo", HTTP_GET, handleSysinfo);
+    server.on("/count", HTTP_GET, handleCounts);
     server.on("/", HTTP_GET, handleForwardIndex);
     server.on("/index", HTTP_GET, handleForwardIndex);
     server.on("/download", HTTP_GET, handleDownload);
@@ -473,6 +478,31 @@ void webDataChanged(uint32_t dataChange)
     {
         notifyClients(mypoints.getJSONValueMixer());
     }
+    if ((dataChange & (TIME_TRIGGER + WSGET_DATA)) != 0)
+    {
+        time_t now;
+        struct tm timeinfo;
+        time(&now);
+        localtime_r(&now, &timeinfo);
+        char buf[32];
+        JsonDocument doc;
+        JsonObject time = doc["time"].to<JsonObject>();
+        if (timeinfo.tm_sec == 0 || (dataChange & (WSGET_DATA)))
+        {
+            time["dst"] = timeinfo.tm_isdst;
+            time["wd"] = timeinfo.tm_wday;
+            time["yd"] = timeinfo.tm_yday;
+            time["d"] = timeinfo.tm_mday;
+            time["mo"] = timeinfo.tm_mon + 1;
+            time["y"] = timeinfo.tm_year + 1900;
+            time["h"] = timeinfo.tm_hour;
+            time["mi"] = timeinfo.tm_min;
+        }
+        time["s"] = timeinfo.tm_sec;
+        String json;
+        serializeJson(doc, json);
+        notifyClients(json);
+    }
 }
 
 void sendWifiList()
@@ -517,6 +547,12 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
             else if (strcmp((char *)data, "wifilist") == 0)
             {
                 sendWifiList();
+            }
+            else if (strcmp((char *)data, "ds18b20ids") == 0)
+            {
+                if (datacare.getDs18b20()) {
+                    notifyClients(datacare.getDs18b20()->getJsonIDs(true));
+                }
             }
         }
         else
@@ -701,6 +737,13 @@ void WEBsetup()
             startAccessPoint();
         }
     }
+    mysetup->resetSection();
+    mysetup->setNextSection("ntp");
+
+    String ntpServer = mysetup->getSectionValue<String>("server", "pool.ntp.org");
+    String timeZone = mysetup->getSectionValue<String>("tz", "CET-1CEST,M3.5.0,M10.5.0/3");
+
+    configTzTime(mysetup->cstrPersists(timeZone), mysetup->cstrPersists(ntpServer));
 }
 
 /**

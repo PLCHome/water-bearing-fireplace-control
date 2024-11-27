@@ -6,8 +6,11 @@
 #include "Datatool.h"
 #include "Modbus.h"
 #include "I2C.h"
+#include "Beeb.h"
+#include "Gpio.h"
+#include "WS2812.h"
+#include "DS18B20.h"
 
-// #include <functional>
 enum TA_INPUT
 {
     in_off = 0x00,  // Input is off (inactive)
@@ -23,6 +26,10 @@ class DataCare
 private:
     Modbus *modbus;
     I2C *i2c;
+    Beeb *beeb;
+    Gpio *gpio;
+    DS18B20 *ds18b20;
+    WS2812 *ws2812;
     std::vector<Datatool *> datatools;
     
     int16_t *temeratures;
@@ -43,8 +50,7 @@ private:
     uint8_t loopsToRead = 10;
     uint8_t CurrentLoop = 0;
 
-    void createSingle(String e1, String e2, std::function<Datatool *()> callback);
-    void createMulti(String e1, String e2, std::function<Datatool *()> callback);
+    void createIO();
     void initTempVals();
     void initDiVals();
     void initDoVals();
@@ -56,7 +62,7 @@ private:
     bool processLedValues();
 
     template <typename T>
-    String jsonArray(String name, T buf[], int count);
+    String jsonArray(String name, T buf[], int count) const;
 
 public:
     DataCare();
@@ -64,24 +70,28 @@ public:
     void DATAloop(void *pvParameters);
     void notifyLoop();
 
-    String jsonTemeratures(bool obj);
-    String jsonDI(bool obj);
-    String jsonDO(bool obj);
+    String jsonTemeratures(bool obj)  const;
+    String jsonDI(bool obj) const;
+    String jsonDO(bool obj) const;
+    String jsonCounts(bool obj) const;
 
-    Modbus *getModbus();
-    I2C *getI2C();
+    Modbus *getModbus() const;
+    I2C *getI2C() const;
+    Beeb * getBeeb() const;
+    Gpio * getGpio() const;
+    DS18B20 * getDs18b20() const;
     
-    int16_t *getTemeratures(int16_t pos = 0);
-    int16_t *getLastTemeratures(int16_t pos = 0);
-    TA_INPUT *getInputs(int16_t pos = 0);
-    bool *getOutputs(int16_t pos = 0);
-    bool *getLastOutputs(int16_t pos = 0);
-    uint32_t *getLeds(int16_t pos = 0);
+    int16_t *getTemeratures(int16_t pos = 0) const;
+    int16_t *getLastTemeratures(int16_t pos = 0) const;
+    TA_INPUT *getInputs(int16_t pos = 0) const;
+    bool *getOutputs(int16_t pos = 0) const;
+    bool *getLastOutputs(int16_t pos = 0) const;
+    uint32_t *getLeds(int16_t pos = 0) const;
     
-    int16_t getLenTemeratures();
-    int16_t getLenInputs();
-    int16_t getLenOutputs();
-    int16_t getLenLeds();
+    int16_t getLenTemeratures() const;
+    int16_t getLenInputs() const;
+    int16_t getLenOutputs() const;
+    int16_t getLenLeds() const;
 };
 
 extern DataCare datacare;

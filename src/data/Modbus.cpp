@@ -3,12 +3,15 @@
 #include "../KC868-A8S.h"
 #include "../mySetup.h"
 
+Modbus::Modbus() : Hardware(HW_MODBUS){
+
+}
+
 void Modbus::init()
 {
     mysetup->resetSection();
     mysetup->setNextSection("modbus");
-
-    this->active = mysetup->getSectionValue<bool>("active", true);
+    Hardware::init();
     switch (mysetup->getSectionValue<uint8_t>("serial", 2))
     {
     case 0:
@@ -54,7 +57,7 @@ void Modbus::ModbusCleanup()
     }
 }
 
-bool Modbus::isActive()
+bool Modbus::isActive() const
 {
     return this->active && this->modbusrtu;
 }

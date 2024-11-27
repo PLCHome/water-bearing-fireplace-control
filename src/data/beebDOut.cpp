@@ -5,11 +5,12 @@
 bool beebDOut::init(DataCare *master)
 {
     Datatool::init(master);
-    this->active = mysetup->getSectionValue<bool>("active", false);
-    this->pin = mysetup->getSectionValue<int8_t>("pin", 2);
+    this->pin = mysetup->getArrayElementValue<int8_t>("pin", 2);
+    this->lo = mysetup->getArrayElementValue<int8_t>("lo", 0);
+    this->active &= this->pin > -1 && master->getBeeb()->isActive();
     if (this->active) {
         pinMode(this->pin, OUTPUT);
-        digitalWrite(this->pin, LOW);
+        digitalWrite(this->pin, this->lo ? HIGH : LOW);
     }
     return true;
 }
@@ -28,7 +29,7 @@ bool beebDOut::processDoValues()
         bool *relays = master->getOutputs(this->DOValsStart);
         if (memcmp(relayLast, relays, 1) != 0)
         {
-            digitalWrite(this->pin, relays[0]);
+            digitalWrite(this->pin, this->lo ?!relays[0]:relays[0]);
             memcpy(relayLast, relays, 1);
             changed=true;
         }

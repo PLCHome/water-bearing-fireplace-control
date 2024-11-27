@@ -1,4 +1,5 @@
 #include "DataCare.h"
+#include <unordered_map>
 
 #include "mySetup.h"
 #include "MessageDispatcher.h"
@@ -8,6 +9,9 @@
 #include "modbTemp.h"
 #include "pcf8574io.h"
 #include "ws2812out.h"
+#include "gpioDio.h"
+#include "ds18b20Temp.h"
+
 
 DataCare datacare = DataCare();
 
@@ -15,6 +19,10 @@ DataCare::DataCare()
 {
     this->modbus = new Modbus();
     this->i2c = new I2C();
+    this->beeb = new Beeb();
+    this->gpio = new Gpio();
+    this->ds18b20 = new DS18B20();
+    this->ws2812 = new WS2812();
 }
 
 void TestDATAloop(void *pvParameters)
@@ -26,17 +34,12 @@ void DataCare::init()
 {
     this->modbus->init();
     this->i2c->init();
-    createMulti("i2c", "pcf8574", []() -> Datatool *
-                { return new pcf8574io(); });
-    createMulti("modbus", "temperatures", []() -> Datatool *
-                { return new modbTemp(); });
-    createMulti("modbus", "outputs", []() -> Datatool *
-                { return new modbDOut(); });
+    this->beeb->init();
+    this->gpio->init();
+    this->ds18b20->init();
+    this->ws2812->init();
 
-    createSingle("beeb", "", []() -> Datatool *
-                { return new beebDOut(); });
-    createSingle("ws2812led", "", []() -> Datatool *
-                { return new ws2812out(); });
+    createIO();
 
     initTempVals();
     initDiVals();
@@ -45,9 +48,9 @@ void DataCare::init()
 
     Serial.print("DataCare: Tmp: ");
     Serial.print(this->getLenTemeratures());
-    Serial.print("DataCare: Di");
+    Serial.print(" Di: ");
     Serial.print(this->getLenInputs());
-    Serial.print("DataCare: Do");
+    Serial.print(" Do: ");
     Serial.print(this->getLenOutputs());
     Serial.println();
 
@@ -101,52 +104,37 @@ void DataCare::notifyLoop()
 }
 
 
-void DataCare::createSingle(String e1, String e2, std::function<Datatool *()> callback)
+void DataCare::createIO()
 {
     mysetup->resetSection();
-    mysetup->setNextSection(e1);
-    if (!e2.isEmpty())
-    {
-        mysetup->setNextSection(e2);
-    }
-
-    Datatool *newtool = callback();
-    if (newtool->init(this))
-    {
-        Serial.println(e1+" in datatools");
-        datatools.push_back(newtool);
-    }
-    else
-    {
-        delete newtool;
-    }
-}
-
-void DataCare::createMulti(String e1, String e2, std::function<Datatool *()> callback)
-{
-    mysetup->resetSection();
-    mysetup->setNextSection(e1);
-    if (!e2.isEmpty())
-    {
-        mysetup->setNextSection(e2);
-    }
+    mysetup->setNextSection("io");
     Serial.print("Is Array? ");
-    Serial.print(mysetup->isArrySection());
+    Serial.println(mysetup->isArrySection());
     if (mysetup->isArrySection())
     {
         uint16_t loop = 0;
         while (mysetup->setArrayElement(loop))
         {
             loop++;
-            Serial.println("rufe callback auf!!");
-            Datatool *newtool = callback();
-            if (newtool->init(this))
-            {
-                datatools.push_back(newtool);
-            }
-            else
-            {
-                delete newtool;
+            std::string card = mysetup->getArrayElementValue<std::string>("card", "");
+            Serial.println(card.c_str());
+            std::unordered_map<std::string, std::function<Datatool *()>> actions = {
+                {"pcf8574", []() { return new pcf8574io(); }},
+                {"temperatures", []() {  return new modbTemp();  }},
+                {"outputs", []() {  return new modbDOut();  }},
+                {"beeb", []() {  return new beebDOut();  }},
+                {"ws2812led", []() {  return new ws2812out();  }},
+                {"gpio", []() {  return new gpioDio();  }},
+                {"ds18b20s", []() {  return new ds18b20Temp(); }}
+            };
+
+            if (actions.find(card) != actions.end()) {
+                Datatool *newIO = actions[card]();
+                newIO->init(this);
+                datatools.push_back(newIO);
+            } else {
+                Serial.print(card.c_str());
+                Serial.println(" not found!!");
             }
         }
     }
@@ -229,6 +217,7 @@ void DataCare::initLedVals()
 bool DataCare::processTempValues()
 {
     bool result = false;
+    this->getDs18b20()->requestTemperatures();
     for (const auto &datatool : this->datatools)
     {
         result |= datatool->processTempValues();
@@ -266,7 +255,7 @@ bool DataCare::processLedValues()
 }
 
 template <typename T>
-String DataCare::jsonArray(String name, T buf[], int count)
+String DataCare::jsonArray(String name, T buf[], int count) const
 {
     JsonDocument doc;
     JsonArray data = (!name.isEmpty()) ? doc[name].to<JsonArray>() : doc.to<JsonArray>();
@@ -280,77 +269,104 @@ String DataCare::jsonArray(String name, T buf[], int count)
     return out;
 }
 
-String DataCare::jsonTemeratures(bool obj)
+String DataCare::jsonTemeratures(bool obj) const
 {
     return this->jsonArray(obj?"tempholdingreg":"", this->temeratures, this->lenTemeratures);
 }
 
-String DataCare::jsonDI(bool obj)
+String DataCare::jsonDI(bool obj) const
 {
     return this->jsonArray(obj?"inputintern":"", this->inputs, this->lenInputs);
 }
 
-String DataCare::jsonDO(bool obj)
+String DataCare::jsonDO(bool obj) const
 {
     return this->jsonArray(obj?"relays":"", this->outputs, this->lenOutputs);
 }
 
-Modbus *DataCare::getModbus()
+String DataCare::jsonCounts(bool obj) const{
+    JsonDocument doc;
+    JsonObject data = obj?doc["data"].to<JsonObject>():doc.to<JsonObject>();
+    data["tmp"]=this->getLenTemeratures();
+    data["in"]=this->getLenInputs();
+    data["out"]=this->getLenOutputs();
+    data["led"]=this->getLenLeds();
+    String out;
+    serializeJson(doc, out);
+    return out;
+}
+
+Modbus *DataCare::getModbus() const
 {
     return this->modbus;
 }
 
-I2C *DataCare::getI2C()
+I2C *DataCare::getI2C() const
 {
     return this->i2c;
 }
 
-int16_t *DataCare::getTemeratures(int16_t pos)
+Beeb *DataCare::getBeeb() const
+{
+    return this->beeb;
+}
+
+Gpio *DataCare::getGpio() const
+{
+    return this->gpio;
+}
+
+DS18B20 *DataCare::getDs18b20() const
+{
+    return this->ds18b20;
+}
+
+int16_t *DataCare::getTemeratures(int16_t pos) const
 {
     return &this->temeratures[pos];
 }
 
-int16_t *DataCare::getLastTemeratures(int16_t pos)
+int16_t *DataCare::getLastTemeratures(int16_t pos) const
 {
     return &this->lastTemeratures[pos];
 }
 
-int16_t DataCare::getLenTemeratures()
+int16_t DataCare::getLenTemeratures() const
 {
     return this->lenTemeratures;
 }
 
-TA_INPUT *DataCare::getInputs(int16_t pos)
+TA_INPUT *DataCare::getInputs(int16_t pos) const
 {
     return &this->inputs[pos];
 }
 
-int16_t DataCare::getLenInputs()
+int16_t DataCare::getLenInputs() const
 {
     return this->lenInputs;
 }
 
-bool *DataCare::getOutputs(int16_t pos)
+bool *DataCare::getOutputs(int16_t pos) const
 {
     return &this->outputs[pos];
 }
 
-bool *DataCare::getLastOutputs(int16_t pos)
+bool *DataCare::getLastOutputs(int16_t pos) const
 {
     return &this->lastOutputs[pos];
 }
 
-int16_t DataCare::getLenOutputs()
+int16_t DataCare::getLenOutputs() const
 {
     return this->lenOutputs;
 }
 
-uint32_t *DataCare::getLeds(int16_t pos)
+uint32_t *DataCare::getLeds(int16_t pos) const
 {
     return &this->leds[pos];
 }
 
-int16_t DataCare::getLenLeds()
+int16_t DataCare::getLenLeds() const
 {
     return this->lenLeds;
 }

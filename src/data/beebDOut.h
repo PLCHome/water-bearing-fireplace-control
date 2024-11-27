@@ -9,8 +9,8 @@
 class beebDOut : public Datatool
 {
 private:
-    bool active = false;
     int8_t pin;
+    uint8_t lo;
 public:
     bool init(DataCare *master) override;
     uint16_t getDOVals() override;

@@ -81,33 +81,7 @@ void myMixerPoint::calcVal()
 {
 }
 
-JsonVariant myMixerPoint::getJson()
-{
-    JsonDocument doc;
-    doc["id"] = this->id;
-    doc["name"] = this->name;
-    doc["val"] = this->on;
-    doc["type"] = this->type;
-
-    doc["idon"] = this->idon;
-    doc["tpos"] = this->tpos;
-    doc["opclose"] = this->opclose;
-    doc["opopen"] = this->opopen;
-
-    doc["checkInterval"] = this->checkInterval;
-    doc["impulseTime"] = this->impulseTime;
-    doc["pulsesToOpen"] = this->pulsesToOpen;
-    doc["currentPulse"] = this->currentPulse;
-    doc["lastTemperature"] = this->lastTemperature;
-    doc["hysteresis"] = this->hysteresis;
-    doc["delta"] = this->delta;
-    doc["targetTemperature"] = this->targetTemperature;
-    doc["prozent"] = this->prozent;
-    doc["closing"] = this->closing;
-    return doc;
-}
-
-void myMixerPoint::getTest(JsonDocument &doc)
+void myMixerPoint::getJson(JsonObject &doc)
 {
     doc["id"] = this->id;
     doc["name"] = this->name;
@@ -129,7 +103,6 @@ void myMixerPoint::getTest(JsonDocument &doc)
     doc["targetTemperature"] = this->targetTemperature;
     doc["prozent"] = this->prozent;
     doc["closing"] = this->closing;
-    //return doc;
 }
 
 void myMixerPoint::doWakeUp()

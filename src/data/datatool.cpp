@@ -1,10 +1,11 @@
 #include "Datatool.h"
+#include "mySetup.h"
 
 bool Datatool::init(DataCare *master)
 {
     Serial.println("Datatool init");
-
     this->master = master;
+    this->active = mysetup->getArrayElementValue<bool>("active", false);
     return false;
 }
 

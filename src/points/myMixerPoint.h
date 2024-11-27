@@ -35,8 +35,7 @@ private:
 public:
     myMixerPoint(JsonVariant json, pointTyp typ);
     void calcVal() override;
-    JsonVariant getJson() override;
-    void getTest(JsonDocument &doc);
+    void getJson(JsonObject &doc) override;
     void doWakeUp() override;
     bool doOpen();
     bool doClose();

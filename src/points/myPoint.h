@@ -28,7 +28,7 @@ public:
   void unsetCalculated();
   ergPoint getVal();
   virtual void calcVal() = 0;
-  virtual JsonVariant getJson() = 0;
+  virtual void getJson(JsonObject &doc) = 0;
   void loop();
   int getId() const;
   ergPoint getOn() const;

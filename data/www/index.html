@@ -11,6 +11,7 @@
   <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/Sortable.min.js"></script>
   <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/logicEdit.js"></script>
   <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/setup.js"></script>
+  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/info.js"></script>
   <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/files.js"></script>
   <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/main.js"></script>
   <title>Ofen- und Heizungssteuerung</title>
@@ -49,13 +50,14 @@
       <i class="fa fa-remove"></i>
     </a>
     <h4 class="w3-bar-item"><b>Menu</b></h4>
-    <a class="w3-bar-item w3-button w3-medium w3-hover-black" href="#values">jQuery</a>
     <a class="w3-bar-item w3-button w3-medium w3-hover-black" href="#values">Show Values</a>
     <h4 class="w3-bar-item"><b>Config</b></a>
       <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#process">Design Process</a>
       <h4 class="w3-bar-item"><b>Setup</b></a>
     <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#files">File management</a>
-    <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#setup">System Setup</a>
+    <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#setup">System setup</a>
+    <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#info">System info</a>
+    <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#update" >Firmware update</a>
     <a class="w3-bar-item w3-button w3-small w3-hover-black" target="_blank" href="/wifi.html">Wi-Fi connection</a>
     
     <br>
@@ -88,7 +90,21 @@
           Tr&auml;ger</a>
         <a id="myAddon" class="w3-bar-item w3-center w3-theme-l1">&nbsp;</a>
         <a class="w3-bar-item w3-button w3-hover-white w3-right w3-theme-l1" href="javascript:void(0)"
-          onclick="myExtension_toggle()"><i id="myExtensionToggle" class="fa fa-arrow-up"></i></a>
+          onclick="myExtension_toggle()">
+          <i data-update="time_d" class="digit2">00</i>
+          <i>.</i>
+          <i data-update="time_mo" class="digit2">00</i>
+          <i>.</i>
+          <i data-update="time_y" class="digit4">0000</i>
+          <i>&nbsp;</i>
+          <i data-update="time_h" class="digit2">00</i>
+          <i>:</i>
+          <i data-update="time_mi" class="digit2">00</i>
+          <i>:</i>
+          <i data-update="time_s" class="digit2">00</i>
+          <i>&nbsp;</i>
+          <i id="myExtensionToggle" class="fa fa-arrow-up"></i>
+        </a>
       </div>
     </footer>
 

@@ -21,7 +21,7 @@ bool modbDOut::processDoValues()
 {
     bool result = false;
     Modbus *modbus = this->master->getModbus();
-    if (modbus && modbus->isActive())
+    if (this->active && modbus && modbus->isActive())
     {
         uint8_t ModbusErr;
         bool *relays = master->getOutputs(this->DOValsStart);

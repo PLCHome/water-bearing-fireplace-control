@@ -47,20 +47,25 @@ function onClose(event) {
 }
 
 function setValue(path, val) {
-    //let ele = $('#'+ path)
-    let ele = $(`[id='${path}']`)
+    let ele = $(`[data-update='${path}']`)
     if (ele && ele.hasClass) {
         let html = "";
         if (ele.hasClass("div100")) {
             html = ((val || 0) / 100).toFixed(2);
         } else if (ele.hasClass("lightbulb")) {
             html = `<i class="${val ? 'fa-solid' : 'fa-regular'} fa-lightbulb" onClick="sendData({${path}:${!val}});"></i>`
+        } else if (ele.hasClass("digit2")) {
+            html = val.toString().padStart(2, '0');
+        } else if (ele.hasClass("digit4")) {
+            html = val.toString().padStart(4, '0');
         } else {
             html = val;
         }
         ele.html(html);
     }
 }
+
+
 
 // Function that receives the message from the ESP32 with the readings
 function onMessage(event) {

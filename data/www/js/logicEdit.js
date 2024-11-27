@@ -199,11 +199,11 @@ const BARMIXER = `<form>
     </div>
     <div class="edit-item">
       <select id="opclose-%id%" class="opclose outselect" ></select>
-      <label for="opclose-%id%">output close<a class="value lightbulb">&nbsp;</a></label>
+      <label for="opclose-%id%">output close <a class="value lightbulb">&nbsp;</a></label>
     </div>
     <div class="edit-item">
       <select id="opopen-%id%" class="opopen outselect" ></select>
-      <label for="opopen-%id%">output open<a class="value lightbulb">&nbsp;</a></label>
+      <label for="opopen-%id%">output open <a class="value lightbulb">&nbsp;</a></label>
     </div>
   </div>
 </div>
@@ -256,7 +256,9 @@ function setAtt() {
     .on("change", function () {
       var sel = $(this).find('option:selected').val();
       if (sel != "") {
-        $(this).parent().find('.value').prop("id", "tempholdingreg" + sel).html("");
+        //data-update
+        //$(this).parent().find('.value').prop("id", "tempholdingreg" + sel).html("");
+        $(this).parent().find('.value').attr("data-update", "tempholdingreg" + sel).html("");
         getReadings();
       }
     });
@@ -272,7 +274,7 @@ function setAtt() {
     .on("change", function () {
       var sel = $(this).find('option:selected').val();
       if (sel != "") {
-        $(this).parent().find('.value').prop("id", "relays" + sel).html("");
+        $(this).parent().find('.value').attr("data-update", "relays" + sel).html("");
         getReadings();
       }
     });

@@ -110,9 +110,8 @@ String myPoints::getJSONValueMixer()
     for (auto* loop : vmypoint) {
         if (loop->getTyp() == PT_MIXER) 
         {
-            JsonDocument idoc =JsonDocument();
-            ((myMixerPoint*)loop)->getTest(idoc);
-            data[String(loop->getId())]=idoc.as<JsonObject>();
+            JsonObject idoc = data[String(loop->getId())].to<JsonObject>();
+            ((myMixerPoint*)loop)->getJson(idoc);
         }
     }
 

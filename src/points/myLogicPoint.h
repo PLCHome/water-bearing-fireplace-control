@@ -24,7 +24,7 @@ class myLogicPoint : public myPoint
 public:
     myLogicPoint(JsonVariant json, pointTyp typ);
     void calcVal() override;
-    JsonVariant getJson() override;
+    void getJson(JsonObject &doc) override;
 };
 
 #endif /* MYLOGICPOINT_H_ */

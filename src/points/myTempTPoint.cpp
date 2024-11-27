@@ -113,20 +113,10 @@ void myTempTPoint::calcVal()
     }
 }
 
-/**
- * @brief Returns the JSON string representation of the object.
- *
- * This method serializes the object data (id, name, and state) into a JSON string
- * for easy transmission or logging.
- *
- * @return A string containing the serialized JSON representation of the object.
- */
-JsonVariant myTempTPoint::getJson()
+void myTempTPoint::getJson(JsonObject &doc)
 {
-    JsonVariant doc = JsonVariant();
     doc["id"] = this->id;
     doc["name"] = this->name;
     doc["val"] = this->on;
     doc["type"] = this->type;
-    return doc;
 }

@@ -117,21 +117,10 @@ void myTempPoint::calcVal()
     }
 }
 
-/**
- * @brief Generates a JSON string of the object's current state.
- *
- * Creates a JSON document with `id`, `name`, and `val` representing the
- * object’s ID, name, and current on/off state, respectively. The JSON is
- * serialized to a string and returned.
- *
- * @return String JSON representation of the object.
- */
-JsonVariant myTempPoint::getJson()
+void myTempPoint::getJson(JsonObject &doc)
 {
-    JsonVariant doc = JsonVariant();
     doc["id"] = this->id;
     doc["name"] = this->name;
     doc["val"] = this->on;
     doc["type"] = this->type;
-    return doc;
 }

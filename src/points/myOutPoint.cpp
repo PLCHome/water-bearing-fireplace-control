@@ -1,4 +1,4 @@
-#include "myOutPoint.h"  // Einbinden der Header-Datei
+#include "myOutPoint.h" // Einbinden der Header-Datei
 #include "myPoints.h"
 #include "pointtyp.h"
 #include "../data/DataCare.h"
@@ -17,7 +17,8 @@ myOutPoint::myOutPoint(JsonVariant json, pointTyp type) : myPoint(json, type)
     {
         this->opos = json["opos"].as<int>();
     }
-    if (this->opos < 0 || this->opos >= datacare.getLenOutputs()){
+    if (this->opos < 0 || this->opos >= datacare.getLenOutputs())
+    {
         this->opos = -1;
     }
 }
@@ -52,12 +53,10 @@ void myOutPoint::calcVal()
     }
 }
 
-JsonVariant myOutPoint::getJson()
+void myOutPoint::getJson(JsonObject &doc)
 {
-    JsonVariant doc = JsonVariant();
     doc["id"] = this->id;
     doc["name"] = this->name;
     doc["val"] = this->on;
     doc["type"] = this->type;
-    return doc;
 }

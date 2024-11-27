@@ -100,21 +100,10 @@ void myLogicPoint::calcVal()
     }
 }
 
-/**
- * @brief Generates a JSON representation of the logical point's current state.
- *
- * The getJson method creates a JSON document with the ID, name, and current value (`on`)
- * of the logical point. This JSON data can be used for communication with other devices
- * or systems.
- *
- * @return String A JSON string representing the current state.
- */
-JsonVariant myLogicPoint::getJson()
+void myLogicPoint::getJson(JsonObject &doc)
 {
-    JsonVariant doc = JsonVariant();
     doc["id"] = this->id;
     doc["name"] = this->name;
     doc["val"] = this->on;
     doc["type"] = this->type;
-    return doc;
 }
