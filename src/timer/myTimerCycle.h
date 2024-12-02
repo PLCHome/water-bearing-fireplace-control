@@ -5,11 +5,12 @@
 
 class myTimerCycle {
 public:
-    unsigned long getCycleInterval() const;
-    unsigned long lastCycleTime;
-    virtual void doCycleIntervall() = 0;
+  unsigned long getCycleInterval() const;
+  unsigned long lastCycleTime;
+  virtual void doCycleIntervall() = 0;
+
 protected:
-    unsigned long cycleInterval;
+  unsigned long cycleInterval;
 };
 
 #endif

@@ -1,5 +1,5 @@
 #include "modbTemp.h"
-#include "../mySetup.h"
+#include "../../mySetup.h"
 
 bool modbTemp::init(DataCare *master)
 {

@@ -2,11 +2,11 @@
 #define PCF8574IO_H_
 
 #include <Arduino.h>
+#include <PCF8574.h>
 
 #include "Datatool.h"
-#include "DataCare.h"
-#include "PCF8574.h"
-#include "dirtyp.h"
+#include "../DataCare.h"
+#include "../dirtyp.h"
 
 class DataCare;
 

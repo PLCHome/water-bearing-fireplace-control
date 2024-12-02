@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <DallasTemperature.h>
 #include "Datatool.h"
-#include "DataCare.h"
+#include "../DataCare.h"
 
 
 class ds18b20Temp : public Datatool

@@ -1,5 +1,5 @@
 #include "Hardware.h"
-#include <mySetup.h>
+#include "../../mySetup.h"
 
 Hardware::Hardware(HardwareTyp type) : type(type)
 {

@@ -37,9 +37,13 @@ function setinner() {
   }
   mySpace.style.height = "" + setHeight + 'px';
 }
-window.onresize = setinner;
-window.addEventListener('load', setinner);
-myExtension.style.display = 'none'
+
+function initMenu(){
+  window.onresize = setinner;
+  window.addEventListener('load', setinner);
+  myExtension.style.display = 'none'
+  setinner();
+}
 
 function myExtension_toggle() {
   if (myExtension.style.display === 'block') {

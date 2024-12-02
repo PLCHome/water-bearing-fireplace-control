@@ -131,14 +131,15 @@ function addNewCard(btn) {
     let key = `${groupkey}.${count}.${thiskey}`;
     btn.data('count', count + 1)
     let dest = $(`#${sortareaid}`)
-    let table = $(`<table id="${key}" style="width:100%" class="w3-table-all w3-hoverable"/>`)
-    dest.append($('<div class="w3-light-grey w3-row w3-border w3-round" style="width:100%" />')
-        .attr('data-id', key)
-        .data('groupkey', groupkey)
-        .data('thiskey', thiskey)
-        .attr('data-key', btnid)
-        .attr('data-iscard', 1)
-        .append(table));
+    let table = $(`<table style="width:100%" class="w3-table-all w3-hoverable"/>`)
+    let div = $(`<div id="${key}"  class="w3-light-grey w3-row w3-border w3-round" style="width:100%" />`)
+    .attr('data-id', key)
+    .data('groupkey', groupkey)
+    .data('thiskey', thiskey)
+    .attr('data-key', btnid)
+    .attr('data-iscard', 1)
+    .append(table);
+    dest.append(div);
     buildParas(paras, key, table)
     let del = $(`<div class="edit-btn process-del"><i class="fa-solid fa-trash-can"></i></div>`);
     del.addClass("w3-button")
@@ -147,7 +148,7 @@ function addNewCard(btn) {
             getByID(key).remove();
         });
     table.append($(`<tr/>`).append($('<td colspan="2"/>').append(del)))
-    return table;
+    return div;
 }
 
 let sortablearray = [];
@@ -167,10 +168,11 @@ function addablecardsBTN(addablecards, key, dest) {
         btn.on("click", function () {
             addNewCard($(this));
         });
-        bar.append(btn);
+        $("#myExtension").append(btn)
+        //bar.append(btn);
     }
     container = $(`<div class="card" style="width:100%"/>`);
-    container.append(bar);
+    //container.append(bar);
     let sortarea = $(`<div id="${sortareaid}" class="sortable" style="width:100%"/>`)
     container.append(sortarea);
     dest.append($('<tr class="addablecardsbtn"/>').append($(`<td colspan="2"/>`).append(container)));
@@ -290,7 +292,7 @@ function loadSetupData() {
                         const card = item.card;
                         let btn = getByID(`${key}.${card}`);
                         let dest = addNewCard(btn);
-                        let desid = dest.attr('id');
+                        let desid = dest.attr('data-id');
                         const valkeys = Object.keys(item);
                         for (let i = 0; i < valkeys.length; i++) {
                             let para = valkeys[i];
@@ -342,7 +344,7 @@ function buildSetup() {
                 const addablecards = data[key].addablecards;
                 if (addablecards)
                     addablecardsBTN(addablecards, key, table);
-                const carddefaulds = data[key].carddefaulds;
+                //const carddefaulds = data[key].carddefaulds;
                 //if (carddefaulds)
                     //setcarddefaulds(carddefaulds, key);
             }
@@ -424,11 +426,13 @@ function saveSetupJSON() {
         let array = sortable.toArray();
         for (let i = 0; i < array.length; i++) {
             let card = $(`[data-id="${array[i]}"]`)
-            let newid = `${card.data('groupkey')}.${i}`;
-            setNestedValue(obj, `${newid}.card`, card.data('thiskey'));
-            card.find(`[data-key]`).each(function () {
+            if (card.length>0) {
+              let newid = `${card.data('groupkey')}.${i}`;
+              setNestedValue(obj, `${newid}.card`, card.data('thiskey'));
+              card.find(`[data-key]`).each(function () {
                 setNestedValue(obj, `${newid}.${$(this).data('key')}`, getSetupValue($(this)));
-            })
+              })
+            }
         }
     });
 

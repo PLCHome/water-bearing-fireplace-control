@@ -21,13 +21,20 @@ const INVERSSELECT = {
   "1": "SET NOT"
 };
 
+const OFFMODE = {
+  "true": "closed",
+  "false": "opened"
+};
+
 const BARBUTTONS = `
+<a class="mySaveButton"><i class="fa-regular fa-floppy-disk"></i> save</a>`;
+
+const EXTBUTTONS = `
 <a data-type="${PT_TEMP}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature value</a>
 <a data-type="${PT_TEMPT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature to another</a>
 <a data-type="${PT_LOGIC}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> logic</a>
 <a data-type="${PT_OUT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> output</a>
-<a data-type="${PT_MIXER}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> mixer</a>
-<a class="mySaveButton"><i class="fa-regular fa-floppy-disk"></i> save</a>`;
+<a data-type="${PT_MIXER}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> mixer</a>`;
 
 const SORTAREA = '<div id="mySortArea" style="height:100%; width:100%; overflow:auto"" class="list-group" ></div>';
 
@@ -197,6 +204,10 @@ const BARMIXER = `<form>
       <input id="delta-%id%" class="delta 2dec_input"/>
       <label for="delta-%id%">max delta</label>
     </div>
+    <div class="edit-sitem">
+      <select id="offc-%id%" class="nc openclose" ></select>
+      <label for="offc-%id%">when off</label>
+    </div>
     <div class="edit-item">
       <select id="opclose-%id%" class="opclose outselect" ></select>
       <label for="opclose-%id%">output close <a class="value lightbulb">&nbsp;</a></label>
@@ -279,8 +290,10 @@ function setAtt() {
       }
     });
 
-    //
+  //
   $(".inversselect")
+    .addClass("w3-select");
+  $(".openclose")
     .addClass("w3-select");
   $(".list-group-item")
     .addClass("w3-light-grey")
@@ -335,11 +348,14 @@ function setAtt() {
   updateSelect("tempselect", temperaturNames);
   makeLogicSelect();
   makeInversSelect();
-
+  makeOffMode();
 }
-
 function makeLogicSelect() {
   updateSelect("logcselect", LOGCSELECT);
+}
+
+function makeOffMode() {
+  updateSelect("openclose", OFFMODE);
 }
 
 function makeInversSelect() {
@@ -361,7 +377,7 @@ function updateSelect(calss, vals) {
     var html = `<option value="" disabled selected>choose</option>`;
     var key = Object.keys(vals);
     for (let i = 0; i < key.length; i++) {
-      html += `<option value="${key[i]}">${vals[i]}</option>`;
+      html += `<option value="${key[i]}">${vals[key[i]]}</option>`;
     }
     $(this).html(html);
     $(this).find(`[value="${sel}"]`).attr('selected', true);
@@ -377,7 +393,7 @@ function createNewRow(type) {
     case PT_TEMPT: val.t2plus = 100; val.t2minus = -100; break;
     case PT_LOGIC: break;
     case PT_OUT: break;
-    case PT_MIXER: val.chkint = 10; val.imptime = 2; val.ttemp = 30; val.impmax = 30; val.hyst = 100;  val.delta = 30; break;
+    case PT_MIXER: val.chkint = 10; val.imptime = 2; val.ttemp = 30; val.impmax = 30; val.hyst = 100; val.delta = 30; break;
   }
   val.name = `Process ${val.id + 1}`;
   createRow(val)
@@ -385,8 +401,8 @@ function createNewRow(type) {
 
 function createRow(val) {
   body = $(`<div class="list-group-item"/>`);
-  body.attr('data-id',val.id);
-  body.attr('data-type',val.type);
+  body.attr('data-id', val.id);
+  body.attr('data-type', val.type);
   switch (parseInt(val.type, 10)) {
     case PT_TEMP: body.html(BARTEMPERATURE.replaceAll(`%id%`, `${val.id}`)); break;
     case PT_TEMPT: body.html(BAR2TEMPERATURE.replaceAll(`%id%`, `${val.id}`)); break;
@@ -398,17 +414,17 @@ function createRow(val) {
   setAtt();
   $(`[data-id='${val.id}'] .name`).val(val.name);
   $(`[data-id='${val.id}'] .name`).trigger('change');
-  $(`[data-id='${val.id}'] .ton`).val((parseFloat(val.ton)/100).toFixed(2));
-  $(`[data-id='${val.id}'] .toff`).val((parseFloat(val.toff)/100).toFixed(2));
-  $(`[data-id='${val.id}'] .t2plus`).val((parseFloat(val.t2plus)/100).toFixed(2));
-  $(`[data-id='${val.id}'] .t2minus`).val((parseFloat(val.t2minus)/100).toFixed(2));
-  $(`[data-id='${val.id}'] .hyst`).val((parseFloat(val.hyst)/100).toFixed(2));
-  $(`[data-id='${val.id}'] .delta`).val((parseFloat(val.delta)/100).toFixed(2));
+  $(`[data-id='${val.id}'] .ton`).val((parseFloat(val.ton) / 100).toFixed(2));
+  $(`[data-id='${val.id}'] .toff`).val((parseFloat(val.toff) / 100).toFixed(2));
+  $(`[data-id='${val.id}'] .t2plus`).val((parseFloat(val.t2plus) / 100).toFixed(2));
+  $(`[data-id='${val.id}'] .t2minus`).val((parseFloat(val.t2minus) / 100).toFixed(2));
+  $(`[data-id='${val.id}'] .hyst`).val((parseFloat(val.hyst) / 100).toFixed(2));
+  $(`[data-id='${val.id}'] .delta`).val((parseFloat(val.delta) / 100).toFixed(2));
   $(`[data-id='${val.id}'] .chkint`).val(val.chkint);
   $(`[data-id='${val.id}'] .imptime`).val(val.imptime);
   $(`[data-id='${val.id}'] .impmax`).val(val.impmax);
-  $(`[data-id='${val.id}'] .ttemp`).val((parseFloat(val.ttemp)/100).toFixed(2));
-    
+  $(`[data-id='${val.id}'] .ttemp`).val((parseFloat(val.ttemp) / 100).toFixed(2));
+
   function setOption(id) {
     var ele = $(`[data-id='${val.id}'] .${id} option`);
     ele.filter(`[value=""]`)
@@ -427,6 +443,7 @@ function createRow(val) {
   setOption('op')
   setOption('opclose')
   setOption('opopen')
+  setOption('nc')
 
 
 
@@ -438,15 +455,17 @@ function buildPageProcess() {
     multiDrag: true, // Enable multi-drag
     selectedClass: 'w3-gray', // The class applied to the selected items
     fallbackTolerance: 3, // So that we can select items on mobile
-    animation: 150
+    animation: 150,
+    handle: '.process-mov'
   });
-  $("#myAddon").append(BARBUTTONS);
+  $("#myAddon").html(BARBUTTONS);
+  $("#myExtension").html(EXTBUTTONS);
   setAtt();
   loadJSON();
 }
 
 function loadJSON() {
-  
+
   $.getJSON(POINTSFILENAME, function (data) {
     // Prüfen, ob die Daten ein Array sind
     if (Array.isArray(data)) {
@@ -467,7 +486,7 @@ function loadJSON() {
 function saveJSON() {
   var json = buildJSON();
   console.log(json);
-  uploadString(POINTSFILENAME, json, function (){
+  uploadString(POINTSFILENAME, json, function () {
     sendData('reloadPoints');
   });
 }
@@ -489,16 +508,18 @@ function buildJSON() {
       });
     }
 
-    function valString(val){
+    function valString(val) {
       return val.toString();
     }
-    function valInt(val){
-      return parseInt(val,10);
+    function valInt(val) {
+      return parseInt(val, 10);
     }
-    function valInt100(val){
-      return parseFloat(val,10)*100;
+    function valInt100(val) {
+      return parseFloat(val, 10) * 100;
     }
-
+    function valBool(val) {
+      return val != "false" ? true : false;
+    }
     setValues('name', valString)
     setValues('ton', valInt100)
     setValues('toff', valInt100)
@@ -520,7 +541,8 @@ function buildJSON() {
     setValues('delta', valInt100)
     setValues('opclose', valInt)
     setValues('opopen', valInt)
-    
+    setValues('nc', valBool)
+
   }
   return JSON.stringify(vals);
 }

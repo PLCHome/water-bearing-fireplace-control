@@ -3,8 +3,6 @@ if (gateway.indexOf('localhost') != -1) {
     gateway = gateway.replace('localhost', '192.168.2.178');
 }
 var websocket;
-// Init web socket when the page loads
-$(window).on('load', onload);
 
 function onload(event) {
     initWebSocket();
@@ -21,8 +19,10 @@ function getReadings() {
 
 function sendData(data) {
     if (typeof data === 'string') {
+      if (websocket)
         websocket.send(data);
     } else {
+      if (websocket)
         websocket.send(JSON.stringify(data));
     }
 }
@@ -191,7 +191,7 @@ function downloadFile(fileUrl, fileName) {
 function downloadFileAsString(filename, cb) {
     // Construct the URL for the /download route with the filename as a query parameter
     var fileUrl = '/download?filename=' + encodeURIComponent(filename);
-    
+
     // Load the file content via AJAX
     $.ajax({
         url: fileUrl, // The /download route

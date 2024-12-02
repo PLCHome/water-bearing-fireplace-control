@@ -2,8 +2,8 @@
 #define I2C_H_
 
 #include <Arduino.h>
-#include "Hardware.h"
 #include <Wire.h>
+#include "Hardware.h"
 
 class I2C  : public Hardware
 {

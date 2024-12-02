@@ -9,15 +9,17 @@
 class DS18B20 : public Hardware
 {
 private:
-    OneWire *oneWire;    
-    DallasTemperature *sensors; 
-    int8_t pin;   
+    OneWire *oneWire;
+    DallasTemperature *sensors;
+    int8_t pin;
+    bool busi = false;
 public:
     DS18B20();
     void init() override;
     String getJsonIDs(bool obj);
     DallasTemperature *getSensors() const;
     void requestTemperatures();
+    void temperaturesFinished();
     bool stringToDeviceAddress(const String &str, DeviceAddress &address);
     int16_t getTemp(const DeviceAddress &address);
 };

@@ -1,6 +1,6 @@
 #include "ws2812out.h"
 
-#include "../mySetup.h"
+#include "../../mySetup.h"
 
 
 bool ws2812out::init(DataCare *master)

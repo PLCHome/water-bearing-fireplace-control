@@ -7,13 +7,7 @@
   <link rel="stylesheet" href="css/w3.css">
   <link rel="stylesheet" href="css/w3-theme-black.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <script language='javascript' type="text/javascript" src="js/jquery-3.7.1.min.js"></script>
-  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/Sortable.min.js"></script>
-  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/logicEdit.js"></script>
-  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/setup.js"></script>
-  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/info.js"></script>
-  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/files.js"></script>
-  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/main.js"></script>
+  <script language='javascript' type="text/javascript" src="/js/jquery-3.7.1.min.js"></script>
   <title>Ofen- und Heizungssteuerung</title>
   <style>
     html,
@@ -27,6 +21,72 @@
       font-family: "Trebuchet MS", Helvetica, sans-serif
     }
   </style>
+  <script>
+    // List of script URLs
+    const scripts = [
+      "/js/menu.js",
+      "/js/Sortable.min.js",
+      "/js/logicEdit.js",
+      "/js/setup.js",
+      "/js/info.js",
+      "/js/files.js",
+      "/js/ws.js"
+    ];
+    const scripts2 = [
+      "/js/main.js"
+    ];
+
+    // Function to dynamically load scripts
+    async function loadScripts(scriptUrls, callback) {
+      let loadedScripts = 0;
+      base = "";
+      try {
+        const response = await fetch('http://localhost:8090/data/www/js/main.js', { method: 'HEAD' });
+        if (response.ok) {
+          base = "http://localhost:8090/data/www";
+        };
+      } catch (error) {
+      }
+
+      scriptUrls.forEach((url) => {
+        const script = document.createElement("script");
+        script.src = base + url;
+        script.type = "text/javascript";
+        script.onload = () => {
+          loadedScripts++;
+          // When all scripts are loaded, call the callback function
+          if (loadedScripts === scriptUrls.length && typeof callback === "function") {
+            callback();
+          }
+        };
+        script.onerror = () => {
+          console.error(`Error loading script: ${url}`);
+        };
+        document.head.appendChild(script); // Append the script to the head section
+      });
+    }
+
+    // doPage is executed after all scripts are loaded
+    function doLoad() {
+      loadScripts(scripts, () => {
+        console.log("All scripts loaded successfully!");
+
+        loadScripts(scripts2, () => {
+          console.log("All scripts loaded successfully!");
+
+          // Call doPage immediately
+          initMenu();
+          onload();
+          doPage();
+
+        });
+      });
+    }
+    // Add event listeners for hash changes and page load
+    $(window).on('hashchange', doLoad);
+    $(window).on('load', doLoad);
+
+  </script>
 </head>
 
 <body>
@@ -54,14 +114,16 @@
     <h4 class="w3-bar-item"><b>Config</b></a>
       <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#process">Design Process</a>
       <h4 class="w3-bar-item"><b>Setup</b></a>
-    <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#files">File management</a>
-    <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#setup">System setup</a>
-    <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#info">System info</a>
-    <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#update" >Firmware update</a>
-    <a class="w3-bar-item w3-button w3-small w3-hover-black" target="_blank" href="/wifi.html">Wi-Fi connection</a>
-    
-    <br>
-    <br>
+        <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#files">File management</a>
+        <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#setup">System setup</a>
+        <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#info">System info</a>
+        <a class="w3-bar-item w3-button w3-small w3-hover-black" href="#update">Firmware update</a>
+        <a class="w3-bar-item w3-button w3-small w3-hover-black" target="_blank" href="/wifi.html">Wi-Fi connection</a>
+        <a class="w3-bar-item w3-button w3-small w3-hover-black" href="javascript:void(0)"
+          onclick="if (confirm(`Do you really want to reboot this device?`)) sendData('reboot');">Reboot device</a>
+
+        <br>
+        <br>
   </div>
 
   <!-- Overlay effect when opening sidebar on small screens -->
@@ -110,8 +172,6 @@
 
     <!-- END MAIN -->
   </div>
-  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/menu.js"></script>
-  <script language='javascript' type="text/javascript" src="http://localhost:8090/data/www/js/ws.js"></script>
 </body>
 
 </html>

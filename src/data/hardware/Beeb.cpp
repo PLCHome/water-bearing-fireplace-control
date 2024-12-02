@@ -1,7 +1,6 @@
 #include "Beeb.h"
 
-#include "../KC868-A8S.h"
-#include "../mySetup.h"
+#include "../../mySetup.h"
 
 Beeb::Beeb() : Hardware(HW_BEEB) {
 }

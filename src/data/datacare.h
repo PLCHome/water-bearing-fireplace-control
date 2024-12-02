@@ -3,13 +3,13 @@
 
 #include <Arduino.h>
 #include <vector>
-#include "Datatool.h"
-#include "Modbus.h"
-#include "I2C.h"
-#include "Beeb.h"
-#include "Gpio.h"
-#include "WS2812.h"
-#include "DS18B20.h"
+#include "io/Datatool.h"
+#include "hardware/Modbus.h"
+#include "hardware/I2C.h"
+#include "hardware/Beeb.h"
+#include "hardware/Gpio.h"
+#include "hardware/WS2812.h"
+#include "hardware/DS18B20.h"
 
 enum TA_INPUT
 {

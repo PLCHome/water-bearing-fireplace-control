@@ -1,7 +1,7 @@
 #include "Modbus.h"
 
-#include "../KC868-A8S.h"
-#include "../mySetup.h"
+#include "../../KC868-A8S.h"
+#include "../../mySetup.h"
 
 Modbus::Modbus() : Hardware(HW_MODBUS){
 

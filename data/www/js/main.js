@@ -4,39 +4,48 @@ var inputNames = [];
 
 var namesok = false;
 
-$.getJSON("/count", function (data) {
-  for (let i = 0; i < data.data.tmp; i++) {
-    temperaturNames[i] = `Measurement ${i + 1}`;
-  }
-  for (let i = 0; i < data.data.out; i++) {
-    outputNames[i] = `Relays ${i + 1}`;
-  }
-  for (let i = 0; i < data.data.in; i++) {
-    inputNames[i] = `Eingang ${i + 1}`;
-  }
+function getNames(cb) {
+  $.getJSON("/count", function (data) {
+    for (let i = 0; i < data.data.tmp; i++) {
+      temperaturNames[i] = `Measurement ${i + 1}`;
+    }
+    for (let i = 0; i < data.data.out; i++) {
+      outputNames[i] = `Relays ${i + 1}`;
+    }
+    for (let i = 0; i < data.data.in; i++) {
+      inputNames[i] = `Eingang ${i + 1}`;
+    }
 
-  namesok = true;
+    if (typeof cb == 'function') {
+      cb()
+    }
 
-}).fail(function (jqxhr, textStatus, error) {
-  console.log("Fehler beim Laden der JSON-Daten", textStatus, error);
-});
+  }).fail(function (jqxhr, textStatus, error) {
+    console.log("Fehler beim Laden der JSON-Daten", textStatus, error);
+    if (typeof cb == 'function') {
+      cb()
+    }
+  });
+}
 
 
 
 
 function meineFunktion() {
-  let body = '<div style="height:100%; width:100%; overflow:auto"><table class="w3-table-all w3-hoverable"><tr><th> Bezeichnung </th><th> Wert </th></tr>';
-  for (let i = 0; i < temperaturNames.length; i++) {
-    body += `<tr><td data-update="name_tempholdingreg${i}">${temperaturNames[i]}</td><td style="text-align: right;" data-update="tempholdingreg${i}" class="div100"> &nbsp; </td></tr>`;
-  }
-  for (let i = 0; i < inputNames.length; i++) {
-    body += `<tr><td data-update="name_inputintern${i}">${inputNames[i]}</td><td style="text-align: right;" data-update="inputintern${i}"> &nbsp; </td></tr>`;
-  }
-  for (let i = 0; i < outputNames.length; i++) {
-    body += `<tr><td data-update="name_relay${i}">${outputNames[i]}</td><td style="text-align: right;" data-update="relays${i}" class="lightbulb"> &nbsp; </td></tr>`;
-  }
-  body += '</table></div>';
-  $("#mySpace").html(body);
+  getNames(function () {
+    let body = '<div style="height:100%; width:100%; overflow:auto"><table class="w3-table-all w3-hoverable"><tr><th> Bezeichnung </th><th> Wert </th></tr>';
+    for (let i = 0; i < temperaturNames.length; i++) {
+      body += `<tr><td data-update="name_tempholdingreg${i}">${temperaturNames[i]}</td><td style="text-align: right;" data-update="tempholdingreg${i}" class="div100"> &nbsp; </td></tr>`;
+    }
+    for (let i = 0; i < inputNames.length; i++) {
+      body += `<tr><td data-update="name_inputintern${i}">${inputNames[i]}</td><td style="text-align: right;" data-update="inputintern${i}"> &nbsp; </td></tr>`;
+    }
+    for (let i = 0; i < outputNames.length; i++) {
+      body += `<tr><td data-update="name_relay${i}">${outputNames[i]}</td><td style="text-align: right;" data-update="relays${i}" class="lightbulb"> &nbsp; </td></tr>`;
+    }
+    body += '</table></div>';
+    $("#mySpace").html(body);
+  });
 }
 
 function buildPage(anchor) {
@@ -71,10 +80,12 @@ let Pages = {
 };
 
 function doPage(e) {
+  getNames();
   var anchor = getAnchor();
   console.log(anchor);
   $("#mySpace").empty();
   $("#myAddon").empty();
+  $("#myExtension").html(`&nbsp;`);
   if (Pages[anchor] && Pages[anchor].func) {
     Pages[anchor].func();
   } else {
@@ -97,5 +108,3 @@ function doPage(e) {
   getReadings();
 }
 
-$(window).on('hashchange', doPage);
-$(window).on('load', doPage);

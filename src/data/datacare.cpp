@@ -1,17 +1,16 @@
 #include "DataCare.h"
 #include <unordered_map>
 
-#include "mySetup.h"
-#include "MessageDispatcher.h"
+#include "../mySetup.h"
+#include "../MessageDispatcher.h"
 
-#include "beebDOut.h"
-#include "modbDOut.h"
-#include "modbTemp.h"
-#include "pcf8574io.h"
-#include "ws2812out.h"
-#include "gpioDio.h"
-#include "ds18b20Temp.h"
-
+#include "io/beebDOut.h"
+#include "io/modbDOut.h"
+#include "io/modbTemp.h"
+#include "io/pcf8574io.h"
+#include "io/ws2812out.h"
+#include "io/gpioDio.h"
+#include "io/ds18b20Temp.h"
 
 DataCare datacare = DataCare();
 
@@ -103,7 +102,6 @@ void DataCare::notifyLoop()
     xTaskNotifyGive(this->taskDataLoop);
 }
 
-
 void DataCare::createIO()
 {
     mysetup->resetSection();
@@ -119,20 +117,29 @@ void DataCare::createIO()
             std::string card = mysetup->getArrayElementValue<std::string>("card", "");
             Serial.println(card.c_str());
             std::unordered_map<std::string, std::function<Datatool *()>> actions = {
-                {"pcf8574", []() { return new pcf8574io(); }},
-                {"temperatures", []() {  return new modbTemp();  }},
-                {"outputs", []() {  return new modbDOut();  }},
-                {"beeb", []() {  return new beebDOut();  }},
-                {"ws2812led", []() {  return new ws2812out();  }},
-                {"gpio", []() {  return new gpioDio();  }},
-                {"ds18b20s", []() {  return new ds18b20Temp(); }}
-            };
+                {"pcf8574", []()
+                 { return new pcf8574io(); }},
+                {"temperatures", []()
+                 { return new modbTemp(); }},
+                {"outputs", []()
+                 { return new modbDOut(); }},
+                {"beeb", []()
+                 { return new beebDOut(); }},
+                {"ws2812led", []()
+                 { return new ws2812out(); }},
+                {"gpio", []()
+                 { return new gpioDio(); }},
+                {"ds18b20s", []()
+                 { return new ds18b20Temp(); }}};
 
-            if (actions.find(card) != actions.end()) {
+            if (actions.find(card) != actions.end())
+            {
                 Datatool *newIO = actions[card]();
                 newIO->init(this);
                 datatools.push_back(newIO);
-            } else {
+            }
+            else
+            {
                 Serial.print(card.c_str());
                 Serial.println(" not found!!");
             }
@@ -217,11 +224,14 @@ void DataCare::initLedVals()
 bool DataCare::processTempValues()
 {
     bool result = false;
-    this->getDs18b20()->requestTemperatures();
+    if (this->getDs18b20())
+      this->getDs18b20()->requestTemperatures();
     for (const auto &datatool : this->datatools)
     {
         result |= datatool->processTempValues();
     }
+    if (this->getDs18b20())
+      this->getDs18b20()->temperaturesFinished();
     return result;
 }
 
@@ -271,26 +281,27 @@ String DataCare::jsonArray(String name, T buf[], int count) const
 
 String DataCare::jsonTemeratures(bool obj) const
 {
-    return this->jsonArray(obj?"tempholdingreg":"", this->temeratures, this->lenTemeratures);
+    return this->jsonArray(obj ? "tempholdingreg" : "", this->temeratures, this->lenTemeratures);
 }
 
 String DataCare::jsonDI(bool obj) const
 {
-    return this->jsonArray(obj?"inputintern":"", this->inputs, this->lenInputs);
+    return this->jsonArray(obj ? "inputintern" : "", this->inputs, this->lenInputs);
 }
 
 String DataCare::jsonDO(bool obj) const
 {
-    return this->jsonArray(obj?"relays":"", this->outputs, this->lenOutputs);
+    return this->jsonArray(obj ? "relays" : "", this->outputs, this->lenOutputs);
 }
 
-String DataCare::jsonCounts(bool obj) const{
+String DataCare::jsonCounts(bool obj) const
+{
     JsonDocument doc;
-    JsonObject data = obj?doc["data"].to<JsonObject>():doc.to<JsonObject>();
-    data["tmp"]=this->getLenTemeratures();
-    data["in"]=this->getLenInputs();
-    data["out"]=this->getLenOutputs();
-    data["led"]=this->getLenLeds();
+    JsonObject data = obj ? doc["data"].to<JsonObject>() : doc.to<JsonObject>();
+    data["tmp"] = this->getLenTemeratures();
+    data["in"] = this->getLenInputs();
+    data["out"] = this->getLenOutputs();
+    data["led"] = this->getLenLeds();
     String out;
     serializeJson(doc, out);
     return out;

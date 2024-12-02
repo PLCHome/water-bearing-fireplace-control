@@ -15,6 +15,7 @@ private:
     int16_t checkInterval = 10;
     int16_t impulseTime = 5;
     int16_t pulsesToOpen = 40;
+    bool offClosed = true;
 
     int16_t currentPulse = 0;
 
@@ -23,13 +24,14 @@ private:
     int16_t delta = 30;
     int16_t targetTemperature;
 
+
     int8_t prozent;
-    
+
     int16_t closing = 0; // closing >0 : closing; closing =0 : off mode; closing =-1 : on mode;
-    
+
     int idon = -1;
-    int tpos = -1; 
-    int opclose = -1; 
+    int tpos = -1;
+    int opclose = -1;
     int opopen = -1;
 
 public:
