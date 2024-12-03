@@ -42,6 +42,7 @@ public:
     bool doOpen();
     bool doClose();
     void doCycleIntervall() override;
+    void setcycleInterval(bool reset);
 };
 
 #endif // MISCHER_H

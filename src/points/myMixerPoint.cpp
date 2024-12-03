@@ -166,6 +166,7 @@ void myMixerPoint::doCycleIntervall() {
   }
   if (closing > 0) // still closing
   {
+    setcycleInterval(true);
     if (this->offClosed) {
       if (doClose())
         closing--;
@@ -173,10 +174,11 @@ void myMixerPoint::doCycleIntervall() {
     } else {
       if (doOpen())
         closing--;
-      prozent = ((pulsesToOpen-closing) * 100 / pulsesToOpen);
+      prozent = ((pulsesToOpen - closing) * 100 / pulsesToOpen);
     }
   } else if (closing == 0 && pointON == TP_ON) // still closed and switched on
   {
+    setcycleInterval(false);
     if (this->offClosed) {
       currentPulse = 0;
       closing = -1;
@@ -188,20 +190,22 @@ void myMixerPoint::doCycleIntervall() {
   } else if (closing == -1 &&
              pointON != TP_ON) // still on and switched off of err
   {
+    setcycleInterval(true);
     closing = pulsesToOpen;
     prozent = 100;
   }
 
   if (closing == -1) // atill on
   {
-    uint16_t aktDelta = (t - lastTemperature);
+    setcycleInterval(false);
+    int16_t aktDelta = (t - lastTemperature);
     if ((t < (targetTemperature - hysteresis)) &&
         (currentPulse < pulsesToOpen) && (aktDelta < delta)) {
       if (doOpen())
         currentPulse++;
     }
     if (t > (targetTemperature + hysteresis) && (currentPulse > 0) &&
-        (aktDelta > delta)) {
+        ((aktDelta * -1) < delta)) {
       if (doClose())
         currentPulse--;
     }
@@ -209,4 +213,11 @@ void myMixerPoint::doCycleIntervall() {
   }
   // store temperature
   lastTemperature = t;
+}
+
+void myMixerPoint::setcycleInterval(bool reset) {
+  this->cycleInterval =
+      (reset && (this->impulseTime * 1500 < this->checkInterval * 1000))
+          ? this->impulseTime * 1500
+          : this->checkInterval * 1000;
 }

@@ -1,15 +1,15 @@
 #define ETH01
-#include "myServer.h"
-#include <ArduinoJson.h>
-
+// Debug Level from 0 to 4
+#define _ETHERNET_WEBSERVER_LOGLEVEL_ 0
+#define DEBUG_ETHERNET_WEBSERVER_PORT Serial
 #define _ASYNC_WEBSERVER_LOGLEVEL_ 0
 
+#include "myServer.h"
+#include <ArduinoJson.h>
 #include <AsyncTCP.h>
 #include <WiFi.h>
-
 #ifdef ETH01
 #include <WebServer_WT32_ETH01.h>
-#include <WebServer_WT32_ETH01_Debug.h>
 #endif
 #include "points/myPoints.h"
 #include <DNSServer.h>
@@ -413,7 +413,7 @@ void webDataChanged(uint32_t dataChange) {
   if ((dataChange & (CHANGE_POINTS + WSGET_DATA)) != 0) {
     notifyClients(mypoints.getJSONValue(true));
   }
-  if ((dataChange & (CHANGE_MIXER)) != 0) {
+  if ((dataChange & (CHANGE_MIXER + WSGET_DATA)) != 0) {
     notifyClients(mypoints.getJSONValueMixer());
   }
   if ((dataChange & (TIME_TRIGGER + WSGET_DATA)) != 0) {
