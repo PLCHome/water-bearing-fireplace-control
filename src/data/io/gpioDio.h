@@ -3,9 +3,9 @@
 
 #include <Arduino.h>
 
-#include "../DataCare.h"
-#include "../dirtyp.h"
-#include "Datatool.h"
+#include "data/DataCare.h"
+#include "data/dirtyp.h"
+#include "data/io/Datatool.h"
 
 class gpioDio : public Datatool {
 private:

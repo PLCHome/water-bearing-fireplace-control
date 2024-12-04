@@ -1,7 +1,7 @@
 #ifndef GPIO_H_
 #define GPIO_H_
 
-#include "Hardware.h"
+#include "data/hardware/Hardware.h"
 #include <Arduino.h>
 
 class Gpio : public Hardware {

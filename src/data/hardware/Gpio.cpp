@@ -1,6 +1,6 @@
-#include "Gpio.h"
+#include "data/hardware/Gpio.h"
 
-#include "../../mySetup.h"
+#include "mySetup.h"
 
 Gpio::Gpio() : Hardware(HW_GIPO) {}
 

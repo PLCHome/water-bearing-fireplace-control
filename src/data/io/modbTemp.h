@@ -1,8 +1,8 @@
 #ifndef MODBTEMP_H_
 #define MODBTEMP_H_
 
-#include "../DataCare.h"
-#include "Datatool.h"
+#include "data/DataCare.h"
+#include "data/io/Datatool.h"
 #include <Arduino.h>
 
 class modbTemp : public Datatool {

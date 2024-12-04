@@ -1,5 +1,5 @@
-#include "myTempPoint.h"
-#include "../data/DataCare.h"
+#include "points/myTempPoint.h"
+#include "data/DataCare.h"
 
 /**
  * @brief Constructor for myTempPoint.

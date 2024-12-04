@@ -1,8 +1,8 @@
 #ifndef MYTEMPTPOINT_H_ // Prevent multiple inclusions of this header file
 #define MYTEMPTPOINT_H_
 
-#include "myPoint.h" ///< Includes custom header for the myPoint class
-#include "pointtyp.h"
+#include "points/myPoint.h" ///< Includes custom header for the myPoint class
+#include "points/pointtyp.h"
 #include <Arduino.h> ///< Includes Arduino framework for basic functionalities
 #include <ArduinoJson.h> ///< Includes ArduinoJson library for JSON handling
 

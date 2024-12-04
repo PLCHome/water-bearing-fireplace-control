@@ -1,7 +1,7 @@
 #ifndef MODBUS_H_
 #define MODBUS_H_
 
-#include "Hardware.h"
+#include "data/hardware/Hardware.h"
 #include <Arduino.h>
 #include <ModbusRTUMaster.h>
 

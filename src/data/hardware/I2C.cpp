@@ -1,7 +1,7 @@
-#include "I2C.h"
+#include "data/hardware/I2C.h"
 
-#include "../../KC868-A8S.h"
-#include "../../mySetup.h"
+#include "KC868-A8S.h"
+#include "mySetup.h"
 
 I2C::I2C() : Hardware(HW_I2C) {}
 

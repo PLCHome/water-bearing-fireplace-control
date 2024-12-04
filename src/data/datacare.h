@@ -1,13 +1,13 @@
 #ifndef DATACARE_H_
 #define DATACARE_H_
 
-#include "hardware/Beeb.h"
-#include "hardware/DS18B20.h"
-#include "hardware/Gpio.h"
-#include "hardware/I2C.h"
-#include "hardware/Modbus.h"
-#include "hardware/WS2812.h"
-#include "io/Datatool.h"
+#include "data/hardware/Beeb.h"
+#include "data/hardware/DS18B20.h"
+#include "data/hardware/Gpio.h"
+#include "data/hardware/I2C.h"
+#include "data/hardware/Modbus.h"
+#include "data/hardware/WS2812.h"
+#include "data/io/Datatool.h"
 #include <Arduino.h>
 #include <vector>
 

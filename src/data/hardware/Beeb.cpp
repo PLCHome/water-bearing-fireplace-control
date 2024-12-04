@@ -1,6 +1,6 @@
-#include "Beeb.h"
+#include "data/hardware/Beeb.h"
 
-#include "../../mySetup.h"
+#include "mySetup.h"
 
 Beeb::Beeb() : Hardware(HW_BEEB) {}
 

@@ -1,4 +1,4 @@
-#include "myPoint.h"
+#include "points/myPoint.h"
 
 myPoint::myPoint(JsonVariant json, pointTyp type) : type(type) {
   if (json["name"].is<String>()) {

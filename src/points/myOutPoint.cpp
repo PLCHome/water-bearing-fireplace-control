@@ -1,7 +1,7 @@
-#include "myOutPoint.h" // Einbinden der Header-Datei
-#include "../data/DataCare.h"
-#include "myPoints.h"
-#include "pointtyp.h"
+#include "points/myOutPoint.h" // Einbinden der Header-Datei
+#include "data/DataCare.h"
+#include "points/myPoints.h"
+#include "points/pointtyp.h"
 
 myOutPoint::myOutPoint(JsonVariant json, pointTyp type) : myPoint(json, type) {
   if (json["ida"].is<int>()) {

@@ -1,8 +1,8 @@
-#include "myPidMixerPoint.h"
-#include "../MessageDispatcher.h"
-#include "../data/DataCare.h"
-#include "../timer/myTimer.h"
-#include "myPoints.h"
+#include "points/myPidMixerPoint.h"
+#include "MessageDispatcher.h"
+#include "data/DataCare.h"
+#include "timer/myTimer.h"
+#include "points/myPoints.h"
 
 // Konstruktor
 myPidMixerPoint::myPidMixerPoint(JsonVariant json, pointTyp type)

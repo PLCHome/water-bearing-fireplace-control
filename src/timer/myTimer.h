@@ -1,8 +1,8 @@
 #ifndef MYTIMER_H
 #define MYTIMER_H
 
-#include "myTimerCycle.h"
-#include "myTimerWakeup.h"
+#include "timer/myTimerCycle.h"
+#include "timer/myTimerWakeup.h"
 #include <Arduino.h>
 #include <vector>
 

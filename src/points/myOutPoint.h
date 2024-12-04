@@ -1,7 +1,7 @@
 #ifndef MYOUTPOINT_H_
 #define MYOUTPOINT_H_
 
-#include "myPoint.h"
+#include "points/myPoint.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 

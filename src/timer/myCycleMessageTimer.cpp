@@ -1,6 +1,6 @@
-#include "myCycleMessageTimer.h"
-#include "../MessageDispatcher.h"
-#include "myTimer.h"
+#include "timer/myCycleMessageTimer.h"
+#include "MessageDispatcher.h"
+#include "timer/myTimer.h"
 
 myCycleMessageTimer::myCycleMessageTimer() {
   this->cycleInterval = CYCLEINTERVAL;

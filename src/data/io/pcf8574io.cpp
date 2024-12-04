@@ -1,6 +1,6 @@
 #include "pcf8574io.h"
-#include "../../mySetup.h"
-#include "../hardware/I2C.h"
+#include "mySetup.h"
+#include "data/hardware/I2C.h"
 #include <Wire.h>
 
 bool pcf8574io::init(DataCare *master) {

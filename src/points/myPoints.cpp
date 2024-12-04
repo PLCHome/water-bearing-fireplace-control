@@ -1,9 +1,9 @@
-#include "myPoints.h"
-#include "myLogicPoint.h"
-#include "myMixerPoint.h"
-#include "myOutPoint.h"
-#include "myTempPoint.h"
-#include "myTempTPoint.h"
+#include "points/myPoints.h"
+#include "points/myLogicPoint.h"
+#include "points/myMixerPoint.h"
+#include "points/myOutPoint.h"
+#include "points/myTempPoint.h"
+#include "points/myTempTPoint.h"
 
 #include "MessageDispatcher.h"
 

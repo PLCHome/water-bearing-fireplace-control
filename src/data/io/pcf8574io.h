@@ -4,9 +4,9 @@
 #include <Arduino.h>
 #include <PCF8574.h>
 
-#include "../DataCare.h"
-#include "../dirtyp.h"
-#include "Datatool.h"
+#include "data/DataCare.h"
+#include "data/dirtyp.h"
+#include "data/io/Datatool.h"
 
 class DataCare;
 

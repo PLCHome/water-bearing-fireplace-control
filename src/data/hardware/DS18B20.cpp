@@ -1,7 +1,7 @@
-#include "DS18B20.h"
+#include "data/hardware/DS18B20.h"
 
-#include "../../KC868-A8S.h"
-#include "../../mySetup.h"
+#include "KC868-A8S.h"
+#include "mySetup.h"
 
 DS18B20::DS18B20() : Hardware(HW_DS18B20) {}
 

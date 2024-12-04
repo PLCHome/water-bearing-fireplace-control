@@ -1,7 +1,7 @@
 #ifndef MYPOINT_H_
 #define MYPOINT_H_
 
-#include "pointtyp.h"
+#include "points/pointtyp.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
