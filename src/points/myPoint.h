@@ -1,19 +1,13 @@
 #ifndef MYPOINT_H_
 #define MYPOINT_H_
 
+#include "pointtyp.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include "pointtyp.h"
 
-enum ergPoint : int8_t
-{
-  TP_OFF = 0,
-  TP_ON = 1,
-  TP_ERR = -1
-};
+enum ergPoint : int8_t { TP_OFF = 0, TP_ON = 1, TP_ERR = -1 };
 
-class myPoint
-{
+class myPoint {
 protected:
   String name = "";
   int id = -1;
@@ -23,6 +17,7 @@ protected:
 
 public:
   myPoint(JsonVariant json, pointTyp type);
+  virtual ~myPoint();
   myPoint *getPoint(int id);
   myPoint *getPoint(String name);
   void unsetCalculated();

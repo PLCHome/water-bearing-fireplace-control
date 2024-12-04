@@ -11,8 +11,8 @@ void myTimer::registerCycle(myTimerCycle *instance) {
   cycleTimer.push_back(instance);
 }
 
-void myTimer::unregisterCycle(myTimerCycle *task) {
-  auto it = std::find(cycleTimer.begin(), cycleTimer.end(), task);
+void myTimer::unregisterCycle(myTimerCycle *instance) {
+  auto it = std::find(cycleTimer.begin(), cycleTimer.end(), instance);
   if (it != cycleTimer.end()) {
     cycleTimer.erase(it);
   }
@@ -23,20 +23,27 @@ void myTimer::registerWakeUp(myTimerWakeup *instance) {
   wakeUpTimer.push_back(instance);
 }
 
-void testTimerTask(void *pvParameters) { mytimer.timerTask(pvParameters); }
+void myTimer::unregisterWakeUp(myTimerWakeup *instance) {
+  auto it = std::find(wakeUpTimer.begin(), wakeUpTimer.end(), instance);
+  if (it != wakeUpTimer.end()) {
+    wakeUpTimer.erase(it);
+  }
+}
+
 
 void myTimer::start() {
   for (auto &instance : this->cycleTimer) {
     instance->lastCycleTime = millis();
   }
-  xTaskCreate(testTimerTask, "Timer Task", 2048, this, 1, NULL);
+  xTaskCreate(timerTask, "Timer Task", 2048, this, TMER_TASK_PRIO, NULL);
+
 }
 
 void myTimer::timerTask(void *pvParameters) {
   myTimer *timer = static_cast<myTimer *>(pvParameters);
   while (true) {
     unsigned long currentTime = millis();
-    for (auto &cycle : this->cycleTimer) {
+    for (auto &cycle : timer->cycleTimer) {
       if (currentTime - cycle->lastCycleTime >= cycle->getCycleInterval()) {
         cycle->doCycleIntervall();
         cycle->lastCycleTime = millis();

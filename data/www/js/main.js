@@ -80,31 +80,32 @@ let Pages = {
 };
 
 function doPage(e) {
-  getNames();
-  var anchor = getAnchor();
-  console.log(anchor);
-  $("#mySpace").empty();
-  $("#myAddon").empty();
-  $("#myExtension").html(`&nbsp;`);
-  if (Pages[anchor] && Pages[anchor].func) {
-    Pages[anchor].func();
-  } else {
-    switch (anchor) {
-      case "": {
-        break;
+  getNames(function () {
+    var anchor = getAnchor();
+    console.log(anchor);
+    $("#mySpace").empty();
+    $("#myAddon").empty();
+    $("#myExtension").html(`&nbsp;`);
+    if (Pages[anchor] && Pages[anchor].func) {
+      Pages[anchor].func();
+    } else {
+      switch (anchor) {
+        case "": {
+          break;
+        }
+        case "process": {
+          buildPageProcess();
+          break;
+        }
+        case "files": {
+          buildPageFiles();
+          break;
+        }
+        default:
+          buildPage(anchor);
       }
-      case "process": {
-        buildPageProcess();
-        break;
-      }
-      case "files": {
-        buildPageFiles();
-        break;
-      }
-      default:
-        buildPage(anchor);
     }
-  }
-  getReadings();
+    getReadings();
+  })
 }
 

@@ -1,19 +1,18 @@
 #ifndef MYPOINTS_H_
 #define MYPOINTS_H_
 
+#include "myPoint.h"
+#include "pointtyp.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <SPIFFS.h>
 #include <vector>
-#include "myPoint.h"
-#include "pointtyp.h"
 
 #define POINTSFILENAME "/config/points.json"
 
 class myPoint;
 
-class myPoints
-{
+class myPoints {
   std::vector<myPoint *> vmypoint;
   bool changed = false;
 

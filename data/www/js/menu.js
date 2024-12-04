@@ -7,11 +7,11 @@ var overlayBg = document.getElementById("myOverlay");
 // Toggle between showing and hiding the sidebar, and add overlay effect
 function w3_open() {
   if (overlayBg.style.display === 'block') {
-	mySidebar.style.display = 'none';
-	overlayBg.style.display = "none";
+    mySidebar.style.display = 'none';
+    overlayBg.style.display = "none";
   } else {
-	mySidebar.style.display = 'block';
-	overlayBg.style.display = "block";
+    mySidebar.style.display = 'block';
+    overlayBg.style.display = "block";
   }
 }
 
@@ -33,12 +33,12 @@ function setinner() {
 
   var setHeight = height - myFooter.offsetHeight - 44;
   if (setHeight < 100) {
-	setHeight = 100;
+    setHeight = 100;
   }
   mySpace.style.height = "" + setHeight + 'px';
 }
 
-function initMenu(){
+function initMenu() {
   window.onresize = setinner;
   window.addEventListener('load', setinner);
   myExtension.style.display = 'none'
@@ -47,15 +47,15 @@ function initMenu(){
 
 function myExtension_toggle() {
   if (myExtension.style.display === 'block') {
-	myExtension.style.display = 'none';
-	$("#myExtensionToggle").addClass("fa-arrow-up");
-	$("#myExtensionToggle").removeClass("fa-arrow-down");
-	//    myExtensionToggle.class="fa fa-caret-square-o-up";
+    myExtension.style.display = 'none';
+    $("#myExtensionToggle").addClass("fa-arrow-up");
+    $("#myExtensionToggle").removeClass("fa-arrow-down");
+    //    myExtensionToggle.class="fa fa-caret-square-o-up";
   } else {
-	myExtension.style.display = 'block';
-	$("#myExtensionToggle").addClass("fa-arrow-down");
-	$("#myExtensionToggle").removeClass("fa-arrow-up");
-	//    myExtensionToggle.class="fa fa-caret-square-o-down";
+    myExtension.style.display = 'block';
+    $("#myExtensionToggle").addClass("fa-arrow-down");
+    $("#myExtensionToggle").removeClass("fa-arrow-up");
+    //    myExtensionToggle.class="fa fa-caret-square-o-down";
   }
   setinner();
 }

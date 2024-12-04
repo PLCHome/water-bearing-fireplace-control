@@ -1,0 +1,66 @@
+name: Build Firmware
+
+on:
+  push:
+    branches:
+      - '**'  # Trigger für normale Pushes auf Branches
+    tags:
+      - '*'   # Trigger für Tags (Releases)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout Repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Set up PlatformIO
+    - name: Set up PlatformIO
+      uses: platformio/action@v2
+
+    # Wenn es ein Tag ist, Version extrahieren
+    - name: Check if this is a tag
+      id: tag_check
+      run: |
+        if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+          echo "is_tag=true" >> $GITHUB_ENV
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        else
+          echo "is_tag=false" >> $GITHUB_ENV
+        fi
+
+    # Update Version.h nur bei Tags
+    - name: Update Version.h
+      if: env.is_tag == 'true'
+      run: |
+        sed -i 's/#define VERSION ".*"/#define VERSION "'$version'"/' src/Version.h
+
+    # Kompiliere das Projekt
+    - name: Build Firmware
+      run: pio run
+
+    # Erstelle das Tar-Archiv
+    - name: Create spiffs.tar
+      run: |
+        mkdir -p lastVersion
+        tar --transform='s/^data\///' --exclude='data/config' -cf lastVersion/spiffs.tar -C data www sys
+
+    # Verschiebe die erzeugten Dateien in lastVersion
+    - name: Move build artifacts
+      run: |
+        cp .pio/build/*/firmware.bin lastVersion/
+        cp .pio/build/*/firmware.elf lastVersion/
+
+    # Release erstellen nur bei Tags
+    - name: Create GitHub Release
+      if: env.is_tag == 'true'
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ github.ref_name }}
+        artifacts: |
+          lastVersion/firmware.bin
+          lastVersion/firmware.elf
+          lastVersion/spiffs.tar
+        token: ${{ secrets.GITHUB_TOKEN }}

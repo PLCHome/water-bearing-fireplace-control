@@ -82,8 +82,11 @@
         });
       });
     }
+    function doChange() {
+      doPage();
+    }
     // Add event listeners for hash changes and page load
-    $(window).on('hashchange', doLoad);
+    $(window).on('hashchange', doChange);
     $(window).on('load', doLoad);
 
   </script>

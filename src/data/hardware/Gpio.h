@@ -1,16 +1,14 @@
 #ifndef GPIO_H_
 #define GPIO_H_
 
-#include <Arduino.h>
 #include "Hardware.h"
+#include <Arduino.h>
 
-class Gpio : public Hardware
-{
+class Gpio : public Hardware {
 private:
-
 public:
-    Gpio();
-    void init() override;
+  Gpio();
+  void init() override;
 };
 
 #endif /* GPIO_H_ */

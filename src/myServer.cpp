@@ -12,6 +12,8 @@
 #include <WebServer_WT32_ETH01.h>
 #endif
 #include "points/myPoints.h"
+#include "version.h"
+#include <ArduinoOTA.h>
 #include <DNSServer.h>
 #include <ESPAsyncWebServer.h>
 #include <MessageDispatcher.h>
@@ -243,6 +245,7 @@ void handleDownload(AsyncWebServerRequest *request) {
 
 void handleSysinfo(AsyncWebServerRequest *request) {
   JsonDocument doc;
+  doc["version"] = VERSION;
   JsonObject utime = doc["uptime"].to<JsonObject>();
   unsigned long uptimeMillis = millis();
   unsigned long uptimeSeconds = uptimeMillis / 1000;

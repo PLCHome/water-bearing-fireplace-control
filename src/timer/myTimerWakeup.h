@@ -3,14 +3,14 @@
 
 #include <Arduino.h>
 
-
 class myTimerWakeup {
 public:
-    unsigned long getWakeUpTime() const;
-    unsigned long lastWakeUpTime;
-    virtual void doWakeUp() = 0;
+  unsigned long getWakeUpTime() const;
+  unsigned long lastWakeUpTime;
+  virtual void doWakeUp() = 0;
+
 protected:
-    unsigned long wakeUpTime = 0; 
+  unsigned long wakeUpTime = 0;
 };
 
 #endif

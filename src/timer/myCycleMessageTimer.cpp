@@ -1,12 +1,12 @@
 #include "myCycleMessageTimer.h"
-#include "myTimer.h"
 #include "../MessageDispatcher.h"
+#include "myTimer.h"
 
 myCycleMessageTimer::myCycleMessageTimer() {
-    this->cycleInterval = CYCLEINTERVAL;
-    mytimer.registerCycle(this);
+  this->cycleInterval = CYCLEINTERVAL;
+  mytimer.registerCycle(this);
 }
 
-void myCycleMessageTimer::doCycleIntervall(){
-    messagedispatcher.notify(TIME_TRIGGER);
+void myCycleMessageTimer::doCycleIntervall() {
+  messagedispatcher.notify(TIME_TRIGGER);
 }

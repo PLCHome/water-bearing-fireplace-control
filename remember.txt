@@ -1,0 +1,14 @@
+	xreef/PCF8574 library@^2.3.7
+	cmb27/ModbusRTUMaster@^2.0.1
+	adafruit/Adafruit NeoPixel@^1.12.3
+	khoih-prog/WebServer_WT32_ETH01@^1.5.1
+  mathieucarbou/ESPAsyncWebServer@^3.3.23
+	#esphome/ESPAsyncWebServer-esphome@^3.3.0
+	#me-no-dev/ESP Async WebServer@^1.2.4
+  #links2004/WebSockets@^2.6.1
+	bblanchon/ArduinoJson@^7.2.0
+	knolleary/PubSubClient@^2.8
+  mathieucarbou/AsyncTCP@^3.2.14
+	#ottowinter/AsyncTCP-esphome@^1.2.1
+	paulstoffregen/OneWire@2.3.7
+	milesburton/DallasTemperature@^3.11.0

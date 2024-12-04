@@ -6,15 +6,18 @@
 #include <Arduino.h>
 #include <vector>
 
+#define TMER_TASK_PRIO 11
+
 class myTimer {
 public:
   void registerCycle(myTimerCycle *task);
   void unregisterCycle(myTimerCycle *task);
   void registerWakeUp(myTimerWakeup *task);
+  void unregisterWakeUp(myTimerWakeup *task);
 
   void start();
 
-  void timerTask(void *pvParameters);
+  static void timerTask(void *pvParameters);
 
 private:
   std::vector<myTimerCycle *> cycleTimer;

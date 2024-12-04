@@ -1,0 +1,1 @@
+c:\Users\Chris\.platformio\packages\toolchain-xtensa-esp32@8.4.0+2021r2-patch3\bin\xtensa-esp32-elf-addr2line -pfiaC -e c:\Prog\ESPDev\Ofen\.pio\build\nodemcu-32s\firmware.elf

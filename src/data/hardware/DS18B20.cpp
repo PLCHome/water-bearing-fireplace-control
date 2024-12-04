@@ -58,13 +58,10 @@ void DS18B20::requestTemperatures() {
       delay(1);
     this->busi = true;
     this->sensors->requestTemperatures();
-
   }
 }
 
-void DS18B20::temperaturesFinished() {
-  this->busi = false;
-}
+void DS18B20::temperaturesFinished() { this->busi = false; }
 
 bool DS18B20::stringToDeviceAddress(const String &str, DeviceAddress &address) {
   if (str.length() != 16)
