@@ -60,6 +60,20 @@ jobs:
         cp .pio/build/*/firmware.bin lastVersion/
         cp .pio/build/*/firmware.elf lastVersion/
 
+    # Commit und push der Artefakte ins Repository
+    - name: Commit and push build artifacts
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git checkout ${{ github.ref_name }}
+        mkdir -p artifacts
+        cp lastVersion/firmware.bin artifacts/
+        cp lastVersion/firmware.elf artifacts/
+        cp lastVersion/spiffs.tar artifacts/
+        git add artifacts/
+        git commit -m "Add build artifacts [skip ci]"
+        git push origin HEAD
+
     # Release erstellen nur bei Tags
     - name: Create GitHub Release
       if: env.is_tag == 'true'
