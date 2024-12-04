@@ -2,7 +2,11 @@ name: Build Firmware
 
 on:
   workflow_call:
-
+    inputs:
+      build_type:
+        description: 'Type of build (branch or tag)'
+        required: false
+        default: 'branch'
 
 jobs:
   build:
