@@ -57,15 +57,19 @@ jobs:
         python -m pip install --upgrade pip
         pip install platformio
 
-    # Update Version.h (nur bei Release-Tag)
-    - name: Update Version.h
+    # Update version.h (nur bei Release-Tag)
+    - name: Update version.h
       if: env.is_release == 'true'
       run: |
-        sed -i 's/#define VERSION ".*"/#define VERSION "'$VERSION'"/' src/Version.h
+        sed -i 's/#define VERSION ".*"/#define VERSION "'$VERSION'"/' src/version.h
 
-    # Baue das Projekt
+    # Baue das Firmware-Image
     - name: Build Firmware
       run: pio run
+
+    # Baue das Filesystem-Image
+    - name: Build Filesystem Image
+      run: pio run -t buildfs
 
     # Erstelle das Tar-Archiv
     - name: Create spiffs.tar
@@ -78,8 +82,9 @@ jobs:
       run: |
         cp .pio/build/*/firmware.bin lastVersion/
         cp .pio/build/*/firmware.elf lastVersion/
+        cp .pio/build/*/spiffs.bin lastVersion/
 
-    # Commit und push der geänderten Version.h und Artefakte ins Repository
+    # Commit und push der geänderten version.h und Artefakte ins Repository
     - name: Commit and push changes
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -91,11 +96,12 @@ jobs:
         cp lastVersion/firmware.bin artifacts/
         cp lastVersion/firmware.elf artifacts/
         cp lastVersion/spiffs.tar artifacts/
+        cp lastVersion/spiffs.bin artifacts/
         git add artifacts/
         if [ "$is_release" = "true" ]; then
-          git add src/Version.h
+          git add src/version.h
         fi
-        git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update Version.h") [skip ci]"
+        git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update version.h") [skip ci]"
         git push origin HEAD
 
     # Release erstellen (nur bei einem gültigen Release-Tag)
@@ -108,4 +114,5 @@ jobs:
           lastVersion/firmware.bin
           lastVersion/firmware.elf
           lastVersion/spiffs.tar
+          lastVersion/spiffs.bin
         token: ${{ secrets.GITHUB_TOKEN }}
