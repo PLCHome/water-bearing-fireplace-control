@@ -60,6 +60,8 @@ jobs:
         echo "version.h set to version: $VERSION"
         sed -i "s/#define VERSION.*/#define VERSION \"$VERSION\"/" src/version.h
         cat src/version.h
+      env:
+        VERSION: ${{ env.VERSION }}
 
 
     # Baue das Firmware-Image
@@ -82,8 +84,6 @@ jobs:
         cp .pio/build/*/firmware.bin lastVersion/
         cp .pio/build/*/firmware.elf lastVersion/
         cp .pio/build/*/spiffs.bin lastVersion/
-      env:
-        VERSION: ${{ env.VERSION }}
 
     # Commit und push der geänderten version.h und Artefakte ins Repository
     - name: Commit and push changes
@@ -104,6 +104,7 @@ jobs:
         # Überprüfen, ob es ein Release-Tag gibt und version.h hinzufügen
         if [ "$is_release" = "true" ]; then
           git add src/version.h
+          cat src/version.h
         fi
 
         git add artifacts/
