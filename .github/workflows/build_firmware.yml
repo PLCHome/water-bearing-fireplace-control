@@ -91,7 +91,8 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git checkout ${{ github.ref_name }}
+        CURRENT_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///;s/refs\/tags\///')
+        git checkout $CURRENT_BRANCH
         mkdir -p artifacts
         cp lastVersion/firmware.bin artifacts/
         cp lastVersion/firmware.elf artifacts/
@@ -102,7 +103,7 @@ jobs:
           git add src/version.h
         fi
         git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update version.h") [skip ci]"
-        git push origin HEAD
+        git push origin $CURRENT_BRANCH
 
     # Release erstellen (nur bei einem gültigen Release-Tag)
     - name: Create GitHub Release
