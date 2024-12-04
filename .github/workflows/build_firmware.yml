@@ -5,7 +5,7 @@ on:
     branches:
       - '**'
     tags:
-      - 'release-*' # Nur Tags mit dem Muster 'release-*' auslösen
+      - '**'
 
 jobs:
   build:
