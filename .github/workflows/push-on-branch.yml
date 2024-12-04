@@ -1,0 +1,13 @@
+
+name: Push to Branches
+
+on:
+  push:
+    branches:
+      - '**'  # Wird bei jedem Commit auf einem beliebigen Branch ausgelöst
+
+jobs:
+  build:
+    uses: ./.github/workflows/build_firmware.yml
+    with:
+      build_type: 'branch'  # Kennzeichnet, dass dies für Branches gebaut wird
