@@ -57,8 +57,10 @@ jobs:
     - name: Update version.h
       if: env.is_release == 'true'
       run: |
-        sed -i 's/#define VERSION ".*"/#define VERSION "'$VERSION'"/' src/version.h
+        echo "version.h set to version: $VERSION"
+        sed -i "s/#define VERSION.*/#define VERSION \"$VERSION\"/" src/version.h
         cat src/version.h
+        echo
 
     # Baue das Firmware-Image
     - name: Build Firmware

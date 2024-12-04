@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - '**'  # Wird bei jedem Commit auf einem beliebigen Branch ausgelöst
+    paths-ignore:
+      - '.github/**'
+      - '.vscode/**'
 
 jobs:
   build:
