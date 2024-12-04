@@ -62,6 +62,7 @@ jobs:
       if: env.is_release == 'true'
       run: |
         sed -i 's/#define VERSION ".*"/#define VERSION "'$VERSION'"/' src/version.h
+        cat src/version.h
 
     # Baue das Firmware-Image
     - name: Build Firmware
@@ -98,12 +99,16 @@ jobs:
         cp lastVersion/firmware.elf artifacts/
         cp lastVersion/spiffs.tar artifacts/
         cp lastVersion/spiffs.bin artifacts/
-        git add artifacts/
+
+        # Überprüfen, ob es ein Release-Tag gibt und version.h hinzufügen
         if [ "$is_release" = "true" ]; then
           git add src/version.h
         fi
+
+        git add artifacts/
         git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update version.h") [skip ci]"
         git push origin $CURRENT_BRANCH
+
 
     # Release erstellen (nur bei einem gültigen Release-Tag)
     - name: Create GitHub Release
