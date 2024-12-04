@@ -2,8 +2,6 @@ name: Build Firmware
 
 on:
   push:
-    branches:
-      - '**'
     tags:
       - '*'
 
@@ -27,24 +25,25 @@ jobs:
         python -m pip install --upgrade pip
         pip install platformio
 
-    # Wenn es ein Tag ist, Version extrahieren
-    - name: Check if this is a tag
-      id: tag_check
+    # Extrahiere und überprüfe das Tag (Label)
+    - name: Parse tag and validate
+      id: parse_tag
       run: |
-        if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-          echo "is_tag=true" >> $GITHUB_ENV
-          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        if [[ "${GITHUB_REF}" =~ ^refs/tags/release[[:space:]]([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+          VERSION="${BASH_REMATCH[1]}"
+          echo "Valid release tag detected: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_ENV
         else
-          echo "is_tag=false" >> $GITHUB_ENV
+          echo "Invalid tag format. Skipping release."
+          exit 0
         fi
 
-    # Update Version.h nur bei Tags
+    # Update Version.h mit der neuen Version
     - name: Update Version.h
-      if: env.is_tag == 'true'
       run: |
-        sed -i 's/#define VERSION ".*"/#define VERSION "'$version'"/' src/Version.h
+        sed -i 's/#define VERSION ".*"/#define VERSION "'$VERSION'"/' src/Version.h
 
-    # Projekt mit PlatformIO bauen
+    # Baue das Projekt
     - name: Build Firmware
       run: pio run
 
@@ -60,8 +59,10 @@ jobs:
         cp .pio/build/*/firmware.bin lastVersion/
         cp .pio/build/*/firmware.elf lastVersion/
 
-    # Commit und push der Artefakte ins Repository
-    - name: Commit and push build artifacts
+    # Commit und push der geänderten Version.h und Artefakte ins Repository
+    - name: Commit and push changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -71,12 +72,12 @@ jobs:
         cp lastVersion/firmware.elf artifacts/
         cp lastVersion/spiffs.tar artifacts/
         git add artifacts/
-        git commit -m "Add build artifacts [skip ci]"
+        git add src/Version.h
+        git commit -m "Update Version.h and add build artifacts [skip ci]"
         git push origin HEAD
 
-    # Release erstellen nur bei Tags
+    # Release erstellen
     - name: Create GitHub Release
-      if: env.is_tag == 'true'
       uses: ncipollo/release-action@v1
       with:
         tag: ${{ github.ref_name }}
