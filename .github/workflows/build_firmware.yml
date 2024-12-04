@@ -2,6 +2,8 @@ name: Build Firmware
 
 on:
   push:
+    branches:
+      - '**'
     tags:
       - '*'
 
@@ -32,14 +34,16 @@ jobs:
         if [[ "${GITHUB_REF}" =~ ^refs/tags/release[[:space:]]([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
           VERSION="${BASH_REMATCH[1]}"
           echo "Valid release tag detected: $VERSION"
+          echo "is_release=true" >> $GITHUB_ENV
           echo "version=$VERSION" >> $GITHUB_ENV
         else
-          echo "Invalid tag format. Skipping release."
-          exit 0
+          echo "is_release=false" >> $GITHUB_ENV
+          echo "version=development" >> $GITHUB_ENV
         fi
 
-    # Update Version.h mit der neuen Version
+    # Update Version.h bei einem Release
     - name: Update Version.h
+      if: env.is_release == 'true'
       run: |
         sed -i 's/#define VERSION ".*"/#define VERSION "'$VERSION'"/' src/Version.h
 
@@ -72,12 +76,15 @@ jobs:
         cp lastVersion/firmware.elf artifacts/
         cp lastVersion/spiffs.tar artifacts/
         git add artifacts/
-        git add src/Version.h
-        git commit -m "Update Version.h and add build artifacts [skip ci]"
+        if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "${env.is_release}" = "true" ]; then
+          git add src/Version.h
+        fi
+        git commit -m "Add build artifacts${{ env.is_release == 'true' && ' and update Version.h' || '' }} [skip ci]"
         git push origin HEAD
 
-    # Release erstellen
+    # Release erstellen nur bei einem Tag
     - name: Create GitHub Release
+      if: env.is_release == 'true'
       uses: ncipollo/release-action@v1
       with:
         tag: ${{ github.ref_name }}
