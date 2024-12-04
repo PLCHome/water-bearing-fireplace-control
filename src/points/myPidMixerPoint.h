@@ -1,10 +1,10 @@
 #ifndef MYPIDMIXERPOINT_H_
 #define MYPIDMIXERPOINT_H_
 
-#include "timer/myTimerCycle.h"
-#include "timer/myTimerWakeup.h"
-#include "points/myPoint.h"
-#include "points/pointtyp.h"
+#include "../timer/myTimerCycle.h"
+#include "../timer/myTimerWakeup.h"
+#include "myPoint.h"
+#include "pointtyp.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <PID_v1.h>

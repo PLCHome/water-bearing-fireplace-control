@@ -1,7 +1,7 @@
 #ifndef DATATOOL_H_
 #define DATATOOL_H_
 
-#include "data/DataCare.h"
+#include "../DataCare.h"
 #include <Arduino.h>
 
 class DataCare;

@@ -23,10 +23,10 @@ eine funktion überschreibbar sein: Imp, Ts, Zi, Zv, Vo, Vauf, Vzu. Nach der
 Impulsdauer (Imp) muss die Callbackroutine wieder mitfals aufgerufen werden.
 Schreibe den Code bitte auf englisch.
 */
-#include "points/myMixerPoint.h"
-#include "MessageDispatcher.h"
-#include "timer/myTimer.h"
-#include "points/myPoints.h"
+#include "myMixerPoint.h"
+#include "../MessageDispatcher.h"
+#include "../timer/myTimer.h"
+#include "myPoints.h"
 #include <data/DataCare.h>
 
 // Konstruktor

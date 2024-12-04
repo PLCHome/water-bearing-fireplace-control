@@ -3,8 +3,8 @@
 
 #include <Arduino.h>
 
-#include "data/DataCare.h"
-#include "data/io/Datatool.h"
+#include "../DataCare.h"
+#include "Datatool.h"
 
 class ws2812out : public Datatool {
 public:

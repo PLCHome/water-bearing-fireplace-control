@@ -1,7 +1,7 @@
-#include "data/io/beebDOut.h"
+#include "beebDOut.h"
 
-#include "KC868-A8S.h"
-#include "mySetup.h"
+#include "../../KC868-A8S.h"
+#include "../../mySetup.h"
 
 bool beebDOut::init(DataCare *master) {
   Datatool::init(master);

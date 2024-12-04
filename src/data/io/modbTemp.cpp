@@ -1,5 +1,5 @@
-#include "data/io/modbTemp.h"
-#include "mySetup.h"
+#include "modbTemp.h"
+#include "../../mySetup.h"
 
 bool modbTemp::init(DataCare *master) {
   Serial.println("modbTemp init");

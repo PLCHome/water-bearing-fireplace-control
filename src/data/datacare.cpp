@@ -1,16 +1,16 @@
-#include "data/DataCare.h"
+#include "DataCare.h"
 #include <unordered_map>
 
-#include "MessageDispatcher.h"
-#include "mySetup.h"
+#include "../MessageDispatcher.h"
+#include "../mySetup.h"
 
-#include "data/io/beebDOut.h"
-#include "data/io/ds18b20Temp.h"
-#include "data/io/gpioDio.h"
-#include "data/io/modbDOut.h"
-#include "data/io/modbTemp.h"
-#include "data/io/pcf8574io.h"
-#include "data/io/ws2812out.h"
+#include "io/beebDOut.h"
+#include "io/ds18b20Temp.h"
+#include "io/gpioDio.h"
+#include "io/modbDOut.h"
+#include "io/modbTemp.h"
+#include "io/pcf8574io.h"
+#include "io/ws2812out.h"
 
 DataCare datacare = DataCare();
 

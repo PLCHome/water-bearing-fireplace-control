@@ -1,7 +1,7 @@
 #ifndef BEEB_H_
 #define BEEB_H_
 
-#include "data/hardware/Hardware.h"
+#include "Hardware.h"
 #include <Arduino.h>
 
 class Beeb : public Hardware {

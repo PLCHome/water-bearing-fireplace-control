@@ -1,7 +1,7 @@
 #ifndef DS18B20_H_
 #define DS18B20_H_
 
-#include "data/hardware/Hardware.h"
+#include "Hardware.h"
 #include <Arduino.h>
 #include <DallasTemperature.h>
 #include <OneWire.h>

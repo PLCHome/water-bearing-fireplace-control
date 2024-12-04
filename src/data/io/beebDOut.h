@@ -3,8 +3,8 @@
 
 #include <Arduino.h>
 
-#include "timer/myTimer.h"
-#include "data/DataCare.h"
+#include "../../timer/myTimer.h"
+#include "../DataCare.h"
 #include "Datatool.h"
 
 class beebDOut : public Datatool, myTimerCycle {

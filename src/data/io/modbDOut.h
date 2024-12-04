@@ -1,8 +1,8 @@
 #ifndef MODBDOUT_H_
 #define MODBDOUT_H_
 
-#include "data/DataCare.h"
-#include "data/io/Datatool.h"
+#include "../DataCare.h"
+#include "Datatool.h"
 #include <Arduino.h>
 
 class modbDOut : public Datatool {

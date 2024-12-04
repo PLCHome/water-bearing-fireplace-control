@@ -1,6 +1,6 @@
-#include "points/myTempTPoint.h"
-#include "data/DataCare.h"
-#include "points/myPoints.h"
+#include "myTempTPoint.h"
+#include "../data/DataCare.h"
+#include "myPoints.h"
 
 /**
  * @brief Construct a new myTempTPoint object.

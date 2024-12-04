@@ -1,9 +1,9 @@
 #ifndef MYTEMPPOINT_H_
 #define MYTEMPPOINT_H_
 
-#include "points/myPoint.h"
-#include "points/myPoints.h"
-#include "points/pointtyp.h"
+#include "myPoint.h"
+#include "myPoints.h"
+#include "pointtyp.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 

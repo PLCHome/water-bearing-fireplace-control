@@ -1,8 +1,8 @@
 #ifndef MYLOGICPOINT_H_
 #define MYLOGICPOINT_H_
 
-#include "points/myPoint.h"
-#include "points/pointtyp.h"
+#include "myPoint.h"
+#include "pointtyp.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 

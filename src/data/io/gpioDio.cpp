@@ -1,6 +1,6 @@
-#include "data/io/gpioDio.h"
+#include "gpioDio.h"
 
-#include "mySetup.h"
+#include "../../mySetup.h"
 
 bool gpioDio::init(DataCare *master) {
   Datatool::init(master);

@@ -1,5 +1,5 @@
-#include "points/myLogicPoint.h"
-#include "points/myPoints.h"
+#include "myLogicPoint.h"
+#include "myPoints.h"
 
 /**
  * @brief Constructs a myLogicPoint object from JSON data and initializes the

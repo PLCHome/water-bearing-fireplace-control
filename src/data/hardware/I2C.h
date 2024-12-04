@@ -1,7 +1,7 @@
 #ifndef I2C_H_
 #define I2C_H_
 
-#include "data/hardware/Hardware.h"
+#include "Hardware.h"
 #include <Arduino.h>
 #include <Wire.h>
 

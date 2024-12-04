@@ -1,7 +1,7 @@
 #ifndef MYCYCLEMESSAGETIMER_H
 #define MYCYCLEMESSAGETIMER_H
 
-#include "timer/myTimerCycle.h"
+#include "myTimerCycle.h"
 #include <Arduino.h>
 
 #define CYCLEINTERVAL (1000); // every secund

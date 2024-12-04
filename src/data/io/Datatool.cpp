@@ -1,5 +1,5 @@
-#include "data/io/Datatool.h"
-#include "mySetup.h"
+#include "Datatool.h"
+#include "../../mySetup.h"
 
 bool Datatool::init(DataCare *master) {
   Serial.println("Datatool init");

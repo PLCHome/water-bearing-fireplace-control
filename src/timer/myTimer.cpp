@@ -1,7 +1,7 @@
-#include "timer/myTimer.h"
-#include "timer/myCycleMessageTimer.h"
-#include "timer/myTimerCycle.h"
-#include "timer/myTimerWakeup.h"
+#include "myTimer.h"
+#include "myCycleMessageTimer.h"
+#include "myTimerCycle.h"
+#include "myTimerWakeup.h"
 
 myTimer mytimer = myTimer();
 myCycleMessageTimer cyclemessagetimer = myCycleMessageTimer();

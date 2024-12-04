@@ -1,7 +1,7 @@
-#include "data/hardware/WS2812.h"
+#include "WS2812.h"
 
-#include "KC868-A8S.h"
-#include "mySetup.h"
+#include "../../KC868-A8S.h"
+#include "../../mySetup.h"
 
 WS2812::WS2812() : Hardware(HW_WS2812) {}
 

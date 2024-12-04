@@ -1,8 +1,8 @@
 #ifndef DS18B20TEMP_H_
 #define DS18B20TEMP_H_
 
-#include "data/DataCare.h"
-#include "data/io/Datatool.h"
+#include "../DataCare.h"
+#include "Datatool.h"
 #include <Arduino.h>
 #include <DallasTemperature.h>
 

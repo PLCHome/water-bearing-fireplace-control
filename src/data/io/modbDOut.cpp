@@ -1,6 +1,6 @@
-#include "data/io/modbDOut.h"
+#include "modbDOut.h"
 
-#include "mySetup.h"
+#include "../../mySetup.h"
 
 bool modbDOut::init(DataCare *master) {
   Datatool::init(master);
