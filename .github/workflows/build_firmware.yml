@@ -76,10 +76,10 @@ jobs:
         cp lastVersion/firmware.elf artifacts/
         cp lastVersion/spiffs.tar artifacts/
         git add artifacts/
-        if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "${env.is_release}" = "true" ]; then
+        if [ "$is_release" = "true" ]; then
           git add src/Version.h
         fi
-        git commit -m "Add build artifacts${{ env.is_release == 'true' && ' and update Version.h' || '' }} [skip ci]"
+        git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update Version.h") [skip ci]"
         git push origin HEAD
 
     # Release erstellen nur bei einem Tag
