@@ -60,7 +60,7 @@ jobs:
         echo "version.h set to version: $VERSION"
         sed -i "s/#define VERSION.*/#define VERSION \"$VERSION\"/" src/version.h
         cat src/version.h
-        echo
+
 
     # Baue das Firmware-Image
     - name: Build Firmware
@@ -82,11 +82,14 @@ jobs:
         cp .pio/build/*/firmware.bin lastVersion/
         cp .pio/build/*/firmware.elf lastVersion/
         cp .pio/build/*/spiffs.bin lastVersion/
+      env:
+        VERSION: ${{ env.VERSION }}
 
     # Commit und push der geänderten version.h und Artefakte ins Repository
     - name: Commit and push changes
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        is_release: ${{ env.is_release }}
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
