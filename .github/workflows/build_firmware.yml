@@ -2,10 +2,8 @@ name: Build Firmware
 
 on:
   push:
-    branches:
-      - '**'
     tags:
-      - '**'
+      - '*'
 
 jobs:
   build:
