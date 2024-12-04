@@ -9,5 +9,4 @@ on:
 jobs:
   build:
     uses: ./.github/workflows/build_firmware.yml
-    with:
-      build_type: 'branch'  # Kennzeichnet, dass dies für Branches gebaut wird
+
