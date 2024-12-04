@@ -5,7 +5,7 @@ on:
     branches:
       - '**'
     tags:
-      - '*'
+      - 'release-*' # Nur Tags mit dem Muster 'release-*' auslösen
 
 jobs:
   build:
@@ -35,7 +35,6 @@ jobs:
       if: env.is_tag == 'true'
       id: validate_tag
       run: |
-        # Überprüfe das Tag-Format release-x.x.x
         if [[ "${tag_name}" =~ ^release-([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
           VERSION="${BASH_REMATCH[1]}"
           echo "Valid release tag detected: $VERSION"
@@ -44,7 +43,7 @@ jobs:
         else
           echo "Invalid tag format. Expected 'release-x.x.x'."
           echo "is_release=false" >> $GITHUB_ENV
-          exit 1 # Abbruch nur bei falschem Tag-Format
+          exit 1 # Abbruch bei falschem Tag-Format
         fi
 
     # Installiere Python und PlatformIO
