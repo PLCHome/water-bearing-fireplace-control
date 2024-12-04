@@ -16,12 +16,27 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Validierung des Tags
+    # Überprüfen, ob ein Tag vorhanden ist
+    - name: Detect tag
+      id: detect_tag
+      run: |
+        if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          echo "Detected tag: $TAG_NAME"
+          echo "is_tag=true" >> $GITHUB_ENV
+          echo "tag_name=$TAG_NAME" >> $GITHUB_ENV
+        else
+          echo "No tag detected."
+          echo "is_tag=false" >> $GITHUB_ENV
+        fi
+
+    # Validierung des Tags (nur wenn ein Tag vorhanden ist)
     - name: Validate tag
+      if: env.is_tag == 'true'
       id: validate_tag
       run: |
         # Überprüfe das Tag-Format release-x.x.x
-        if [[ "${GITHUB_REF}" =~ ^refs/tags/release-([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+        if [[ "${tag_name}" =~ ^release-([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
           VERSION="${BASH_REMATCH[1]}"
           echo "Valid release tag detected: $VERSION"
           echo "is_release=true" >> $GITHUB_ENV
@@ -29,23 +44,21 @@ jobs:
         else
           echo "Invalid tag format. Expected 'release-x.x.x'."
           echo "is_release=false" >> $GITHUB_ENV
-          exit 1 # Workflow abbrechen
+          exit 1 # Abbruch nur bei falschem Tag-Format
         fi
 
     # Installiere Python und PlatformIO
     - name: Set up Python
-      if: env.is_release == 'true'
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
     - name: Install PlatformIO
-      if: env.is_release == 'true'
       run: |
         python -m pip install --upgrade pip
         pip install platformio
 
-    # Update Version.h bei einem Release
+    # Update Version.h (nur bei Release-Tag)
     - name: Update Version.h
       if: env.is_release == 'true'
       run: |
@@ -53,26 +66,22 @@ jobs:
 
     # Baue das Projekt
     - name: Build Firmware
-      if: env.is_release == 'true'
       run: pio run
 
     # Erstelle das Tar-Archiv
     - name: Create spiffs.tar
-      if: env.is_release == 'true'
       run: |
         mkdir -p lastVersion
         tar --transform='s/^data\///' --exclude='data/config' -cf lastVersion/spiffs.tar -C data www sys
 
     # Verschiebe die erzeugten Dateien in lastVersion
     - name: Move build artifacts
-      if: env.is_release == 'true'
       run: |
         cp .pio/build/*/firmware.bin lastVersion/
         cp .pio/build/*/firmware.elf lastVersion/
 
     # Commit und push der geänderten Version.h und Artefakte ins Repository
     - name: Commit and push changes
-      if: env.is_release == 'true'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
@@ -84,11 +93,13 @@ jobs:
         cp lastVersion/firmware.elf artifacts/
         cp lastVersion/spiffs.tar artifacts/
         git add artifacts/
-        git add src/Version.h
-        git commit -m "Add build artifacts and update Version.h [skip ci]"
+        if [ "$is_release" = "true" ]; then
+          git add src/Version.h
+        fi
+        git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update Version.h") [skip ci]"
         git push origin HEAD
 
-    # Release erstellen nur bei einem Tag
+    # Release erstellen (nur bei einem gültigen Release-Tag)
     - name: Create GitHub Release
       if: env.is_release == 'true'
       uses: ncipollo/release-action@v1
