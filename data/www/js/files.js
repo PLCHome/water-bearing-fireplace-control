@@ -61,14 +61,45 @@ function doUpload() {
   if (fileInput && fileInput[0] && fileInput[0].files) {
     var file = fileInput[0].files[0]; // Select the first file if multiple are chosen
   }
+  if (!file) return
   // Retrieve the filename from the data attribute or input field
   var filename = $(this).data('path');
+  var uploadFilename = file.name;
+
   if (!filename || filename == "") {
     filename = $("#filename").val();
   }
 
-  // Confirm with the user before uploading or overwriting
-  if (file && filename && confirm(`Do you want to overwrite or upload the file ${filename} with ${file.name}?`)) {
+  if (uploadFilename.endsWith(".tar") && filename.endsWith(".tar")) {
+    if (!confirm("A tar archive is uploaded, the files are unpacked and overwritten individually!")) return;
+
+    let tar = new tarball.TarReader();
+    tar.readFile(file).then(function (files) {
+      i = 0;
+      for (const extractedFile of files) {
+        if (extractedFile.type == "file") {
+          console.log(`Upload: ${extractedFile.name}`);
+          uploadFile(tar.getFileBlob(extractedFile.name), extractedFile.name, function () {
+            i++;
+            if (files.length == i)
+              buildFilelist()
+          })
+        }
+      }
+    });
+    return;
+  } else if (uploadFilename.endsWith(".tar")){
+    let tar = new tarball.TarReader();
+    tar.readFile(file).then(function (files) {
+      for (const extractedFile of files) {
+        if ('/'+extractedFile.name == filename && confirm(`Do you want to overwrite or upload the file ${filename} from ${file.name}?`)) {
+          uploadFile(tar.getFileBlob(extractedFile.name), filename, function () {
+            buildFilelist()
+          })
+        }
+      }
+    });
+  } else if (file && filename && confirm(`Do you want to overwrite or upload the file ${filename} with ${file.name}?`)) {
     console.log("Calling uploadFile function...");
     // Call the upload function and refresh the file list after uploading
     uploadFile(file, filename, function () {
