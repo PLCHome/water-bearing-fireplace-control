@@ -16,15 +16,20 @@ jobs:
     - name: Detect tag
       id: detect_tag
       run: |
+        CURRENT_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///;s/refs\/tags\///')
+        echo "Detected branche: $CURRENT_BRANCH"
         if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
           TAG_NAME="${GITHUB_REF#refs/tags/}"
           echo "Detected tag: $TAG_NAME"
+          CURRENT_BRANCH=main
           echo "is_tag=true" >> $GITHUB_ENV
           echo "tag_name=$TAG_NAME" >> $GITHUB_ENV
         else
           echo "No tag detected."
           echo "is_tag=false" >> $GITHUB_ENV
         fi
+        echo "Current branch: $CURRENT_BRANCH"
+        echo "current_branch=$CURRENT_BRANCH" >> $GITHUB_ENV
 
     # Validierung des Tags (nur wenn ein Tag vorhanden ist)
     - name: Validate tag
@@ -41,6 +46,17 @@ jobs:
           echo "is_release=false" >> $GITHUB_ENV
           exit 1 # Abbruch bei falschem Tag-Format
         fi
+
+    - name: Merge release to main
+      id: merge_to_release
+      if: env.is_tag == 'true'
+      env:
+        CURRENT_BRANCH: ${{ env.current_branch }}
+      run: |
+        git fetch origin $CURRENT_BRANCH
+        git checkout $CURRENT_BRANCH
+        git merge $GITHUB_REF
+        git push origin $CURRENT_BRANCH
 
     # Installiere Python und PlatformIO
     - name: Set up Python
@@ -94,16 +110,10 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-        # Ermitteln des aktuellen Branches oder Tags
         CURRENT_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///;s/refs\/tags\///')
-        echo "Current branch or tag: $CURRENT_BRANCH"
-
-        # Sicherstellen, dass wir auf den richtigen Branch oder Tag wechseln können
-        git fetch --all
-        git checkout "$CURRENT_BRANCH"
-
-        # Änderungen an den Artefakten durchführen
+        echo github ref ${GITHUB_REF}
+        echo git checkout $CURRENT_BRANCH
+        git checkout $CURRENT_BRANCH
         mkdir -p artifacts
         cp lastVersion/firmware.bin artifacts/
         cp lastVersion/firmware.elf artifacts/
@@ -111,30 +121,15 @@ jobs:
         cp lastVersion/spiffs.bin artifacts/
         git add artifacts/
 
-        # version.h bei einem Release-Tag hinzufügen
+        # Überprüfen, ob es ein Release-Tag gibt und version.h hinzufügen
         if [ "$is_release" = "true" ]; then
           cp version/version.h src/version.h
           cat src/version.h
           git add src/version.h
         fi
 
-        # Änderungen committen und pushen
         git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update version.h") [skip ci]"
-        git push origin "$CURRENT_BRANCH"
-
-        # Wenn es ein Tag ist, zum Ziel-Branch wechseln und mergen
-        if [[ "${GITHUB_REF}" =~ ^refs/tags/ ]]; then
-          TARGET_BRANCH="main" # Zielbranch hier anpassen
-          echo "Merging into target branch: $TARGET_BRANCH"
-
-          # Ziel-Branch sicherstellen und mergen
-          git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
-          git checkout $TARGET_BRANCH
-          git merge "$CURRENT_BRANCH"
-
-          # Änderungen pushen
-          git push origin $TARGET_BRANCH
-        fi
+        git push origin $CURRENT_BRANCH
 
 
     # Release erstellen (nur bei einem gültigen Release-Tag)
