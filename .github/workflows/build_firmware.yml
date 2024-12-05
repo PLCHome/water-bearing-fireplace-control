@@ -86,42 +86,54 @@ jobs:
         cp .pio/build/*/firmware.elf lastVersion/
         cp .pio/build/*/spiffs.bin lastVersion/
 
-    # Commit und push der geänderten version.h und Artefakte ins Repository
-    - name: Commit and push changes
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        is_release: ${{ env.is_release }}
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        CURRENT_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///;s/refs\/tags\///')
-        echo git checkout $CURRENT_BRANCH
-        git checkout $CURRENT_BRANCH
-        mkdir -p artifacts
-        cp lastVersion/firmware.bin artifacts/
-        cp lastVersion/firmware.elf artifacts/
-        cp lastVersion/spiffs.tar artifacts/
-        cp lastVersion/spiffs.bin artifacts/
-        git add artifacts/
+        - name: Commit and push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          is_release: ${{ env.is_release }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-        # Überprüfen, ob es ein Release-Tag gibt und version.h hinzufügen
-        if [ "$is_release" = "true" ]; then
-          cp version/version.h src/version.h
-          cat src/version.h
-          git add src/version.h
-        fi
+          # Ermitteln des aktuellen Branches oder Tags
+          CURRENT_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///;s/refs\/tags\///')
+          echo "Current branch or tag: $CURRENT_BRANCH"
 
-        git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update version.h") [skip ci]"
-        git push origin $CURRENT_BRANCH
+          # Sicherstellen, dass wir auf den richtigen Branch oder Tag wechseln können
+          git fetch --all
+          git checkout "$CURRENT_BRANCH"
 
-        if [[ "${GITHUB_REF}" =~ ^refs/tags/(.*)$ ]]; then
-          # Jetzt kannst du zum gewünschten Branch wechseln (z.B. 'main') und die Änderungen pushen
-          git checkout main  # Oder der gewünschte Branch
-          git merge "$CURRENT_BRANCH"  # Merge des Tags in den Branch
+          # Änderungen an den Artefakten durchführen
+          mkdir -p artifacts
+          cp lastVersion/firmware.bin artifacts/
+          cp lastVersion/firmware.elf artifacts/
+          cp lastVersion/spiffs.tar artifacts/
+          cp lastVersion/spiffs.bin artifacts/
+          git add artifacts/
 
-          # Push den Branch nach dem Mergen
-          git push origin main  # Oder der gewünschte Branch
-        fi
+          # version.h bei einem Release-Tag hinzufügen
+          if [ "$is_release" = "true" ]; then
+            cp version/version.h src/version.h
+            cat src/version.h
+            git add src/version.h
+          fi
+
+          # Änderungen committen und pushen
+          git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update version.h") [skip ci]"
+          git push origin "$CURRENT_BRANCH"
+
+          # Wenn es ein Tag ist, zum Ziel-Branch wechseln und mergen
+          if [[ "${GITHUB_REF}" =~ ^refs/tags/ ]]; then
+            TARGET_BRANCH="main" # Zielbranch hier anpassen
+            echo "Merging into target branch: $TARGET_BRANCH"
+
+            # Ziel-Branch sicherstellen und mergen
+            git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
+            git checkout $TARGET_BRANCH
+            git merge "$CURRENT_BRANCH"
+
+            # Änderungen pushen
+            git push origin $TARGET_BRANCH
+          fi
 
     # Release erstellen (nur bei einem gültigen Release-Tag)
     - name: Create GitHub Release
