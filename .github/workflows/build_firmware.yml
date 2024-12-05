@@ -96,11 +96,10 @@ jobs:
 
           # Ermitteln des aktuellen Branches oder Tags
           CURRENT_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///;s/refs\/tags\///')
-          echo "Current branch or tag: $CURRENT_BRANCH"
+          echo git checkout $CURRENT_BRANCH
 
           # Sicherstellen, dass wir auf den richtigen Branch oder Tag wechseln können
-          git fetch --all
-          git checkout "$CURRENT_BRANCH"
+          git checkout $CURRENT_BRANCH
 
           # Änderungen an den Artefakten durchführen
           mkdir -p artifacts
