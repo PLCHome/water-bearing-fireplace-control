@@ -8,6 +8,8 @@ on:
     paths-ignore:
       - '.github/**'
       - '.vscode/**'
+      - 'artifacts/**'
+      - 'src/version.h'
 
 jobs:
   build:

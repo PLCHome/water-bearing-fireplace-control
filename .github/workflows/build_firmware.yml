@@ -128,7 +128,7 @@ jobs:
           git add src/version.h
         fi
 
-        git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update version.h") [skip ci]"
+        git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update version.h [skip ci]") "
         git push origin $CURRENT_BRANCH
 
 
