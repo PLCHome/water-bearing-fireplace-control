@@ -81,58 +81,54 @@ jobs:
 
     # Verschiebe die erzeugten Dateien in lastVersion
     - name: Move build artifacts
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        is_release: ${{ env.is_release }}
       run: |
-        cp .pio/build/*/firmware.bin lastVersion/
-        cp .pio/build/*/firmware.elf lastVersion/
-        cp .pio/build/*/spiffs.bin lastVersion/
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-        - name: Commit and push changes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          is_release: ${{ env.is_release }}
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        # Ermitteln des aktuellen Branches oder Tags
+        CURRENT_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///;s/refs\/tags\///')
+        echo "Current branch or tag: $CURRENT_BRANCH"
 
-          # Ermitteln des aktuellen Branches oder Tags
-          CURRENT_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///;s/refs\/tags\///')
-          echo git checkout $CURRENT_BRANCH
+        # Sicherstellen, dass wir auf den richtigen Branch oder Tag wechseln können
+        git fetch --all
+        git checkout "$CURRENT_BRANCH"
 
-          # Sicherstellen, dass wir auf den richtigen Branch oder Tag wechseln können
-          git checkout $CURRENT_BRANCH
+        # Änderungen an den Artefakten durchführen
+        mkdir -p artifacts
+        cp lastVersion/firmware.bin artifacts/
+        cp lastVersion/firmware.elf artifacts/
+        cp lastVersion/spiffs.tar artifacts/
+        cp lastVersion/spiffs.bin artifacts/
+        git add artifacts/
 
-          # Änderungen an den Artefakten durchführen
-          mkdir -p artifacts
-          cp lastVersion/firmware.bin artifacts/
-          cp lastVersion/firmware.elf artifacts/
-          cp lastVersion/spiffs.tar artifacts/
-          cp lastVersion/spiffs.bin artifacts/
-          git add artifacts/
+        # version.h bei einem Release-Tag hinzufügen
+        if [ "$is_release" = "true" ]; then
+          cp version/version.h src/version.h
+          cat src/version.h
+          git add src/version.h
+        fi
 
-          # version.h bei einem Release-Tag hinzufügen
-          if [ "$is_release" = "true" ]; then
-            cp version/version.h src/version.h
-            cat src/version.h
-            git add src/version.h
-          fi
+        # Änderungen committen und pushen
+        git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update version.h") [skip ci]"
+        git push origin "$CURRENT_BRANCH"
 
-          # Änderungen committen und pushen
-          git commit -m "Add build artifacts $([ "$is_release" = "true" ] && echo "and update version.h") [skip ci]"
-          git push origin "$CURRENT_BRANCH"
+        # Wenn es ein Tag ist, zum Ziel-Branch wechseln und mergen
+        if [[ "${GITHUB_REF}" =~ ^refs/tags/ ]]; then
+          TARGET_BRANCH="main" # Zielbranch hier anpassen
+          echo "Merging into target branch: $TARGET_BRANCH"
 
-          # Wenn es ein Tag ist, zum Ziel-Branch wechseln und mergen
-          if [[ "${GITHUB_REF}" =~ ^refs/tags/ ]]; then
-            TARGET_BRANCH="main" # Zielbranch hier anpassen
-            echo "Merging into target branch: $TARGET_BRANCH"
+          # Ziel-Branch sicherstellen und mergen
+          git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
+          git checkout $TARGET_BRANCH
+          git merge "$CURRENT_BRANCH"
 
-            # Ziel-Branch sicherstellen und mergen
-            git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
-            git checkout $TARGET_BRANCH
-            git merge "$CURRENT_BRANCH"
+          # Änderungen pushen
+          git push origin $TARGET_BRANCH
+        fi
 
-            # Änderungen pushen
-            git push origin $TARGET_BRANCH
-          fi
 
     # Release erstellen (nur bei einem gültigen Release-Tag)
     - name: Create GitHub Release
