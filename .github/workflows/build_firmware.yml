@@ -81,6 +81,13 @@ jobs:
 
     # Verschiebe die erzeugten Dateien in lastVersion
     - name: Move build artifacts
+      run: |
+        cp .pio/build/*/firmware.bin lastVersion/
+        cp .pio/build/*/firmware.elf lastVersion/
+        cp .pio/build/*/spiffs.bin lastVersion/
+
+    # Commit und push der geänderten version.h und Artefakte ins Repository
+    - name: Commit and push changes
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         is_release: ${{ env.is_release }}
