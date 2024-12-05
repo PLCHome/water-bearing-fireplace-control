@@ -106,11 +106,11 @@ jobs:
     - name: Commit and push changes
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CURRENT_BRANCH: ${{ env.current_branch }}
         is_release: ${{ env.is_release }}
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        CURRENT_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///;s/refs\/tags\///')
         echo github ref ${GITHUB_REF}
         echo git checkout $CURRENT_BRANCH
         git checkout $CURRENT_BRANCH
