@@ -1,6 +1,6 @@
 
 // URL to get the list of file names from the server
-const GETSETUPPARA = `/config/setupPara.json`;
+const GETSETUPPARA = `/sys/setupPara.json`;
 const GETSETUP = `/config/setup.json`;
 
 
