@@ -17,7 +17,7 @@ jobs:
       id: detect_tag
       run: |
         CURRENT_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///;s/refs\/tags\///')
-        echo "Detected branche: $CURRENT_BRANCH"
+        echo "Detected branch: $CURRENT_BRANCH"
         if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
           TAG_NAME="${GITHUB_REF#refs/tags/}"
           echo "Detected tag: $TAG_NAME"
