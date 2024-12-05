@@ -95,6 +95,11 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         CURRENT_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///;s/refs\/tags\///')
+        TAG_NAME="${GITHUB_REF#refs/tags/}"
+        COMMIT_HASH=$(git rev-list -n 1 "$TAG_NAME")
+        echo "Commit for tag $TAG_NAME: $COMMIT_HASH"
+        BRANCHES=$(git branch -r --contains "$COMMIT_HASH")
+        echo "Branches containing the commit: $BRANCHES"
         echo github ref ${GITHUB_REF}
         echo git checkout $CURRENT_BRANCH
         git checkout $CURRENT_BRANCH
