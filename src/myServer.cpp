@@ -381,6 +381,7 @@ void initWebserver() {
   server.on("/update", HTTP_POST, onUpdateStart, onUpdateDo);
   server.serveStatic("/", SPIFFS, "/www/");
   server.serveStatic("/config/", SPIFFS, "/config/");
+  server.serveStatic("/sys/", SPIFFS, "/sys/");
   server.onNotFound(handleForwardIndex);
   server.begin();
 }
