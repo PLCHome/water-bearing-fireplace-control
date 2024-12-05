@@ -56,13 +56,12 @@ jobs:
     # Update version.h (nur bei Release-Tag)
     - name: Update version.h
       if: env.is_release == 'true'
+      env:
+        VERSION: ${{ env.version }}
       run: |
         echo "version.h set to version: $VERSION"
         sed -i "s/#define VERSION.*/#define VERSION \"$VERSION\"/" src/version.h
         cat src/version.h
-      env:
-        VERSION: ${{ env.VERSION }}
-
 
     # Baue das Firmware-Image
     - name: Build Firmware
@@ -94,7 +93,6 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         CURRENT_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///;s/refs\/tags\///')
-        git checkout $CURRENT_BRANCH
         mkdir -p artifacts
         cp lastVersion/firmware.bin artifacts/
         cp lastVersion/firmware.elf artifacts/
