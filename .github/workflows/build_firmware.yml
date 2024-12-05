@@ -117,11 +117,10 @@ jobs:
         if [[ "${GITHUB_REF}" =~ ^refs/tags/(.*)$ ]]; then
           # Jetzt kannst du zum gewünschten Branch wechseln (z.B. 'main') und die Änderungen pushen
           git checkout main  # Oder der gewünschte Branch
-          git merge "$CURRENT_TAG"  # Merge des Tags in den Branch
+          git merge "$CURRENT_BRANCH"  # Merge des Tags in den Branch
 
           # Push den Branch nach dem Mergen
           git push origin main  # Oder der gewünschte Branch
-          git push origin "refs/tags/$CURRENT_TAG"  # Stelle sicher, dass der Tag ebenfalls gepusht wird
         fi
 
     # Release erstellen (nur bei einem gültigen Release-Tag)
