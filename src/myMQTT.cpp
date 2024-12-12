@@ -31,7 +31,7 @@ void myMQTT::init() {
   this->connectTime =
       1000 * mysetup->getSectionValue<uint16_t>("connecttime", 5);
   this->clientId = mysetup->cstrPersists(
-      mysetup->getSectionValue<String>("clientid", "myOfen"));
+      mysetup->getSectionValue<String>("clientid", "myOven"));
   this->user =
       mysetup->cstrPersistsNull(mysetup->getSectionValue<String>("user", ""));
   this->pass = mysetup->cstrPersistsNull(

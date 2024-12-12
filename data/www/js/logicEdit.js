@@ -424,6 +424,7 @@ function createRow(val) {
   $(`[data-id='${val.id}'] .imptime`).val(val.imptime);
   $(`[data-id='${val.id}'] .impmax`).val(val.impmax);
   $(`[data-id='${val.id}'] .ttemp`).val((parseFloat(val.ttemp) / 100).toFixed(2));
+  $(`[data-id='${val.id}'] .ttemp`).val((parseFloat(val.ttemp) / 100).toFixed(2));
 
   function setOption(id) {
     var ele = $(`[data-id='${val.id}'] .${id} option`);

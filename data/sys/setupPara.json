@@ -29,7 +29,7 @@
             "clientid": {
                 "text": "MQTT client id",
                 "type": "string",
-                "default": "myOfen"
+                "default": "my"
             },
             "server": {
                 "text": "MQTT server",
@@ -59,7 +59,7 @@
             },
             "lastwilltop": {
                 "text": "Last will topic",
-                "default": "myofen/condition",
+                "default": "myoven/condition",
                 "type": "string"
             },
             "lastwillmes": {
@@ -86,7 +86,7 @@
             "connecttop": {
                 "text": "Connect topic",
                 "type": "string",
-                "default": "myofen/condition"
+                "default": "myoven/condition"
             },
             "connectmes": {
                 "text": "Connect message payload",
@@ -101,7 +101,7 @@
             "puplishtopic": {
                 "text": "Value puplish topic",
                 "type": "string",
-                "default": "myofen/values"
+                "default": "myoven/values"
             },
             "puplishretain": {
                 "text": "Value puplish retain",
@@ -111,7 +111,7 @@
             "subscribetopic": {
                 "text": "Subscribe topic",
                 "type": "string",
-                "default": "myofen/command"
+                "default": "myoven/command"
             },
             "subscribeqos": {
                 "text": "Subscribe QoS",
@@ -144,7 +144,7 @@
             "hostname": {
                 "text": "WiFi hostname",
                 "type": "string",
-                "default": "myofen_wifi"
+                "default": "myoven_wifi"
             }
         }
     },
@@ -159,7 +159,7 @@
             "hostname": {
                 "text": "LAN hostname",
                 "type": "string",
-                "default": "myofen_lan"
+                "default": "myoven_lan"
             },
             "type": {
                 "text": "LAN type",

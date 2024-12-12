@@ -84,15 +84,17 @@ function doUpload() {
             if (files.length == i)
               buildFilelist()
           })
+        } else {
+          i++;
         }
       }
     });
     return;
-  } else if (uploadFilename.endsWith(".tar")){
+  } else if (uploadFilename.endsWith(".tar")) {
     let tar = new tarball.TarReader();
     tar.readFile(file).then(function (files) {
       for (const extractedFile of files) {
-        if ('/'+extractedFile.name == filename && confirm(`Do you want to overwrite or upload the file ${filename} from ${file.name}?`)) {
+        if ('/' + extractedFile.name == filename && confirm(`Do you want to overwrite or upload the file ${filename} from ${file.name}?`)) {
           uploadFile(tar.getFileBlob(extractedFile.name), filename, function () {
             buildFilelist()
           })

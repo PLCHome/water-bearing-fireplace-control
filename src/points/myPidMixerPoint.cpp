@@ -82,12 +82,14 @@ void myPidMixerPoint::getJson(JsonObject &doc) {
   doc["opclose"] = this->opclose;
   doc["opopen"] = this->opopen;
 
-  doc["mc"] = this->offClosed;
+  doc["nc"] = this->offClosed;
   doc["checkInterval"] = this->checkInterval;
   doc["impulseTime"] = this->impulseTime;
   doc["runTime"] = this->runTime;
 
-  doc["targetTemperature"] = this->targetTemperature;
+  doc["kp"] = this->Kp;
+  doc["ki"] = this->Ki;
+  doc["kd"] = this->Kd;
 }
 
 void myPidMixerPoint::doWakeUp() {

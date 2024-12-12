@@ -1,6 +1,7 @@
 #include "myPoints.h"
 #include "myLogicPoint.h"
 #include "myMixerPoint.h"
+#include "myPidMixerPoint.h"
 #include "myOutPoint.h"
 #include "myTempPoint.h"
 #include "myTempTPoint.h"
@@ -155,6 +156,9 @@ void myPoints::build() {
               break;
             case PT_MIXER:
               next = new myMixerPoint(value, typ);
+              break;
+            case PT_PIDMIXER:
+              next = new myPidMixerPoint(value, typ);
               break;
             }
           }
