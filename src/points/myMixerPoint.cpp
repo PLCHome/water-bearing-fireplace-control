@@ -48,8 +48,8 @@ myMixerPoint::myMixerPoint(JsonVariant json, pointTyp type)
     this->offClosed = json["nc"].as<bool>();
   }
 
-  this->wakeUpTime = (unsigned long) this->impulseTime * 1000;
-  this->cycleInterval = (unsigned long) this->checkInterval * 1000;
+  this->wakeUpTime = (unsigned long)this->impulseTime * 1000;
+  this->cycleInterval = (unsigned long)this->checkInterval * 1000;
   this->closing = this->pulsesToOpen;
 
   if (json["idon"].is<int>()) {
@@ -78,9 +78,11 @@ myMixerPoint::myMixerPoint(JsonVariant json, pointTyp type)
   mytimer.registerCycle(this);
 }
 
-myMixerPoint::~myMixerPoint(){
+myMixerPoint::~myMixerPoint() {
   mytimer.unregisterWakeUp(this);
   mytimer.unregisterCycle(this);
+  if (this->on != TP_OFF)
+    this->doWakeUp();
 }
 
 void myMixerPoint::calcVal() {}
