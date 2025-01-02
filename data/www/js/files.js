@@ -74,16 +74,19 @@ function doUpload() {
     if (!confirm("A tar archive is uploaded, the files are unpacked and overwritten individually!")) return;
 
     let tar = new tarball.TarReader();
-    tar.readFile(file).then(function (files) {
+    tar.readFile(file).then(async function (files) {
       i = 0;
       for (const extractedFile of files) {
         if (extractedFile.type == "file") {
           console.log(`Upload: ${extractedFile.name}`);
-          uploadFile(tar.getFileBlob(extractedFile.name), extractedFile.name, function () {
+
+          await new Promise((resolve) => {uploadFile(tar.getFileBlob(extractedFile.name), extractedFile.name, function () {
             i++;
+            resolve();
             if (files.length == i)
               buildFilelist()
-          })
+          })}
+        );
         } else {
           i++;
         }

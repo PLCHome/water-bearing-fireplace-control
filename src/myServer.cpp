@@ -584,9 +584,6 @@ void WEBsetup() {
   mysetup->setNextSection("lan");
   WT32_ETH01_onEvent();
   String lanHostname = mysetup->getSectionValue<String>("hostname", "");
-  if (!lanHostname.isEmpty()) {
-    ETH.setHostname(mysetup->cstrPersists(lanHostname));
-  }
   LANActive = mysetup->getSectionValue<bool>("active", false);
   if (LANActive) {
     Serial.print("\nStarting WebServer on " + String(ARDUINO_BOARD));
@@ -598,6 +595,10 @@ void WEBsetup() {
         mysetup->getSectionValue<int>("phy_mdio", ETH_PHY_MDIO),
         mysetup->getSectionValue<eth_phy_type_t>("type", ETH_PHY_TYPE),
         mysetup->getSectionValue<eth_clock_mode_t>("clk_mode", ETH_CLK_MODE));
+  }
+  if (!lanHostname.isEmpty()) {
+    ETH.setHostname(mysetup->cstrPersists(lanHostname));
+    Serial.println("ETH.setHostname " + lanHostname);
   }
 #endif
   mysetup->resetSection();

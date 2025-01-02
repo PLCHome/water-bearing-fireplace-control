@@ -13,8 +13,8 @@ myPidMixerPoint::myPidMixerPoint(JsonVariant json, pointTyp type)
   if (json["imptime"].is<int>()) {
     this->impulseTime = json["imptime"].as<unsigned long>() * 1000;
   }
-  if (json["runTime"].is<int>()) {
-    this->runTime = json["runTime"].as<unsigned long>() * 1000;
+  if (json["runtime"].is<int>()) {
+    this->runTime = json["runtime"].as<unsigned long>() * 1000;
   }
   if (json["ttemp"].is<int>()) {
     this->pidSetpoint = 0.01 * ((double)json["ttemp"].as<int>());
@@ -23,14 +23,14 @@ myPidMixerPoint::myPidMixerPoint(JsonVariant json, pointTyp type)
     this->offClosed = json["nc"].as<bool>();
   }
 
-  if (json["Kp"].is<int>()) {
-    this->Kp = 0.01 * ((double)json["Kp"].as<int>());
+  if (json["kp"].is<int>()) {
+    this->Kp = 0.01 * ((double)json["kp"].as<int>());
   }
-  if (json["Ki"].is<int>()) {
-    this->Ki = 0.01 * ((double)json["Ki"].as<int>());
+  if (json["ki"].is<int>()) {
+    this->Ki = 0.01 * ((double)json["ki"].as<int>());
   }
-  if (json["Kd"].is<int>()) {
-    this->Kd = 0.01 * ((double)json["Kd"].as<int>());
+  if (json["kd"].is<int>()) {
+    this->Kd = 0.01 * ((double)json["kd"].as<int>());
   }
 
   this->cycleInterval = (unsigned long)this->checkInterval * 1000;

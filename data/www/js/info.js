@@ -106,7 +106,7 @@ const INFOTAB = `
 function infoBuild() {
   $("#mySpace").html(INFOAREA);
   $("#infoTab").html('<div id="loading">Loading files...</div>');
-  $.getJSON(GETINFO, function (data) {
+  $.getJSON(GETINFO, {_: new Date().getTime()}, function (data) {
     let tab = $(INFOTAB);
 
     Object.keys(data).forEach((key) => {

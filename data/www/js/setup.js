@@ -277,7 +277,7 @@ function setcarddefaulds(carddefaulds, key) {
 }
 
 function loadSetupData() {
-  $.getJSON(GETSETUP, function (data) {
+  $.getJSON(GETSETUP, {_: new Date().getTime()}, function (data) {
     function traverseObject(obj, prefix = '', callback) {
       Object.keys(obj).forEach((key) => {
         const value = obj[key];

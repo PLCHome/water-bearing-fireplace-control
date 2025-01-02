@@ -5,6 +5,7 @@ const PT_TEMPT = 1;
 const PT_LOGIC = 2;
 const PT_OUT = 3;
 const PT_MIXER = 4;
+const PT_PIDMIXER = 5;
 
 const POINTSFILENAME = "/config/points.json";
 
@@ -34,7 +35,8 @@ const EXTBUTTONS = `
 <a data-type="${PT_TEMPT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature to another</a>
 <a data-type="${PT_LOGIC}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> logic</a>
 <a data-type="${PT_OUT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> output</a>
-<a data-type="${PT_MIXER}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> mixer</a>`;
+<a data-type="${PT_MIXER}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> mixer</a>
+<a data-type="${PT_PIDMIXER}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> pid-mixer</a>`;
 
 const SORTAREA = '<div id="mySortArea" style="height:100%; width:100%; overflow:auto"" class="list-group" ></div>';
 
@@ -219,6 +221,72 @@ const BARMIXER = `<form>
   </div>
 </div>
 </form>`;
+
+const PIDBARMIXER = `<form>
+<div class="edit-btn process-mov">
+  <i class="fa-solid fa-up-down"></i>
+</div>
+<div class="edit-btn process-del">
+  <i class="fa-solid fa-trash-can"></i>
+</div>
+<div class="edit-cont">
+  <div class="edit-bar">
+    <div class="edit-item">
+      <input id="name-%id%" class="name name_input""/>
+      <label for="name-%id%">name</label>
+    </div>
+    <div class="edit-item">
+      <select id="idon-%id%" class="idon processelect" ></select>
+      <label for="idon-%id%">process on<a class="value">&nbsp;</a></label>
+    </div>
+    <div class="edit-item">
+      <select id="tpos-%id%" class="tpos tempselect" ></select>
+      <label for="tpos-%id%">temperature measurement <a class="value div100">&nbsp;</a></label>
+    </div>
+    <div class="edit-sitem">
+      <input id="chkint-%id%" class="chkint uint_input"/>
+      <label for="chkint-%id%">inetrvall (s)</label>
+    </div>
+    <div class="edit-sitem">
+      <input id="imptime-%id%" class="imptime uint_input"/>
+      <label for="imptime-%id%">impulse time (s)</label>
+    </div>
+    <div class="edit-sitem">
+      <input id="runtime-%id%" class="runtime uint_input"/>
+      <label for="runtime-%id%">impulse to open</label>
+    </div>
+    <div class="edit-sitem">
+      <input id="ttemp-%id%" class="ttemp 2dec_input"/>
+      <label for="ttemp-%id%">target temperature</label>
+    </div>
+    <div class="edit-sitem">
+      <input id="kp-%id%" class="kp 2dec_input"/>
+      <label for="kp-%id%">P</label>
+    </div>
+    <div class="edit-sitem">
+      <input id="ki-%id%" class="ki 2dec_input"/>
+      <label for="ki-%id%">I</label>
+    </div>
+    <div class="edit-sitem">
+      <input id="kd-%id%" class="kd 2dec_input"/>
+      <label for="kd-%id%">D</label>
+    </div>
+    <div class="edit-sitem">
+      <select id="offc-%id%" class="nc openclose" ></select>
+      <label for="offc-%id%">when off</label>
+    </div>
+    <div class="edit-item">
+      <select id="opclose-%id%" class="opclose outselect" ></select>
+      <label for="opclose-%id%">output close <a class="value lightbulb">&nbsp;</a></label>
+    </div>
+    <div class="edit-item">
+      <select id="opopen-%id%" class="opopen outselect" ></select>
+      <label for="opopen-%id%">output open <a class="value lightbulb">&nbsp;</a></label>
+    </div>
+  </div>
+</div>
+</form>`;
+
 
 function setAtt() {
   $(".2dec_input")
@@ -414,6 +482,7 @@ function createRow(val) {
   setAtt();
   $(`[data-id='${val.id}'] .name`).val(val.name);
   $(`[data-id='${val.id}'] .name`).trigger('change');
+  $(`[data-id='${val.id}'] .ttemp`).val((parseFloat(val.ttemp) / 100).toFixed(2));
   $(`[data-id='${val.id}'] .ton`).val((parseFloat(val.ton) / 100).toFixed(2));
   $(`[data-id='${val.id}'] .toff`).val((parseFloat(val.toff) / 100).toFixed(2));
   $(`[data-id='${val.id}'] .t2plus`).val((parseFloat(val.t2plus) / 100).toFixed(2));
@@ -423,8 +492,9 @@ function createRow(val) {
   $(`[data-id='${val.id}'] .chkint`).val(val.chkint);
   $(`[data-id='${val.id}'] .imptime`).val(val.imptime);
   $(`[data-id='${val.id}'] .impmax`).val(val.impmax);
-  $(`[data-id='${val.id}'] .ttemp`).val((parseFloat(val.ttemp) / 100).toFixed(2));
-  $(`[data-id='${val.id}'] .ttemp`).val((parseFloat(val.ttemp) / 100).toFixed(2));
+  $(`[data-id='${val.id}'] .kp`).val((parseFloat(val.kp) / 100).toFixed(2));
+  $(`[data-id='${val.id}'] .ki`).val((parseFloat(val.ki) / 100).toFixed(2));
+  $(`[data-id='${val.id}'] .kd`).val((parseFloat(val.kd) / 100).toFixed(2));
 
   function setOption(id) {
     var ele = $(`[data-id='${val.id}'] .${id} option`);
@@ -467,7 +537,7 @@ function buildPageProcess() {
 
 function loadJSON() {
 
-  $.getJSON(POINTSFILENAME, function (data) {
+  $.getJSON(POINTSFILENAME, {_: new Date().getTime()} , function (data) {
     // Prüfen, ob die Daten ein Array sind
     if (Array.isArray(data)) {
       // Jedes Element im Array an die Callback-Funktion übergeben
@@ -543,6 +613,9 @@ function buildJSON() {
     setValues('opclose', valInt)
     setValues('opopen', valInt)
     setValues('nc', valBool)
+    setValues('kp', valInt100)
+    setValues('ki', valInt100)
+    setValues('kd', valInt100)
 
   }
   return JSON.stringify(vals);

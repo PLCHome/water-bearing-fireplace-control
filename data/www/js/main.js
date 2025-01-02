@@ -5,7 +5,7 @@ var inputNames = [];
 var namesok = false;
 
 function getNames(cb) {
-  $.getJSON("/count", function (data) {
+  $.getJSON("/count", {_: new Date().getTime()} , function (data) {
     for (let i = 0; i < data.data.tmp; i++) {
       temperaturNames[i] = `Measurement ${i + 1}`;
     }
