@@ -50,21 +50,26 @@ uint16_t pcf8574io::getDIVals() { return this->input; }
 
 bool pcf8574io::processDoValues() {
   bool changed = false;
+  PCF8574::DigitalInput digitalInput;
+  uint8_t *val = (uint8_t *) &digitalInput;
   if (this->output > 0 && this->active) {
     bool *relayLast = master->getLastOutputs(this->DOValsStart);
     bool *relays = master->getOutputs(this->DOValsStart);
     int8_t pos = 0;
     for (int i = 0; i < 8; i++) {
       if (this->dirb[i] == DIR_OUTPUT) {
+        val[i] = relays[pos] ? looutput ? LOW : HIGH
+                      : looutput  ? HIGH
+                                  : LOW;
         if (relayLast[pos] != relays[pos]) {
-          this->pcf8574->digitalWrite(i, relays[pos] ? looutput ? LOW : HIGH
-                                         : looutput  ? HIGH
-                                                     : LOW);
           changed = true;
           relayLast[pos] = relays[pos];
         }
         pos++;
       }
+    }
+    if (changed) {
+      this->pcf8574->digitalWriteAll(digitalInput);
     }
   }
   return changed;
@@ -75,9 +80,11 @@ bool pcf8574io::processDiValues() {
   if (this->input > 0 && this->active) {
     TA_INPUT *inputs = master->getInputs(this->DIValsStart);
     int8_t pos = 0;
+    PCF8574::DigitalInput digitalInput = this->pcf8574->digitalReadAll();
+    uint8_t *val = (uint8_t *) &digitalInput;
     for (int i = 0; i < 8; i++) {
       if (this->dirb[i] == DIR_INPUT) {
-        if (this->pcf8574->digitalRead(i) == looutput ? LOW : HIGH) {
+        if (val[i] == looutput ? LOW : HIGH) {
           if (inputs[pos] != in_on) {
             if ((inputs[pos] == in_come)) {
               changed = true;
