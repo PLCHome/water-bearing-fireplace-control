@@ -29,6 +29,9 @@ Schreibe den Code bitte auf englisch.
 #include "myPoints.h"
 #include <data/DataCare.h>
 
+//#define DEBUG_TIMING
+
+
 // Konstruktor
 myMixerPoint::myMixerPoint(JsonVariant json, pointTyp type)
     : myPoint(json, type) {
@@ -112,54 +115,99 @@ void myMixerPoint::getJson(JsonObject &doc) {
 }
 
 void myMixerPoint::doWakeUp() {
+#ifdef DEBUG_TIMING
+  Serial.print(millis());
+  Serial.print(": ");
+  Serial.print(this->name);
+#endif
   this->on = TP_OFF;
   if (this->opclose >= 0) {
     mypoints.setChanged();
+#ifdef DEBUG_TIMING
+    Serial.print(" close off");
+#endif
     datacare.getOutputs()[this->opclose] = false;
   } else
     this->on = TP_ERR;
   if (this->opopen >= 0) {
     mypoints.setChanged();
+#ifdef DEBUG_TIMING
+    Serial.print(" open off ");
+#endif
     datacare.getOutputs()[this->opopen] = false;
     this->on = TP_OFF;
   } else
     this->on = TP_ERR;
+
+#ifdef DEBUG_TIMING
+  Serial.println(this->on != TP_ERR);
+#endif
+  if (this->on != TP_ERR) {
+    datacare.notifyLoop();
+    messagedispatcher.notify(CHANGE_MIXER);
+  }
 }
 
 bool myMixerPoint::doClose() {
-  messagedispatcher.notify(CHANGE_MIXER);
+  bool result = true;
+#ifdef DEBUG_TIMING
+  Serial.print(millis());
+  Serial.print(": ");
+  Serial.print(this->name);
+  Serial.print(" close ");
+#endif
   if (this->opopen >= 0 && datacare.getOutputs()[this->opopen]) {
     this->on = TP_ERR;
-    return false; // something is wrong!!!
+    result = false;
   }
-  if (this->opclose >= 0 && !datacare.getOutputs()[this->opclose]) {
+  if (result && this->opclose >= 0 && !datacare.getOutputs()[this->opclose]) {
     mypoints.setChanged();
     datacare.getOutputs()[this->opclose] = true;
-    datacare.notifyLoop();
     mytimer.registerWakeUp(this);
     this->on = TP_ON;
-    return true;
-  } else
+  } else {
     this->on = TP_ERR;
-  return false;
+    result = false;
+  }
+#ifdef DEBUG_TIMING
+  Serial.println(result);
+#endif
+  if (result) {
+    datacare.notifyLoop();
+    messagedispatcher.notify(CHANGE_MIXER);
+  }
+  return result;
 }
 
 bool myMixerPoint::doOpen() {
-  messagedispatcher.notify(CHANGE_MIXER);
+  bool result = true;
+#ifdef DEBUG_TIMING
+  Serial.print(millis());
+  Serial.print(": ");
+  Serial.print(this->name);
+  Serial.print(" open ");
+#endif
   if (this->opclose >= 0 && datacare.getOutputs()[this->opclose]) {
     this->on = TP_ERR;
-    return false; // something is wrong!!!
+    result = false;
   }
-  if (this->opopen >= 0 && !datacare.getOutputs()[this->opopen]) {
+  if (result && this->opopen >= 0 && !datacare.getOutputs()[this->opopen]) {
     mypoints.setChanged();
     datacare.getOutputs()[this->opopen] = true;
-    datacare.notifyLoop();
     mytimer.registerWakeUp(this);
     this->on = TP_ON;
-    return true;
-  } else
+  } else {
     this->on = TP_ERR;
-  return false;
+    result = false;
+  }
+#ifdef DEBUG_TIMING
+  Serial.println(result);
+#endif
+  if (result) {
+    datacare.notifyLoop();
+    messagedispatcher.notify(CHANGE_MIXER);
+  }
+  return result;
 }
 
 void myMixerPoint::doCycleIntervall() {

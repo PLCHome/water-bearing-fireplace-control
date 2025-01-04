@@ -58,13 +58,14 @@ bool pcf8574io::processDoValues() {
     int8_t pos = 0;
     for (int i = 0; i < 8; i++) {
       if (this->dirb[i] == DIR_OUTPUT) {
-        val[i] = relays[pos] ? looutput ? LOW : HIGH
+        bool r = relays[pos];
+        if (relayLast[pos] != r) {
+          changed = true;
+          relayLast[pos] = r;
+        }
+        val[i] = r ? looutput ? LOW : HIGH
                       : looutput  ? HIGH
                                   : LOW;
-        if (relayLast[pos] != relays[pos]) {
-          changed = true;
-          relayLast[pos] = relays[pos];
-        }
         pos++;
       }
     }

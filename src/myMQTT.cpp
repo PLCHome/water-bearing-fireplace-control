@@ -3,6 +3,8 @@
 #include "data/DataCare.h"
 #include "points/myPoints.h"
 
+// #define DEBUG_MQTTPUB
+
 myMQTT *mymqtt = new myMQTT();
 
 // Constructor
@@ -123,8 +125,10 @@ void myMQTT::publish(String topic, String message) {
     if (client.connected()) {
       String top = this->publishTopic + topic;
       client.publish(top.c_str(), message.c_str(), this->publishRetain);
+#ifdef DEBUG_MQTTPUB
       Serial.print(top + " sent: ");
       Serial.println(message);
+#endif
     } else {
       Serial.println("Error: Not connected to the myMQTT server.");
     }

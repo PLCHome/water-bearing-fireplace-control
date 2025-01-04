@@ -42,9 +42,8 @@ void myTimer::start() {
 void myTimer::timerTask(void *pvParameters) {
   myTimer *timer = static_cast<myTimer *>(pvParameters);
   while (true) {
-    unsigned long currentTime = millis();
     for (auto &cycle : timer->cycleTimer) {
-      if (currentTime - cycle->lastCycleTime >= cycle->getCycleInterval()) {
+      if (millis() - cycle->lastCycleTime >= cycle->getCycleInterval()) {
         cycle->doCycleIntervall();
         cycle->lastCycleTime = millis();
       }
@@ -52,7 +51,7 @@ void myTimer::timerTask(void *pvParameters) {
     for (auto it = timer->wakeUpTimer.begin();
          it != timer->wakeUpTimer.end();) {
       auto &wakeup = *it;
-      if (currentTime - wakeup->lastWakeUpTime >= wakeup->getWakeUpTime()) {
+      if (millis() - wakeup->lastWakeUpTime >= wakeup->getWakeUpTime()) {
         wakeup->doWakeUp();
         it = timer->wakeUpTimer.erase(it);
       } else {

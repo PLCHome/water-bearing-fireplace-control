@@ -125,7 +125,6 @@ void myPoints::build() {
       if (error) {
         Serial.println("deserializeJson points.json error...");
       } else {
-        serializeJson(doc, Serial);
         Serial.println();
         JsonArray array = doc.as<JsonArray>();
         serializeJson(array, Serial);

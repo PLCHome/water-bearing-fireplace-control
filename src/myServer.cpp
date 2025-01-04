@@ -4,6 +4,8 @@
 #define DEBUG_ETHERNET_WEBSERVER_PORT Serial
 #define _ASYNC_WEBSERVER_LOGLEVEL_ 0
 
+#define DEBUG_NOTIFYCLIENTS
+
 #include "myServer.h"
 #include <ArduinoJson.h>
 #include <AsyncTCP.h>
@@ -392,7 +394,10 @@ void initWebserver() {
  * @param sensorReadings JSON string with the current sensor readings.
  */
 void notifyClients(String sensorReadings) {
+#ifdef DEBUG_NOTIFYCLIENTS
+  Serial.print("Websocket send: ");
   Serial.println(sensorReadings);
+#endif
   ws.textAll(sensorReadings);
 }
 
