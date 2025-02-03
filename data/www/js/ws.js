@@ -1,4 +1,4 @@
-var gateway = `${(window.location.protocol == "https:" ? "wss" : "ws")}://${window.location.hostname}/ws`;
+var gateway = `${(window.location.protocol == "https:" ? "wss" : "ws")}://${window.location.hostname}:${window.location.port}/ws`;
 if (gateway.indexOf('localhost') != -1) {
   gateway = gateway.replace('localhost', '192.168.2.178');
 }
@@ -49,9 +49,13 @@ function onClose(event) {
 function setValue(path, val) {
   let ele = $(`[data-update='${path}']`)
   if (ele && ele.hasClass) {
+    // Prüfen, ob bereits ein Eingabefeld offen ist
+    if (ele.find(".input-overlay").length > 0) {
+      return; // Wenn ja, nicht überschreiben
+    }
     let html = "";
     if (ele.hasClass("div100")) {
-      html = ((val || 0) / 100).toFixed(2);
+      html = `<i onClick="showInput('${path}', ${val || 0})">${((val || 0) / 100).toFixed(2)}</i>`;
     } else if (ele.hasClass("lightbulb")) {
       html = `<i class="${val ? 'fa-solid' : 'fa-regular'} fa-lightbulb" onClick="sendData({${path}:${!val}});"></i>`
     } else if (ele.hasClass("digit2")) {
@@ -65,6 +69,33 @@ function setValue(path, val) {
   }
 }
 
+function showInput(path, val) {
+  let ele = $(`[data-update='${path}']`);
+  if (!ele) return;
+
+  let inputHtml = `
+    <div class="input-overlay">
+      <input type="number" id="input-${path}" value="${(val / 100).toFixed(2)}">
+      <button onClick="confirmInput('${path}')">OK</button>
+      <button onClick="cancelInput('${path}', ${val})">Abbrechen</button>
+    </div>
+  `;
+  ele.html(inputHtml);
+}
+
+function confirmInput(path) {
+  let inputVal = parseFloat($(`#input-${path}`).val());
+  let newValue = Math.round(inputVal * 100); // Umrechnung für dein Datenformat
+  let ele = $(`[data-update='${path}']`);
+  ele.find(".input-overlay").remove();
+  sendData({ [path]: newValue });
+}
+
+function cancelInput(path, originalVal) {
+  let ele = $(`[data-update='${path}']`);
+  ele.find(".input-overlay").remove();
+  setValue(path, originalVal);
+}
 
 
 // Function that receives the message from the ESP32 with the readings

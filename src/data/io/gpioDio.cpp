@@ -29,12 +29,13 @@ uint16_t gpioDio::getDIVals() { return (this->dir == DIR_INPUT) ? 1 : 0; }
 
 bool gpioDio::processDoValues() {
   bool changed = false;
-  if (this->active && (this->dir == DIR_OUTPUT) &&
-      master->getGpio()->isActive()) {
+  if (this->dir == DIR_OUTPUT) {
     bool *relayLast = master->getLastOutputs(this->DOValsStart);
     bool *relays = master->getOutputs(this->DOValsStart);
     if (memcmp(relayLast, relays, 1) != 0) {
-      digitalWrite(this->pin, lo ? !relays[0] : relays[0]);
+      if (this->active && master->getGpio()->isActive()) {
+        digitalWrite(this->pin, lo ? !relays[0] : relays[0]);
+      }
       memcpy(relayLast, relays, 1);
       changed = true;
     }
@@ -44,7 +45,7 @@ bool gpioDio::processDoValues() {
 
 bool gpioDio::processDiValues() {
   bool changed = false;
-  if (this->active && (this->dir == DIR_INPUT) &&
+  if ((this->dir == DIR_INPUT) && this->active &&
       master->getGpio()->isActive()) {
     TA_INPUT *inputs = master->getInputs(this->DIValsStart);
     int8_t pos = 0;

@@ -52,7 +52,7 @@ bool pcf8574io::processDoValues() {
   bool changed = false;
   PCF8574::DigitalInput digitalInput;
   uint8_t *val = (uint8_t *) &digitalInput;
-  if (this->output > 0 && this->active) {
+  if (this->output > 0) {
     bool *relayLast = master->getLastOutputs(this->DOValsStart);
     bool *relays = master->getOutputs(this->DOValsStart);
     int8_t pos = 0;
@@ -69,7 +69,7 @@ bool pcf8574io::processDoValues() {
         pos++;
       }
     }
-    if (changed) {
+    if (changed && this->active) {
       this->pcf8574->digitalWriteAll(digitalInput);
     }
   }

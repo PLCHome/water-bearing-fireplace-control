@@ -38,7 +38,7 @@
     "phy_power": -1
   },
   "modbus": {
-    "active": true,
+    "active": false,
     "serial": 1,
     "buad": 9600,
     "config": 134217756,
@@ -47,7 +47,7 @@
     "rs485_de_pin": -1
   },
   "beeb": {
-    "active": true
+    "active": false
   },
   "ds18b20": {
     "active": false,
@@ -57,7 +57,7 @@
     "active": false
   },
   "ws2812led": {
-    "active": true,
+    "active": false,
     "pin": 12,
     "length": 1,
     "pixel": 0
@@ -100,7 +100,7 @@
     },
     {
       "card": "temperatures",
-      "active": true,
+      "active": false,
       "typ": 0,
       "id": 1,
       "adress": 0,
@@ -109,7 +109,7 @@
     },
     {
       "card": "outputs",
-      "active": true,
+      "active": false,
       "typ": 0,
       "id": 2,
       "adress": 0,
@@ -118,7 +118,7 @@
     },
     {
       "card": "beeb",
-      "active": true,
+      "active": false,
       "lo": 0,
       "pin": 2
     }

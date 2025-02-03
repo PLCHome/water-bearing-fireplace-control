@@ -6,7 +6,7 @@
 #include "mySetup.h"
 #include "points/myPoints.h"
 #include "timer/myTimer.h"
-#define TASK_MONITOR
+//#define TASK_MONITOR
 #ifdef TASK_MONITOR
 #include <MycilaTaskMonitor.h>
 #endif

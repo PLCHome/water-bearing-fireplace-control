@@ -6,7 +6,6 @@
 #include "hardware/Gpio.h"
 #include "hardware/I2C.h"
 #include "hardware/Modbus.h"
-#include "hardware/WS2812.h"
 #include "io/Datatool.h"
 #include <Arduino.h>
 #include <vector>
@@ -29,7 +28,6 @@ private:
   Beeb *beeb;
   Gpio *gpio;
   DS18B20 *ds18b20;
-  WS2812 *ws2812;
   std::vector<Datatool *> datatools;
 
   int16_t *temeratures;

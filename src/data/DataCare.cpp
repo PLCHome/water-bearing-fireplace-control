@@ -10,7 +10,7 @@
 #include "io/modbDOut.h"
 #include "io/modbTemp.h"
 #include "io/pcf8574io.h"
-#include "io/ws2812out.h"
+#include "io/mqttIoTemp.h"
 
 DataCare datacare = DataCare();
 
@@ -20,7 +20,6 @@ DataCare::DataCare() {
   this->beeb = new Beeb();
   this->gpio = new Gpio();
   this->ds18b20 = new DS18B20();
-  this->ws2812 = new WS2812();
 }
 
 void DataCare::init() {
@@ -29,7 +28,6 @@ void DataCare::init() {
   this->beeb->init();
   this->gpio->init();
   this->ds18b20->init();
-  this->ws2812->init();
 
   createIO();
 
@@ -102,9 +100,9 @@ void DataCare::createIO() {
           {"temperatures", []() { return new modbTemp(); }},
           {"outputs", []() { return new modbDOut(); }},
           {"beeb", []() { return new beebDOut(); }},
-          {"ws2812led", []() { return new ws2812out(); }},
           {"gpio", []() { return new gpioDio(); }},
-          {"ds18b20s", []() { return new ds18b20Temp(); }}};
+          {"ds18b20s", []() { return new ds18b20Temp(); }},
+          {"mqtts", []() { return new mqttIoTemp(); }}};
 
       if (actions.find(card) != actions.end()) {
         Datatool *newIO = actions[card]();

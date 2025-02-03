@@ -4,11 +4,19 @@
 #include <Arduino.h>
 #include <PubSubClient.h> // For MQTT
 #include <WiFi.h> // For Wi-Fi, replace this with EthernetClient if using Ethernet
+#include <vector>
 
 #include "mySetup.h"
 
 // Define the myMQTT broker server
 #define MQTT_PORT 1883 // Standard MQTT Port without TLS
+
+class myMQTTRegister {
+public:
+  virtual void processCallback(char *topic, byte *payload,
+                               unsigned int length) = 0;
+  virtual void onConnection(PubSubClient *client) = 0;
+};
 
 class myMQTT {
 private:
@@ -44,7 +52,10 @@ private:
   static void callback(char *topic, byte *payload, unsigned int length);
   void onMessage(uint32_t change);
 
+  SemaphoreHandle_t xMutex = xSemaphoreCreateMutex();
+
 public:
+  std::vector<myMQTTRegister *> mqttRegister;
   myMQTT();    // Constructor
   void init(); // myMQTT initialization function
   String cleanSubscribTopic(String topic);
@@ -52,6 +63,8 @@ public:
   void reconnect(); // Reconnect to the broker if disconnected
   String cleanPubTopic(String topic);
   void publish(String topic, String message); // Function to send messages
+  void registerTopic(myMQTTRegister *instance);
+  void unregisterTopic(myMQTTRegister *instance);
 };
 
 extern myMQTT *mymqtt;

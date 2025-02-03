@@ -3,7 +3,7 @@
 #include "data/DataCare.h"
 #include "points/myPoints.h"
 
-// #define DEBUG_MQTTPUB
+ #define DEBUG_MQTTPUB
 
 myMQTT *mymqtt = new myMQTT();
 
@@ -12,17 +12,23 @@ myMQTT::myMQTT() : client(espClient) {}
 
 // Callback for received messages
 void myMQTT::callback(char *topic, byte *payload, unsigned int length) {
-  Serial.print("Message received on topic: ");
-  Serial.println(topic);
-  Serial.print("Message: ");
-  for (unsigned int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println();
+  //if (topic[0]!=0) {
+    Serial.print("Message received on topic: ");
+    Serial.println(topic);
+    Serial.print("Message: ");
+    for (unsigned int i = 0; i < length; i++) {
+      Serial.print((char)payload[i]);
+    }
+    Serial.println();
+    for (auto &mqttreg : mymqtt->mqttRegister) {
+      mqttreg->processCallback(topic, payload, length);
+    }
+  //}
 }
 
 // myMQTT Initialization function
 void myMQTT::init() {
+  this->client.setBufferSize(1024);
   mysetup->resetSection();
   mysetup->setNextSection("mqtt");
 
@@ -89,20 +95,23 @@ String myMQTT::cleanPubTopic(String topic) {
 // Reconnect to the myMQTT broker
 void myMQTT::reconnect() {
   // Keep trying to reconnect while not connected
-  if (client.connect(this->clientId, this->user, this->pass, this->willTopic,
+  if (this->client.connect(this->clientId, this->user, this->pass, this->willTopic,
                      this->willQos, this->willRetain, this->willMessage)) {
     Serial.println("MQTT Connected!");
     if (this->connectTopic) {
-      client.publish(this->connectTopic, this->connectMessage,
+      this->client.publish(this->connectTopic, this->connectMessage,
                      this->connectRetain);
     }
     if (this->subscribeTopic) {
-      client.subscribe(this->subscribeTopic, this->subscribeQos);
+      this->client.subscribe(this->subscribeTopic, this->subscribeQos);
+    }
+    for (auto &mqttreg : mymqtt->mqttRegister) {
+      mqttreg->onConnection(&this->client);
     }
     messagedispatcher.notify(MQTTGET_DATA);
   } else {
     Serial.print("Failed, rc=");
-    Serial.print(client.state());
+    Serial.print(this->client.state());
     Serial.println(" - Trying again later...");
   }
 }
@@ -114,19 +123,22 @@ void myMQTT::loop() {
       if (millis() - this->lastConnect > this->connectTime)
         reconnect(); // Reconnect if the connection is lost
     } else
-      client.loop(); // Update the myMQTT client to process incoming and
-                     // outgoing messages
+      if (xSemaphoreTake(this->xMutex, portMAX_DELAY)) {
+        client.loop(); // Update the myMQTT client to process incoming and outgoing messages
+        xSemaphoreGive(this->xMutex);
+      }
   }
 }
 
 // Function to publish messages to a topic
 void myMQTT::publish(String topic, String message) {
   if (this->active) {
-    if (client.connected()) {
+    if (client.connected() && xSemaphoreTake(this->xMutex, portMAX_DELAY)) {
       String top = this->publishTopic + topic;
-      client.publish(top.c_str(), message.c_str(), this->publishRetain);
+      boolean send = client.publish(top.c_str(), message.c_str(), this->publishRetain);
+      xSemaphoreGive(this->xMutex);
 #ifdef DEBUG_MQTTPUB
-      Serial.print(top + " sent: ");
+      Serial.print(top + " " + send + " sent: ");
       Serial.println(message);
 #endif
     } else {
@@ -153,5 +165,19 @@ void myMQTT::onMessage(uint32_t dataChange) {
   }
   if ((dataChange & (CHANGE_MIXER)) != 0) {
     this->publish("points", mypoints.getJSONValueMixer());
+  }
+}
+
+void myMQTT::registerTopic(myMQTTRegister *instance) {
+  mqttRegister.push_back(instance);
+  if (client.connected()) {
+    instance->onConnection(&client);
+  }
+}
+
+void myMQTT::unregisterTopic(myMQTTRegister *instance) {
+  auto it = std::find(mqttRegister.begin(), mqttRegister.end(), instance);
+  if (it != mqttRegister.end()) {
+    mqttRegister.erase(it);
   }
 }

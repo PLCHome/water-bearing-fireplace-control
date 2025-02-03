@@ -3,8 +3,8 @@
 #define _ETHERNET_WEBSERVER_LOGLEVEL_ 0
 #define DEBUG_ETHERNET_WEBSERVER_PORT Serial
 #define _ASYNC_WEBSERVER_LOGLEVEL_ 0
-
-#define DEBUG_NOTIFYCLIENTS
+#include "esp_system.h"
+//#define DEBUG_NOTIFYCLIENTS
 
 #include "myServer.h"
 #include <ArduinoJson.h>
@@ -252,9 +252,11 @@ void handleSysinfo(AsyncWebServerRequest *request) {
   unsigned long uptimeMillis = millis();
   unsigned long uptimeSeconds = uptimeMillis / 1000;
   utime["d"] = uptimeSeconds / 86400;
-  utime["h"] = (uptimeSeconds % 86400) / 3600;
-  utime["m"] = (uptimeSeconds % 3600) / 60;
+  utime["h"] = (uptimeSeconds / 3600) % 24;
+  utime["m"] = (uptimeSeconds / 60) % 60;
   utime["s"] = uptimeSeconds % 60;
+  doc["temp"] = temperatureRead();
+  doc["reason"] = esp_reset_reason();
   doc["freeheapsize"] = xPortGetFreeHeapSize();
   doc["minimumeverfreeheapsize"] = xPortGetMinimumEverFreeHeapSize();
   doc["heapsize"] = ESP.getHeapSize();
@@ -276,13 +278,19 @@ void handleSysinfo(AsyncWebServerRequest *request) {
 
   doc["accesspointActive"] = accesspointActive;
   doc["wifiaptime"] = WiFiAptime;
-  doc["lanactive"] = LANActive;
 #ifdef ETH01
+  doc["lanactive"] = LANActive;
   doc["lanhostname"] = LANActive ? ETH.getHostname() : "";
+  doc["lanip"] = LANActive ? ETH.localIP().toString() : "";
+  doc["lanipv6"] = LANActive ? ETH.localIPv6().toString() : "";
+#else
+  doc["lanactive"] = fslse;
 #endif
   doc["wifiactive"] = WiFiActive;
   doc["wifimode"] = WiFi.getMode();
   doc["wifihostname"] = WiFi.getHostname();
+  doc["wifiip"] = WiFi.localIP().toString();
+  doc["wifiipv6"] = WiFi.localIPv6().toString();
   if (datacare.getDs18b20()) {
     doc["ds18b20ids"] = datacare.getDs18b20()->getJsonIDs(false);
   }
@@ -497,6 +505,12 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
           int pos = key.substring(6).toInt();
           if (pos >= 0 && pos < datacare.getLenOutputs()) {
             datacare.getOutputs()[pos] = kv.value().as<bool>();
+          }
+        }
+        if (key.startsWith("tempholdingreg")) {
+          int pos = key.substring(14).toInt();
+          if (pos >= 0 && pos < datacare.getLenTemeratures()) {
+            datacare.getTemeratures()[pos] = kv.value().as<int16_t>();
           }
         }
       }

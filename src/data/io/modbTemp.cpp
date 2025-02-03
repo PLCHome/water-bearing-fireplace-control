@@ -35,24 +35,25 @@ void modbTemp::calcTo2Dec(int16_t *buf) {
 bool modbTemp::processTempValues() {
   bool result = false;
   Modbus *modbus = this->master->getModbus();
+  uint8_t ModbusErr = MODBUS_RTU_MASTER_SUCCESS;
+  int16_t *tempHoldingRegRead = master->getLastTemeratures(this->tempValsStart);
+  int16_t *tempHoldingReg = master->getTemeratures(this->tempValsStart);
   if (this->active && modbus && modbus->isActive()) {
-    uint8_t ModbusErr;
-    int16_t *tempHoldingRegRead =
-        master->getLastTemeratures(this->tempValsStart);
-    int16_t *tempHoldingReg = master->getTemeratures(this->tempValsStart);
     modbus->ModbusCleanup();
     ModbusErr =
         modbus->readIntValues(this->typ, this->id, this->adress,
                               (uint16_t *)tempHoldingRegRead, this->values);
     if (ModbusErr == MODBUS_RTU_MASTER_SUCCESS) {
       calcTo2Dec(tempHoldingRegRead);
-      if (memcmp(tempHoldingReg, tempHoldingRegRead, this->values * 2) != 0) {
-        memcpy(tempHoldingReg, tempHoldingRegRead, this->values * 2);
-        result = true;
-      }
-    } else {
-      Serial.println("Read Temps modbus error: " + String(ModbusErr));
     }
+  }
+  if (ModbusErr == MODBUS_RTU_MASTER_SUCCESS) {
+    if (memcmp(tempHoldingReg, tempHoldingRegRead, this->values * 2) != 0) {
+      memcpy(tempHoldingReg, tempHoldingRegRead, this->values * 2);
+      result = true;
+    }
+  } else {
+    Serial.println("Read Temps modbus error: " + String(ModbusErr));
   }
   return result;
 }

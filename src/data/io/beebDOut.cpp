@@ -20,24 +20,24 @@ uint16_t beebDOut::getDOVals() { return 1; }
 
 bool beebDOut::processDoValues() {
   bool changed = false;
-  if (this->active) {
-    bool *relayLast = master->getLastOutputs(this->DOValsStart);
-    bool *relays = master->getOutputs(this->DOValsStart);
-    if (memcmp(relayLast, relays, 1) != 0) {
-      this->cycle = true;
+  bool *relayLast = master->getLastOutputs(this->DOValsStart);
+  bool *relays = master->getOutputs(this->DOValsStart);
+  if (memcmp(relayLast, relays, 1) != 0) {
+    this->cycle = true;
+    if (this->active) {
       digitalWrite(this->pin, this->lo ? !relays[0] : relays[0]);
-      memcpy(relayLast, relays, 1);
-      changed = true;
     }
+    memcpy(relayLast, relays, 1);
+    changed = true;
   }
   return changed;
 }
 
 void beebDOut::doCycleIntervall() {
-  if (this->active) {
-    bool *relays = master->getOutputs(this->DOValsStart);
-    if (relays[0]) {
-      this->cycle = !this->cycle;
+  bool *relays = master->getOutputs(this->DOValsStart);
+  if (relays[0]) {
+    this->cycle = !this->cycle;
+    if (this->active) {
       digitalWrite(this->pin,
                    (this->lo ? !relays[0] : relays[0]) && this->cycle);
     }
