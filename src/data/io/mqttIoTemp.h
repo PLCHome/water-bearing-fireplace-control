@@ -10,7 +10,6 @@ class mqttIoTemp : public Datatool, myMQTTRegister {
 private:
   String topic;
   uint8_t qos;
-  int16_t val;
   int16_t valtyp;
   int16_t defval;
   String json;
@@ -22,6 +21,7 @@ private:
 public:
   ~mqttIoTemp();
   bool init(DataCare *master) override;
+  void start() override;
   uint16_t getTempVals() override;
   bool processTempValues() override;
 

@@ -5,7 +5,8 @@ const PT_TEMPT = 1;
 const PT_LOGIC = 2;
 const PT_OUT = 3;
 const PT_MIXER = 4;
-const PT_PIDMIXER = 5;
+const PT_MIXERT = 5;
+const PT_PIDMIXER = 6;
 
 const POINTSFILENAME = "/config/points.json";
 
@@ -36,6 +37,7 @@ const EXTBUTTONS = `
 <a data-type="${PT_LOGIC}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> logic</a>
 <a data-type="${PT_OUT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> output</a>
 <a data-type="${PT_MIXER}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> mixer</a>
+<a data-type="${PT_MIXERT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> mixer to measurement</a>
 <a data-type="${PT_PIDMIXER}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> pid-mixer</a>`;
 
 const SORTAREA = '<div id="mySortArea" style="height:100%; width:100%; overflow:auto"" class="list-group" ></div>';
@@ -197,6 +199,67 @@ const BARMIXER = `<form>
     <div class="edit-sitem">
       <input id="ttemp-%id%" class="ttemp 2dec_input"/>
       <label for="ttemp-%id%">target temperature</label>
+    </div>
+    <div class="edit-sitem">
+      <input id="hyst-%id%" class="hyst 2dec_input"/>
+      <label for="hyst-%id%">hysterresis</label>
+    </div>
+    <div class="edit-sitem">
+      <input id="delta-%id%" class="delta 2dec_input"/>
+      <label for="delta-%id%">max delta</label>
+    </div>
+    <div class="edit-sitem">
+      <select id="offc-%id%" class="nc openclose" ></select>
+      <label for="offc-%id%">when off</label>
+    </div>
+    <div class="edit-item">
+      <select id="opclose-%id%" class="opclose outselect" ></select>
+      <label for="opclose-%id%">output close <a class="value lightbulb">&nbsp;</a></label>
+    </div>
+    <div class="edit-item">
+      <select id="opopen-%id%" class="opopen outselect" ></select>
+      <label for="opopen-%id%">output open <a class="value lightbulb">&nbsp;</a></label>
+    </div>
+  </div>
+</div>
+</form>`;
+
+const BARMIXERT = `<form>
+<div class="edit-btn process-mov">
+  <i class="fa-solid fa-up-down"></i>
+</div>
+<div class="edit-btn process-del">
+  <i class="fa-solid fa-trash-can"></i>
+</div>
+<div class="edit-cont">
+  <div class="edit-bar">
+    <div class="edit-item">
+      <input id="name-%id%" class="name name_input""/>
+      <label for="name-%id%">name</label>
+    </div>
+    <div class="edit-item">
+      <select id="idon-%id%" class="idon processelect" ></select>
+      <label for="idon-%id%">process on<a class="value">&nbsp;</a></label>
+    </div>
+    <div class="edit-item">
+      <select id="tpos-%id%" class="tpos tempselect" ></select>
+      <label for="tpos-%id%">temperature measurement <a class="value div100">&nbsp;</a></label>
+    </div>
+    <div class="edit-sitem">
+      <input id="chkint-%id%" class="chkint uint_input"/>
+      <label for="chkint-%id%">inetrvall (s)</label>
+    </div>
+    <div class="edit-sitem">
+      <input id="imptime-%id%" class="imptime uint_input"/>
+      <label for="imptime-%id%">impulse time (s)</label>
+    </div>
+    <div class="edit-sitem">
+      <input id="impmax-%id%" class="impmax uint_input"/>
+      <label for="impmax-%id%">impulse to open</label>
+    </div>
+    <div class="edit-item">
+      <select id="tpos2-%id%" class="tpos2 tempselect" ></select>
+      <label for="tpos2-%id%">target temperature <a class="value div100">&nbsp;</a></label>
     </div>
     <div class="edit-sitem">
       <input id="hyst-%id%" class="hyst 2dec_input"/>
@@ -462,6 +525,8 @@ function createNewRow(type) {
     case PT_LOGIC: break;
     case PT_OUT: break;
     case PT_MIXER: val.chkint = 10; val.imptime = 2; val.ttemp = 30; val.impmax = 30; val.hyst = 100; val.delta = 30; break;
+    case PT_MIXERT: val.chkint = 10; val.imptime = 2; val.impmax = 30; val.hyst = 100; val.delta = 30; break;
+    case PT_PIDMIXER: break;
   }
   val.name = `Process ${val.id + 1}`;
   createRow(val)
@@ -477,6 +542,8 @@ function createRow(val) {
     case PT_LOGIC: body.html(BARLOGIC.replaceAll(`%id%`, `${val.id}`)); break;
     case PT_OUT: body.html(BAROUTPUT.replaceAll(`%id%`, `${val.id}`)); break;
     case PT_MIXER: body.html(BARMIXER.replaceAll(`%id%`, `${val.id}`)); break;
+    case PT_MIXERT: body.html(BARMIXERT.replaceAll(`%id%`, `${val.id}`)); break;
+    case PT_PIDMIXER: body.html(PIDBARMIXER.replaceAll(`%id%`, `${val.id}`)); break;
   }
   $("#mySortArea").append(body);
   setAtt();

@@ -17,6 +17,7 @@ protected:
 
 public:
   virtual bool init(DataCare *master);
+  virtual void start();
   virtual uint16_t getTempVals();
   virtual void setTempValsStart(int16_t);
   virtual int16_t getTempValsStart();

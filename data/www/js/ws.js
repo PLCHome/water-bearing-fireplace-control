@@ -113,7 +113,8 @@ function onMessage(event) {
       }
     }
   }
-  change('', myObj);
+  console.log(typeof myObj);
+  if (myObj) change('', myObj);
 }
 
 function uploadString(filename, fileContent, cb) {

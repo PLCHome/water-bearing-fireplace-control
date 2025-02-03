@@ -9,8 +9,8 @@
 #include "io/gpioDio.h"
 #include "io/modbDOut.h"
 #include "io/modbTemp.h"
-#include "io/pcf8574io.h"
 #include "io/mqttIoTemp.h"
+#include "io/pcf8574io.h"
 
 DataCare datacare = DataCare();
 
@@ -35,6 +35,10 @@ void DataCare::init() {
   initDiVals();
   initDoVals();
   initLedVals();
+
+  for (const auto &datatool : this->datatools) {
+    datatool->start();
+  }
 
   Serial.print("DataCare: Tmp: ");
   Serial.print(this->getLenTemeratures());

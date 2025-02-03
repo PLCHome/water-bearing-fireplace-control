@@ -1,6 +1,7 @@
 #include "myPoints.h"
 #include "myLogicPoint.h"
 #include "myMixerPoint.h"
+#include "myMixerTPoint.h"
 #include "myPidMixerPoint.h"
 #include "myOutPoint.h"
 #include "myTempPoint.h"
@@ -92,7 +93,7 @@ String myPoints::getJSONValueMixer() {
   JsonVariant data = doc.to<JsonVariant>();
 
   for (auto *loop : vmypoint) {
-    if (loop->getTyp() == PT_MIXER) {
+    if (loop->getTyp() == PT_MIXER || loop->getTyp() == PT_MIXERT) {
       JsonObject idoc = data[String(loop->getId())].to<JsonObject>();
       ((myMixerPoint *)loop)->getJson(idoc);
     }
@@ -155,6 +156,9 @@ void myPoints::build() {
               break;
             case PT_MIXER:
               next = new myMixerPoint(value, typ);
+              break;
+            case PT_MIXERT:
+              next = new myMixerTPoint(value, typ);
               break;
             case PT_PIDMIXER:
               next = new myPidMixerPoint(value, typ);

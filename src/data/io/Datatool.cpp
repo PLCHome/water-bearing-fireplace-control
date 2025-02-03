@@ -8,6 +8,8 @@ bool Datatool::init(DataCare *master) {
   return false;
 }
 
+void Datatool::start() {};
+
 uint16_t Datatool::getTempVals() { return 0; }
 
 void Datatool::setTempValsStart(int16_t val) { this->tempValsStart = val; }

@@ -510,7 +510,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         if (key.startsWith("tempholdingreg")) {
           int pos = key.substring(14).toInt();
           if (pos >= 0 && pos < datacare.getLenTemeratures()) {
-            datacare.getTemeratures()[pos] = kv.value().as<int16_t>();
+            datacare.getLastTemeratures()[pos] = kv.value().as<int16_t>();
           }
         }
       }

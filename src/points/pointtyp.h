@@ -8,7 +8,8 @@ enum pointTyp : int8_t {
   PT_LOGIC = 2,
   PT_OUT = 3,
   PT_MIXER = 4,
-  PT_PIDMIXER = 5
+  PT_MIXERT = 5,
+  PT_PIDMIXER = 6
 };
 
 #endif /* POINTTYP_H_ */

@@ -8,7 +8,6 @@ bool mqttIoTemp::init(DataCare *master) {
   this->topic = mysetup->getArrayElementValue<String>("topic", "");
   this->qos = mysetup->getArrayElementValue<uint8_t>("qos", 0);
   this->defval = mysetup->getArrayElementValue<int16_t>("def", 2000);
-  this->val = defval;
   this->valtyp = mysetup->getArrayElementValue<int16_t>("valtyp", 100);
   this->json = mysetup->getArrayElementValue<String>("json", "");
   this->maxval = mysetup->getArrayElementValue<int16_t>("maxval", 5000);
@@ -19,21 +18,21 @@ bool mqttIoTemp::init(DataCare *master) {
   return true;
 }
 
+void mqttIoTemp::start() {
+    this->master->getLastTemeratures(this->tempValsStart)[0] = this->defval;
+}
+
 uint16_t mqttIoTemp::getTempVals() { return 1; }
 
 bool mqttIoTemp::processTempValues() {
   bool result = false;
-  if (this->active) {
+  int16_t *tempHoldingRegRead =
+      this->master->getLastTemeratures(this->tempValsStart);
+  int16_t *tempHoldingReg = this->master->getTemeratures(this->tempValsStart);
 
-    int16_t *tempHoldingRegRead =
-        master->getLastTemeratures(this->tempValsStart);
-    int16_t *tempHoldingReg = master->getTemeratures(this->tempValsStart);
-
-    tempHoldingRegRead[0] = this->val;
-    if (memcmp(tempHoldingReg, tempHoldingRegRead, 2) != 0) {
-      memcpy(tempHoldingReg, tempHoldingRegRead, 2);
-      result = true;
-    }
+  if (memcmp(tempHoldingReg, tempHoldingRegRead, 2) != 0) {
+    memcpy(tempHoldingReg, tempHoldingRegRead, 2);
+    result = true;
   }
   return result;
 }
@@ -44,7 +43,7 @@ int16_t mqttIoTemp::cut(uint8_t cuttype, int16_t aktval, int16_t cutval) {
     return aktval;
     break;
   case 1:
-    return this->val;
+    return this->master->getLastTemeratures(this->tempValsStart)[0];
     break;
   case 2:
     return this->defval;
@@ -90,7 +89,7 @@ void mqttIoTemp::processCallback(char *topic, byte *payload,
       } else if (newval > this->maxval) {
         newval = cut(this->maxcut, newval, this->maxval);
       }
-      this->val = newval;
+      this->master->getLastTemeratures(this->tempValsStart)[0] = newval;
     } else {
       Serial.print("Pfad nicht gefunden: ");
       Serial.println(this->json);
