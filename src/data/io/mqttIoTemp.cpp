@@ -50,6 +50,7 @@ int16_t mqttIoTemp::cut(uint8_t cuttype, int16_t aktval, int16_t cutval) {
     return this->defval;
     break;
   case 3:
+  default:
     return cutval;
     break;
   }
