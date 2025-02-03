@@ -4,7 +4,7 @@
 #define DEBUG_ETHERNET_WEBSERVER_PORT Serial
 #define _ASYNC_WEBSERVER_LOGLEVEL_ 0
 #include "esp_system.h"
-//#define DEBUG_NOTIFYCLIENTS
+#define DEBUG_NOTIFYCLIENTS
 
 #include "myServer.h"
 #include <ArduinoJson.h>

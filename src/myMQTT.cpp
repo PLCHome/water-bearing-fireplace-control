@@ -3,7 +3,7 @@
 #include "data/DataCare.h"
 #include "points/myPoints.h"
 
- #define DEBUG_MQTTPUB
+//#define DEBUG_MQTTPUB
 
 myMQTT *mymqtt = new myMQTT();
 
