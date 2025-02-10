@@ -58,10 +58,18 @@ function setValue(path, val) {
       html = `<i onClick="showInput('${path}', ${val || 0})">${((val || 0) / 100).toFixed(2)}</i>`;
     } else if (ele.hasClass("lightbulb")) {
       html = `<i class="${val ? 'fa-solid' : 'fa-regular'} fa-lightbulb" onClick="sendData({${path}:${!val}});"></i>`
+    } else if (ele.hasClass("lightbulb2")) {
+      html = `<i class="${val==-1 ? 'fa fa-bug' : val==1 ? 'fa-solid fa-lightbulb' : 'fa-regular fa-lightbulb'}"></i>`
+    } else if (ele.hasClass("processind")) {
+      html = `<i class="${val ? 'fas fa-ban' : 'fas fa-pepper-hot'}" onClick="sendData({${path}:${!val}});"></i>`
     } else if (ele.hasClass("digit2")) {
       html = val.toString().padStart(2, '0');
     } else if (ele.hasClass("digit4")) {
       html = val.toString().padStart(4, '0');
+    } else if (ele.hasClass("perc")) {
+      html = val.toString()+'%';
+    } else if (ele.hasClass("act")) {
+      html = 'now '+val.toString();
     } else {
       html = val;
     }
@@ -72,26 +80,27 @@ function setValue(path, val) {
 function showInput(path, val) {
   let ele = $(`[data-update='${path}']`);
   if (!ele) return;
-
-  let inputHtml = `
-    <div class="input-overlay">
-      <input type="number" id="input-${path}" value="${(val / 100).toFixed(2)}">
-      <button onClick="confirmInput('${path}')">OK</button>
-      <button onClick="cancelInput('${path}', ${val})">Abbrechen</button>
-    </div>
-  `;
-  ele.html(inputHtml);
+  ele.each(function (index) {
+    let inputHtml = `
+      <div class="input-overlay">
+        <input type="number" id="input-${path}-${index}" value="${(val / 100).toFixed(2)}">
+        <button onClick="confirmInput('${path}',${index})">OK</button>
+        <button onClick="cancelInput('${path}',${index}, ${val})">Abbrechen</button>
+      </div>
+    `;
+    $(this).html(inputHtml)
+  });
 }
 
-function confirmInput(path) {
-  let inputVal = parseFloat($(`#input-${path}`).val());
+function confirmInput(path,i) {
+  let inputVal = parseFloat($(`#input-${path}-${i}`).val());
   let newValue = Math.round(inputVal * 100); // Umrechnung für dein Datenformat
   let ele = $(`[data-update='${path}']`);
   ele.find(".input-overlay").remove();
   sendData({ [path]: newValue });
 }
 
-function cancelInput(path, originalVal) {
+function cancelInput(path,i, originalVal) {
   let ele = $(`[data-update='${path}']`);
   ele.find(".input-overlay").remove();
   setValue(path, originalVal);

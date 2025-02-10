@@ -35,7 +35,7 @@ function meineFunktion() {
   getNames(function () {
     let body = '<div style="height:100%; width:100%; overflow:auto"><table class="w3-table-all w3-hoverable"><tr><th> Bezeichnung </th><th> Wert </th></tr>';
     for (let i = 0; i < temperaturNames.length; i++) {
-      body += `<tr><td data-update="name_tempholdingreg${i}">${temperaturNames[i]}</td><td style="text-align: right;" data-update="tempholdingreg${i}" class="div100"> &nbsp; </td></tr>`;
+      body += `<tr><td data-update="name_tempholdingreg${i}">${temperaturNames[i]}</td><td style="text-align: right;" ><a data-update="tempholdingreg${i}" class="div100">&nbsp;</a> <i data-update="noreadtemp${i}" class="processind">&nbsp;</i></td></tr>`;
     }
     for (let i = 0; i < inputNames.length; i++) {
       body += `<tr><td data-update="name_inputintern${i}">${inputNames[i]}</td><td style="text-align: right;" data-update="inputintern${i}"> &nbsp; </td></tr>`;

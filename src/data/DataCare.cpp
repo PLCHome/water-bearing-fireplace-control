@@ -134,6 +134,8 @@ void DataCare::initTempVals() {
         (int16_t *)calloc(this->lenTemeratures, sizeof(int16_t));
     this->lastTemeratures =
         (int16_t *)calloc(this->lenTemeratures, sizeof(int16_t));
+    this->noReadTemeratures =
+        (bool *)calloc(this->lenTemeratures, sizeof(bool));
   }
 }
 
@@ -234,13 +236,18 @@ String DataCare::jsonTemeratures(bool obj) const {
                          this->lenTemeratures);
 }
 
+String DataCare::jsonNoTemeratures(bool obj) const {
+  return this->jsonArray(obj ? "noreadtemp" : "", (uint8_t*) noReadTemeratures,
+                         this->lenTemeratures);
+}
+
 String DataCare::jsonDI(bool obj) const {
   return this->jsonArray(obj ? "inputintern" : "", this->inputs,
                          this->lenInputs);
 }
 
 String DataCare::jsonDO(bool obj) const {
-  return this->jsonArray(obj ? "relays" : "", this->outputs, this->lenOutputs);
+  return this->jsonArray(obj ? "relays" : "", (uint8_t*) this->outputs, this->lenOutputs);
 }
 
 String DataCare::jsonCounts(bool obj) const {
@@ -271,6 +278,10 @@ int16_t *DataCare::getTemeratures(int16_t pos) const {
 
 int16_t *DataCare::getLastTemeratures(int16_t pos) const {
   return &this->lastTemeratures[pos];
+}
+
+bool *DataCare::getNoReadTemeratures(int16_t pos) const {
+  return &this->noReadTemeratures[pos];
 }
 
 int16_t DataCare::getLenTemeratures() const { return this->lenTemeratures; }

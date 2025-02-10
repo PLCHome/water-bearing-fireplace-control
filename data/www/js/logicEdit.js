@@ -54,11 +54,11 @@ const BARTEMPERATURE = `<form>
   <div class="edit-bar">
     <div class="edit-item">
       <input id="name-%id%" class="name name_input""/>
-      <label for="name-%id%">name</label>
+      <label for="name-%id%">name <a class="point lightbulb2">&nbsp;</a></label>
     </div>
     <div class="edit-item">
       <select id="tpos-%id%" class="tpos tempselect" ></select>
-      <label for="tpos-%id%">temperature measurement <a class="value div100">&nbsp;</a></label>
+      <label for="tpos-%id%">temperature  <a class="value div100">&nbsp;</a> <i class="process processind">&nbsp;</i></label>
     </div>
     <div class="edit-sitem">
       <input id="toff-%id%" class="toff 2dec_input"/>
@@ -83,15 +83,15 @@ const BAR2TEMPERATURE = `<form>
   <div class="edit-bar">
     <div class="edit-item">
       <input id="name-%id%" class="name name_input""/>
-      <label for="name-%id%">name</label>
+      <label for="name-%id%">name <a class="point lightbulb2">&nbsp;</a></label>
     </div>
     <div class="edit-item">
       <select id="tpos-%id%" class="tpos tempselect" ></select>
-      <label for="tpos-%id%">temperature measurement <a class="value div100">&nbsp;</a></label>
+      <label for="tpos-%id%">temperature  <a class="value div100">&nbsp;</a> <i class="process processind">&nbsp;</i></label>
     </div>
     <div class="edit-item">
       <select id="tpos2-%id%" class="tpos2 tempselect" ></select>
-      <label for="tpos2-%id%">hysteresis measurement <a class="value div100">&nbsp;</a></label>
+      <label for="tpos2-%id%">hysteresis measurement <a class="value div100">&nbsp;</a> <i class="process processind">&nbsp;</i></label>
     </div>
     <div class="edit-sitem">
       <input id="t2minus-%id%" class="t2minus 2dec_input"/>
@@ -116,7 +116,7 @@ const BARLOGIC = `<form>
   <div class="edit-bar">
     <div class="edit-item">
       <input id="name-%id%" class="name name_input""/>
-      <label for="name-%id%">name</label>
+      <label for="name-%id%">name <a class="point lightbulb2">&nbsp;</a></label>
     </div>
     <div class="edit-item">
       <select id="ida-%id%" class="ida processelect" ></select>
@@ -145,7 +145,7 @@ const BAROUTPUT = `<form>
   <div class="edit-bar">
     <div class="edit-item">
       <input id="name-%id%" class="name name_input""/>
-      <label for="name-%id%">name</label>
+      <label for="name-%id%">name <a class="point lightbulb2">&nbsp;</a></label>
     </div>
     <div class="edit-item">
       <select id="ida-%id%" class="ida processelect" ></select>
@@ -174,15 +174,15 @@ const BARMIXER = `<form>
   <div class="edit-bar">
     <div class="edit-item">
       <input id="name-%id%" class="name name_input""/>
-      <label for="name-%id%">name</label>
+      <label for="name-%id%">name <a class="point lightbulb2">&nbsp;</a> <a class="value perc">&nbsp;</a></label>
     </div>
     <div class="edit-item">
       <select id="idon-%id%" class="idon processelect" ></select>
-      <label for="idon-%id%">process on<a class="value">&nbsp;</a></label>
+      <label for="idon-%id%">process on <a class="value">&nbsp;</a></label>
     </div>
     <div class="edit-item">
       <select id="tpos-%id%" class="tpos tempselect" ></select>
-      <label for="tpos-%id%">temperature measurement <a class="value div100">&nbsp;</a></label>
+      <label for="tpos-%id%">temperature <a class="value div100">&nbsp;</a> <i class="process processind">&nbsp;</i></label>
     </div>
     <div class="edit-sitem">
       <input id="chkint-%id%" class="chkint uint_input"/>
@@ -194,7 +194,7 @@ const BARMIXER = `<form>
     </div>
     <div class="edit-sitem">
       <input id="impmax-%id%" class="impmax uint_input"/>
-      <label for="impmax-%id%">impulse to open</label>
+      <label for="impmax-%id%">impulse to open <a class="value act">&nbsp;</a></label>
     </div>
     <div class="edit-sitem">
       <input id="ttemp-%id%" class="ttemp 2dec_input"/>
@@ -235,15 +235,15 @@ const BARMIXERT = `<form>
   <div class="edit-bar">
     <div class="edit-item">
       <input id="name-%id%" class="name name_input""/>
-      <label for="name-%id%">name</label>
+      <label for="name-%id%">name <a class="point lightbulb2">&nbsp;</a> <a class="value perc">&nbsp;</a></label>
     </div>
     <div class="edit-item">
       <select id="idon-%id%" class="idon processelect" ></select>
-      <label for="idon-%id%">process on<a class="value">&nbsp;</a></label>
+      <label for="idon-%id%">process on <a class="value">&nbsp;</a></label>
     </div>
     <div class="edit-item">
       <select id="tpos-%id%" class="tpos tempselect" ></select>
-      <label for="tpos-%id%">temperature measurement <a class="value div100">&nbsp;</a></label>
+      <label for="tpos-%id%">temperature <a class="value div100">&nbsp;</a> <i class="process processind">&nbsp;</i></label>
     </div>
     <div class="edit-sitem">
       <input id="chkint-%id%" class="chkint uint_input"/>
@@ -255,11 +255,11 @@ const BARMIXERT = `<form>
     </div>
     <div class="edit-sitem">
       <input id="impmax-%id%" class="impmax uint_input"/>
-      <label for="impmax-%id%">impulse to open</label>
+      <label for="impmax-%id%">impulse to open <a class="value act">&nbsp;</a></label>
     </div>
     <div class="edit-item">
       <select id="tpos2-%id%" class="tpos2 tempselect" ></select>
-      <label for="tpos2-%id%">target temperature <a class="value div100">&nbsp;</a></label>
+      <label for="tpos2-%id%">target temperature <a class="value div100">&nbsp;</a> <i class="process processind">&nbsp;</i></label>
     </div>
     <div class="edit-sitem">
       <input id="hyst-%id%" class="hyst 2dec_input"/>
@@ -296,15 +296,15 @@ const PIDBARMIXER = `<form>
   <div class="edit-bar">
     <div class="edit-item">
       <input id="name-%id%" class="name name_input""/>
-      <label for="name-%id%">name</label>
+      <label for="name-%id%">name <a class="point lightbulb2">&nbsp;</a></label>
     </div>
     <div class="edit-item">
       <select id="idon-%id%" class="idon processelect" ></select>
-      <label for="idon-%id%">process on<a class="value">&nbsp;</a></label>
+      <label for="idon-%id%">process on <a class="value">&nbsp;</a></label>
     </div>
     <div class="edit-item">
       <select id="tpos-%id%" class="tpos tempselect" ></select>
-      <label for="tpos-%id%">temperature measurement <a class="value div100">&nbsp;</a></label>
+      <label for="tpos-%id%">temperature <a class="value div100">&nbsp;</a> <i class="process processind">&nbsp;</i></label>
     </div>
     <div class="edit-sitem">
       <input id="chkint-%id%" class="chkint uint_input"/>
@@ -401,13 +401,24 @@ function setAtt() {
         //data-update
         //$(this).parent().find('.value').prop("id", "tempholdingreg" + sel).html("");
         $(this).parent().find('.value').attr("data-update", "tempholdingreg" + sel).html("");
+        $(this).parent().find('.process').attr("data-update", "noreadtemp" + sel).html("");
         getReadings();
       }
     });
   $("label")
     .css({ "font-size": "0.8em" });
   $(".processelect")
-    .addClass("w3-select");
+    .addClass("w3-select")
+    .off("change")
+    .on("change", function () {
+      var sel = $(this).find('option:selected').val();
+      if (sel != "") {
+        //data-update
+        //$(this).parent().find('.value').prop("id", "tempholdingreg" + sel).html("");
+        $(this).parent().find('.value').attr("data-update",  "process_" + sel).html("");
+        getReadings();
+      }
+    });
   $(".logcselect")
     .addClass("w3-select");
   $(".outselect")
@@ -562,6 +573,10 @@ function createRow(val) {
   $(`[data-id='${val.id}'] .kp`).val((parseFloat(val.kp) / 100).toFixed(2));
   $(`[data-id='${val.id}'] .ki`).val((parseFloat(val.ki) / 100).toFixed(2));
   $(`[data-id='${val.id}'] .kd`).val((parseFloat(val.kd) / 100).toFixed(2));
+
+  $(`[data-id='${val.id}'] .name`).parent().find('.value').attr("data-update", val.id+"_percent").html("");
+  $(`[data-id='${val.id}'] .name`).parent().find('.point').attr("data-update", "process_"+val.id).html("");
+  $(`[data-id='${val.id}'] .impmax`).parent().find('.value').attr("data-update", val.id+"_currentPulse").html("");
 
   function setOption(id) {
     var ele = $(`[data-id='${val.id}'] .${id} option`);

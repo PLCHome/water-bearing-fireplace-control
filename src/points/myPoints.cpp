@@ -50,7 +50,6 @@ ergPoint myPoints::getVal(String name) {
 void myPoints::calcVal(uint32_t change) {
   if (change & (CHANGE_TEMP | CHANGE_DI) != 0) {
     for (auto *p : vmypoint) {
-      this->changed = false;
       p->unsetCalculated();
     }
     for (auto *p : vmypoint) {
@@ -58,6 +57,7 @@ void myPoints::calcVal(uint32_t change) {
     }
 
     if (this->changed) {
+      this->changed = false;
       messagedispatcher.notify(CHANGE_POINTS);
     }
   }

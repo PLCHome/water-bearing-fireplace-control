@@ -22,7 +22,7 @@ private:
   int16_t delta = 30;
   int16_t targetTemperature;
 
-  int8_t prozent;
+  int8_t percent;
 
   int16_t closing =
       0; // closing >0 : closing; closing =0 : off mode; closing =-1 : on mode;

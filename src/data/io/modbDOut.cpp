@@ -26,12 +26,12 @@ bool modbDOut::processDoValues() {
       modbus->ModbusCleanup();
       ModbusErr = modbus->writeBoolValues(this->typ, this->id, this->adress,
                                           relays, this->values);
-      if (ModbusErr == MODBUS_RTU_MASTER_SUCCESS) {
-        memcpy(relayLast, relays, this->values);
-        result = true;
-      } else {
-        Serial.println("Write relays modbus error: " + String(ModbusErr));
-      }
+    }
+    if (ModbusErr == MODBUS_RTU_MASTER_SUCCESS) {
+      memcpy(relayLast, relays, this->values);
+      result = true;
+    } else {
+      Serial.println("Write relays modbus error: " + String(ModbusErr));
     }
   }
   return result;

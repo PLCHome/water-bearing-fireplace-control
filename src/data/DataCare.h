@@ -32,6 +32,7 @@ private:
 
   int16_t *temeratures;
   int16_t *lastTemeratures;
+  bool *noReadTemeratures;
   TA_INPUT *inputs;
   bool *outputs;
   bool *lastOutputs;
@@ -68,6 +69,7 @@ public:
   void notifyLoop();
 
   String jsonTemeratures(bool obj) const;
+  String jsonNoTemeratures(bool obj) const;
   String jsonDI(bool obj) const;
   String jsonDO(bool obj) const;
   String jsonCounts(bool obj) const;
@@ -80,6 +82,7 @@ public:
 
   int16_t *getTemeratures(int16_t pos = 0) const;
   int16_t *getLastTemeratures(int16_t pos = 0) const;
+  bool *getNoReadTemeratures(int16_t pos = 0) const;
   TA_INPUT *getInputs(int16_t pos = 0) const;
   bool *getOutputs(int16_t pos = 0) const;
   bool *getLastOutputs(int16_t pos = 0) const;

@@ -84,8 +84,7 @@ myMixerPoint::myMixerPoint(JsonVariant json, pointTyp type)
 myMixerPoint::~myMixerPoint() {
   mytimer.unregisterWakeUp(this);
   mytimer.unregisterCycle(this);
-  if (this->on != TP_OFF)
-    this->doWakeUp();
+  this->doWakeUp();
 }
 
 void myMixerPoint::calcVal() {}
@@ -109,8 +108,13 @@ void myMixerPoint::getJson(JsonObject &doc) {
   doc["lastTemperature"] = this->lastTemperature;
   doc["hysteresis"] = this->hysteresis;
   doc["delta"] = this->delta;
-  doc["targetTemperature"] = this->targetTemperature;
-  doc["prozent"] = this->prozent;
+  uint16_t t = -127;
+  if (this->tpos > -1) {
+    t = datacare.getTemeratures()[this->tpos];
+  }
+  doc["t"] = t;
+  doc["tt"] = this->targetTemperature;
+  doc["percent"] = this->percent;
   doc["closing"] = this->closing;
 }
 
@@ -120,32 +124,25 @@ void myMixerPoint::doWakeUp() {
   Serial.print(": ");
   Serial.print(this->name);
 #endif
-  this->on = TP_OFF;
   if (this->opclose >= 0) {
-    mypoints.setChanged();
 #ifdef DEBUG_TIMING
     Serial.print(" close off");
 #endif
     datacare.getOutputs()[this->opclose] = false;
-  } else
-    this->on = TP_ERR;
+  }
+
   if (this->opopen >= 0) {
-    mypoints.setChanged();
 #ifdef DEBUG_TIMING
     Serial.print(" open off ");
 #endif
     datacare.getOutputs()[this->opopen] = false;
-    this->on = TP_OFF;
-  } else
-    this->on = TP_ERR;
+  }
 
 #ifdef DEBUG_TIMING
   Serial.println(this->on != TP_ERR);
 #endif
-  if (this->on != TP_ERR) {
-    datacare.notifyLoop();
-    messagedispatcher.notify(CHANGE_MIXER);
-  }
+  datacare.notifyLoop();
+  messagedispatcher.notify(CHANGE_MIXER);
 }
 
 bool myMixerPoint::doClose() {
@@ -157,16 +154,13 @@ bool myMixerPoint::doClose() {
   Serial.print(" close ");
 #endif
   if (this->opopen >= 0 && datacare.getOutputs()[this->opopen]) {
-    this->on = TP_ERR;
     result = false;
   }
   if (result && this->opclose >= 0 && !datacare.getOutputs()[this->opclose]) {
     mypoints.setChanged();
     datacare.getOutputs()[this->opclose] = true;
     mytimer.registerWakeUp(this);
-    this->on = TP_ON;
   } else {
-    this->on = TP_ERR;
     result = false;
   }
 #ifdef DEBUG_TIMING
@@ -188,16 +182,13 @@ bool myMixerPoint::doOpen() {
   Serial.print(" open ");
 #endif
   if (this->opclose >= 0 && datacare.getOutputs()[this->opclose]) {
-    this->on = TP_ERR;
     result = false;
   }
   if (result && this->opopen >= 0 && !datacare.getOutputs()[this->opopen]) {
     mypoints.setChanged();
     datacare.getOutputs()[this->opopen] = true;
     mytimer.registerWakeUp(this);
-    this->on = TP_ON;
   } else {
-    this->on = TP_ERR;
     result = false;
   }
 #ifdef DEBUG_TIMING
@@ -212,12 +203,14 @@ bool myMixerPoint::doOpen() {
 
 void myMixerPoint::doCycleIntervall() {
   uint16_t t;
+  ergPoint ON = TP_OFF;
   ergPoint pointON = mypoints.getVal(this->idon);
   if (this->tpos > -1) // get temperatuer
   {
     t = datacare.getTemeratures()[this->tpos];
   } else {
     pointON = TP_ERR;
+    ON = TP_ERR;
   }
   if (closing > 0) // still closing
   {
@@ -225,11 +218,11 @@ void myMixerPoint::doCycleIntervall() {
     if (this->offClosed) {
       if (doClose())
         closing--;
-      prozent = (closing * 100 / pulsesToOpen);
+      percent = (closing * 100 / pulsesToOpen);
     } else {
       if (doOpen())
         closing--;
-      prozent = ((pulsesToOpen - closing) * 100 / pulsesToOpen);
+      percent = ((pulsesToOpen - closing) * 100 / pulsesToOpen);
     }
   } else if (closing == 0 && pointON == TP_ON) // still closed and switched on
   {
@@ -241,17 +234,18 @@ void myMixerPoint::doCycleIntervall() {
       currentPulse = pulsesToOpen;
       closing = -1;
     }
-    prozent = (currentPulse * 100 / pulsesToOpen);
+    percent = (currentPulse * 100 / pulsesToOpen);
   } else if (closing == -1 &&
              pointON != TP_ON) // still on and switched off of err
   {
     setcycleInterval(true);
     closing = pulsesToOpen;
-    prozent = 100;
+    percent = 100;
   }
 
   if (closing == -1) // atill on
   {
+    ON = TP_ON;
     setcycleInterval(false);
     int16_t aktDelta = (t - lastTemperature);
     if ((t < (targetTemperature - hysteresis)) &&
@@ -264,8 +258,9 @@ void myMixerPoint::doCycleIntervall() {
       if (doClose())
         currentPulse--;
     }
-    prozent = (currentPulse * 100 / pulsesToOpen);
+    percent = (currentPulse * 100 / pulsesToOpen);
   }
+  this->setOn(ON);
   // store temperature
   lastTemperature = t;
 }

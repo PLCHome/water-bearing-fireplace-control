@@ -14,7 +14,7 @@ bool modbTemp::init(DataCare *master) {
 
 uint16_t modbTemp::getTempVals() { return this->values; }
 
-void modbTemp::calcTo2Dec(int16_t *buf) {
+void modbTemp::calcTo2Dec(int16_t *buf, int16_t *out, bool *p) {
   int16_t mul = 1;
   switch (this->decimals) {
   case 0:
@@ -23,12 +23,11 @@ void modbTemp::calcTo2Dec(int16_t *buf) {
   case 1:
     mul = 10;
     break;
-  default:
-    return;
   }
 
   for (int i = 0; i < this->values; i++) {
-    buf[i] = buf[i] * mul;
+    if (!p[i])
+      out[i] = buf[i] * mul;
   }
 }
 
@@ -36,24 +35,24 @@ bool modbTemp::processTempValues() {
   bool result = false;
   Modbus *modbus = this->master->getModbus();
   uint8_t ModbusErr = MODBUS_RTU_MASTER_SUCCESS;
-  int16_t *tempHoldingRegRead = master->getLastTemeratures(this->tempValsStart);
+  //int16_t *tempHoldingRegRead = master->getLastTemeratures(this->tempValsStart);
+  int16_t *tempHoldingWork = master->getLastTemeratures(this->tempValsStart);
   int16_t *tempHoldingReg = master->getTemeratures(this->tempValsStart);
   if (this->active && modbus && modbus->isActive()) {
     modbus->ModbusCleanup();
+    int16_t tempHoldingRegRead[this->values];
     ModbusErr =
         modbus->readIntValues(this->typ, this->id, this->adress,
                               (uint16_t *)tempHoldingRegRead, this->values);
     if (ModbusErr == MODBUS_RTU_MASTER_SUCCESS) {
-      calcTo2Dec(tempHoldingRegRead);
+      calcTo2Dec(tempHoldingRegRead, tempHoldingWork, this->master->getNoReadTemeratures(this->tempValsStart));
+    } else {
+      Serial.println("Read Temps modbus error: " + String(ModbusErr));
     }
   }
-  if (ModbusErr == MODBUS_RTU_MASTER_SUCCESS) {
-    if (memcmp(tempHoldingReg, tempHoldingRegRead, this->values * 2) != 0) {
-      memcpy(tempHoldingReg, tempHoldingRegRead, this->values * 2);
-      result = true;
-    }
-  } else {
-    Serial.println("Read Temps modbus error: " + String(ModbusErr));
+  if (memcmp(tempHoldingReg, tempHoldingWork, this->values * 2) != 0) {
+    memcpy(tempHoldingReg, tempHoldingWork, this->values * 2);
+    result = true;
   }
   return result;
 }

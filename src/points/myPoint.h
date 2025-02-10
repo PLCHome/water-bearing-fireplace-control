@@ -28,6 +28,7 @@ public:
   int getId() const;
   ergPoint getOn() const;
   pointTyp getTyp() const;
+  void setOn(ergPoint on);
 };
 
 #endif /* MYPOINT_H_ */

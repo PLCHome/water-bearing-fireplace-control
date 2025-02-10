@@ -12,11 +12,11 @@ private:
   uint16_t adress;
   uint16_t values;
   uint8_t decimals;
+  void calcTo2Dec(int16_t *buf, int16_t *out, bool *p);
 
 public:
   bool init(DataCare *master) override;
   uint16_t getTempVals() override;
-  void calcTo2Dec(int16_t *buf);
   bool processTempValues() override;
 };
 

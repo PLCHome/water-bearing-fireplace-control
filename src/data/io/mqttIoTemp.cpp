@@ -57,7 +57,7 @@ int16_t mqttIoTemp::cut(uint8_t cuttype, int16_t aktval, int16_t cutval) {
 
 void mqttIoTemp::processCallback(char *topic, byte *payload,
                                  unsigned int length) {
-  if (this->active && strcmp(this->topic.c_str(), topic) == 0) {
+  if (this->active && !(this->master->getNoReadTemeratures(this->tempValsStart)[0]) && strcmp(this->topic.c_str(), topic) == 0) {
     JsonDocument doc;
     deserializeJson(doc, payload, length);
 

@@ -274,10 +274,9 @@ void handleSysinfo(AsyncWebServerRequest *request) {
   doc["chiprevision"] = ESP.getChipRevision();
   doc["cpufreqmhz"] = ESP.getCpuFreqMHz();
   doc["cyclecount"] = ESP.getCycleCount();
+  doc["wsclients"] = ws.getClients().size();
   doc["efusemac"] = String(ESP.getEfuseMac(), HEX);
 
-  doc["accesspointActive"] = accesspointActive;
-  doc["wifiaptime"] = WiFiAptime;
 #ifdef ETH01
   doc["lanactive"] = LANActive;
   doc["lanhostname"] = LANActive ? ETH.getHostname() : "";
@@ -286,6 +285,8 @@ void handleSysinfo(AsyncWebServerRequest *request) {
 #else
   doc["lanactive"] = fslse;
 #endif
+  doc["accesspointActive"] = accesspointActive;
+  doc["wifiaptime"] = WiFiAptime;
   doc["wifiactive"] = WiFiActive;
   doc["wifimode"] = WiFi.getMode();
   doc["wifihostname"] = WiFi.getHostname();
@@ -297,6 +298,34 @@ void handleSysinfo(AsyncWebServerRequest *request) {
 
   String json;
   serializeJson(doc, json);
+
+  request->send(200, "text/json", json);
+}
+
+void handleData(AsyncWebServerRequest *request) {
+  if (!request->hasArg("d")) {
+    request->send(500, "text/plain", "BAD ARGS");
+    return;
+  }
+
+  String d = request->arg("d");
+  String json = "";
+  if (d == "temp") {
+    json = datacare.jsonNoTemeratures(false);
+  } else if (d == "tpro") {
+    json = datacare.jsonNoTemeratures(false);
+  } else if (d == "di") {
+    json = datacare.jsonDI(false);
+  } else if (d == "do") {
+    json = datacare.jsonDO(false);
+  } else if (d == "points") {
+    json = mypoints.getJSONValue(false);
+  } else if (d == "mix") {
+    json = mypoints.getJSONValueMixer();
+  } else {
+    request->send(500, "text/plain", "BAD ARGS");
+    return;
+  }
 
   request->send(200, "text/json", json);
 }
@@ -384,6 +413,7 @@ void initWebserver() {
   server.on("/reboot", HTTP_GET, handleRestart);
   server.on("/setWifi", HTTP_POST, setWifi);
   server.on("/sysinfo", HTTP_GET, handleSysinfo);
+  server.on("/data", HTTP_GET, handleData);
   server.on("/count", HTTP_GET, handleCounts);
   server.on("/", HTTP_GET, handleForwardIndex);
   server.on("/index", HTTP_GET, handleForwardIndex);
@@ -417,6 +447,7 @@ void notifyClients(String sensorReadings) {
 void webDataChanged(uint32_t dataChange) {
   if ((dataChange & (CHANGE_TEMP + WSGET_DATA)) != 0) {
     notifyClients(datacare.jsonTemeratures(true));
+    notifyClients(datacare.jsonNoTemeratures(true));
   }
   if ((dataChange & (CHANGE_DI + WSGET_DATA)) != 0) {
     notifyClients(datacare.jsonDI(true));
@@ -511,6 +542,13 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
           int pos = key.substring(14).toInt();
           if (pos >= 0 && pos < datacare.getLenTemeratures()) {
             datacare.getLastTemeratures()[pos] = kv.value().as<int16_t>();
+          }
+        }
+        if (key.startsWith("noreadtemp")) {
+          int pos = key.substring(10).toInt();
+          if (pos >= 0 && pos < datacare.getLenTemeratures()) {
+            datacare.getNoReadTemeratures()[pos] = kv.value().as<bool>();
+            messagedispatcher.notify(CHANGE_TEMP);
           }
         }
       }

@@ -1,4 +1,5 @@
 #include "myPoint.h"
+#include "mypoints.h"
 
 myPoint::myPoint(JsonVariant json, pointTyp type) : type(type) {
   if (json["name"].is<String>()) {
@@ -43,3 +44,10 @@ int myPoint::getId() const { return this->id; }
 ergPoint myPoint::getOn() const { return this->on; }
 
 pointTyp myPoint::getTyp() const { return this->type; }
+
+void myPoint::setOn(ergPoint on){
+  if (this->on != on) {
+    this->on = on;
+    mypoints.setChanged();
+  }
+}

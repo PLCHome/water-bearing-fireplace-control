@@ -327,6 +327,7 @@ function buildSetup() {
   // Handle network errors, timeouts, and other issues
   $.ajax({
     url: GETSETUPPARA,
+    data: {_: new Date().getTime()},
     dataType: 'json',
     timeout: 5000, // Timeout set to 5 seconds
     success: function (data) {

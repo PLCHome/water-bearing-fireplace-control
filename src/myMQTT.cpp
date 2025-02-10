@@ -149,7 +149,8 @@ void myMQTT::publish(String topic, String message) {
 
 void myMQTT::onMessage(uint32_t dataChange) {
   if ((dataChange & (CHANGE_TEMP + MQTTGET_DATA)) != 0) {
-    this->publish("temeratures", datacare.jsonTemeratures(false));
+    this->publish("temperatures", datacare.jsonTemeratures(false));
+    this->publish("noreadtemp", datacare.jsonTemeratures(false));
   }
   if ((dataChange & (CHANGE_DI + MQTTGET_DATA)) != 0) {
     this->publish("inputs", datacare.jsonDI(false));

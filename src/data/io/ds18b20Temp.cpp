@@ -15,17 +15,17 @@ uint16_t ds18b20Temp::getTempVals() { return 1; }
 
 bool ds18b20Temp::processTempValues() {
   bool result = false;
-  if (this->active) {
 
     int16_t *tempHoldingRegRead =
         master->getLastTemeratures(this->tempValsStart);
     int16_t *tempHoldingReg = master->getTemeratures(this->tempValsStart);
 
-    tempHoldingRegRead[0] = master->getDs18b20()->getTemp(this->device);
+    if (this->active && !(this->master->getNoReadTemeratures(this->tempValsStart)[0])) {
+      tempHoldingRegRead[0] = master->getDs18b20()->getTemp(this->device);
+    }
     if (memcmp(tempHoldingReg, tempHoldingRegRead, 2) != 0) {
       memcpy(tempHoldingReg, tempHoldingRegRead, 2);
       result = true;
     }
-  }
   return result;
 }

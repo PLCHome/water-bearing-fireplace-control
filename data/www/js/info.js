@@ -1,4 +1,5 @@
 const description = {
+  "version": "Version",
   "uptime": "Total up time of ESP (maximum 47 days)",
   "temp": "ESP CPU temperature",
   "reason": "Reason last start",
@@ -31,7 +32,8 @@ const description = {
   "wifiipv6": "Wi-Fi IP v6",
   "freeheapsize": "free heap memory (freeRTOS)",
   "minimumeverfreeheapsize": "lowest recorded free heap memory (freeRTOS)",
-  "ds18b20ids": "DS18B20 sensor ids found on the bus."
+  "ds18b20ids": "DS18B20 sensor ids found on the bus.",
+  "wsclients": "Connected websocket clients"
 };
 
 function foyesno(val) {
