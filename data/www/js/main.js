@@ -66,7 +66,8 @@ function updateBuild() {
     <form class="w3-container" method="POST" action="/update" enctype="multipart/form-data">
       <input class="w3-input" type="file" name="update">
       <input class="w3-input" type="submit" value="Upload">
-    </form>`
+    </form>
+    <i data-update="update"> &nbsp; </i>`
   );
 }
 

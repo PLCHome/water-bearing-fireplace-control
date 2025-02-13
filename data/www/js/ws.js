@@ -48,7 +48,7 @@ function onClose(event) {
 
 function setValue(path, val) {
   let ele = $(`[data-update='${path}']`)
-  if (ele && ele.hasClass) {
+  if (ele && ele.hasClass && ele.html) {
     // Prüfen, ob bereits ein Eingabefeld offen ist
     if (ele.find(".input-overlay").length > 0) {
       return; // Wenn ja, nicht überschreiben
@@ -74,6 +74,7 @@ function setValue(path, val) {
       html = val;
     }
     ele.html(html);
+
   }
 }
 
@@ -122,7 +123,7 @@ function onMessage(event) {
       }
     }
   }
-  console.log(typeof myObj);
+  //console.log(typeof myObj);
   if (myObj) change('', myObj);
 }
 

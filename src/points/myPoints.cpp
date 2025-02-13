@@ -1,10 +1,8 @@
 #include "myPoints.h"
 #include "myLogicPoint.h"
-#include "myMixerPoint.h"
 #include "myMixerTPoint.h"
 #include "myPidMixerPoint.h"
 #include "myOutPoint.h"
-#include "myTempPoint.h"
 #include "myTempTPoint.h"
 
 #include "MessageDispatcher.h"
@@ -93,9 +91,9 @@ String myPoints::getJSONValueMixer() {
   JsonVariant data = doc.to<JsonVariant>();
 
   for (auto *loop : vmypoint) {
-    if (loop->getTyp() == PT_MIXER || loop->getTyp() == PT_MIXERT) {
+    if (loop->getTyp() == PT_MIXERT) {
       JsonObject idoc = data[String(loop->getId())].to<JsonObject>();
-      ((myMixerPoint *)loop)->getJson(idoc);
+      ((myMixerTPoint *)loop)->getJson(idoc);
     }
   }
 
@@ -142,9 +140,6 @@ void myPoints::build() {
             pointTyp typ = value["type"].as<pointTyp>();
             Serial.println(String("Erzeuge Typ: ") + String(typ));
             switch (typ) {
-            case PT_TEMP:
-              next = new myTempPoint(value, typ);
-              break;
             case PT_TEMPT:
               next = new myTempTPoint(value, typ);
               break;
@@ -153,9 +148,6 @@ void myPoints::build() {
               break;
             case PT_OUT:
               next = new myOutPoint(value, typ);
-              break;
-            case PT_MIXER:
-              next = new myMixerPoint(value, typ);
               break;
             case PT_MIXERT:
               next = new myMixerTPoint(value, typ);

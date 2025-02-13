@@ -32,11 +32,9 @@ const BARBUTTONS = `
 <a class="mySaveButton"><i class="fa-regular fa-floppy-disk"></i> save</a>`;
 
 const EXTBUTTONS = `
-<a data-type="${PT_TEMP}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature value</a>
 <a data-type="${PT_TEMPT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> temperature to another</a>
 <a data-type="${PT_LOGIC}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> logic</a>
 <a data-type="${PT_OUT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> output</a>
-<a data-type="${PT_MIXER}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> mixer</a>
 <a data-type="${PT_MIXERT}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> mixer to measurement</a>
 <a data-type="${PT_PIDMIXER}" class="myAddButton"><i class="fa-solid fa-file-circle-plus"></i> pid-mixer</a>`;
 
@@ -91,7 +89,7 @@ const BAR2TEMPERATURE = `<form>
     </div>
     <div class="edit-item">
       <select id="tpos2-%id%" class="tpos2 tempselect" ></select>
-      <label for="tpos2-%id%">hysteresis measurement <a class="value div100">&nbsp;</a> <i class="process processind">&nbsp;</i></label>
+      <label for="tpos2-%id%">target temperature <a class="value div100">&nbsp;</a> <i class="process processind">&nbsp;</i></label>
     </div>
     <div class="edit-sitem">
       <input id="t2minus-%id%" class="t2minus 2dec_input"/>

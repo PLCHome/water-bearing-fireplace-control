@@ -4,7 +4,7 @@
 #define DEBUG_ETHERNET_WEBSERVER_PORT Serial
 #define _ASYNC_WEBSERVER_LOGLEVEL_ 0
 #include "esp_system.h"
-#define DEBUG_NOTIFYCLIENTS
+//#define DEBUG_NOTIFYCLIENTS
 
 #include "myServer.h"
 #include <ArduinoJson.h>
@@ -44,6 +44,7 @@ unsigned long WiFiAptime = 600000;
 unsigned long WiFiApstarttime = 0;
 bool WiFiActive = true;
 bool LANActive = false;
+bool reboot = false;
 
 /**
  * @brief Converts bytes to a human-readable string format (B, KB, MB, or GB).
@@ -146,8 +147,8 @@ void handleFileList(AsyncWebServerRequest *request) {
  * @param request The web server request.
  */
 void handleRestart(AsyncWebServerRequest *request) {
-  request->send(200);
-  ESP.restart();
+  request->redirect("/index.html");
+  reboot = true;
 }
 
 /**
@@ -311,7 +312,7 @@ void handleData(AsyncWebServerRequest *request) {
   String d = request->arg("d");
   String json = "";
   if (d == "temp") {
-    json = datacare.jsonNoTemeratures(false);
+    json = datacare.jsonTemeratures(false);
   } else if (d == "tpro") {
     json = datacare.jsonNoTemeratures(false);
   } else if (d == "di") {
@@ -373,32 +374,50 @@ void setWifi(AsyncWebServerRequest *request) {
   }
 };
 
+void updateMsg(const char *msg){
+  JsonDocument doc;
+  doc["update"] = msg;
+  String json;
+  serializeJson(doc, json);
+  notifyClients(json);
+}
+
 void onUpdateStart(AsyncWebServerRequest *request) {
   bool updateSuccess = !Update.hasError();
-  AsyncWebServerResponse *response = request->beginResponse(
-      200, "text/plain",
-      updateSuccess ? "Update erfolgreich!" : "Update fehlgeschlagen!");
-  response->addHeader("Connection", "close");
-  request->send(response);
-  ESP.restart();
+  const char * msg = updateSuccess ? "Update erfolgreich!" : "Update fehlgeschlagen!";
+  updateMsg(msg);
+  if (updateSuccess) {
+    request->redirect("/reboot");
+  } else {
+    AsyncWebServerResponse *response = request->beginResponse(
+        200, "text/plain",
+        msg);
+    response->addHeader("Connection", "close");
+    request->send(response);
+  }
 }
 
 void onUpdateDo(AsyncWebServerRequest *request, String filename, size_t index,
                 uint8_t *data, size_t len, bool final) {
   if (!index) {
     Serial.printf("Update gestartet: %s\n", filename.c_str());
+    updateMsg("Update gestartet");
     if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
       Update.printError(Serial);
+      updateMsg(Update.errorString());
     }
   }
   if (Update.write(data, len) != len) {
     Update.printError(Serial);
+    updateMsg(Update.errorString());
   }
   if (final) {
     if (Update.end(true)) {
       Serial.printf("Update erfolgreich: %u Bytes\n", index + len);
+      updateMsg("Update erfolgreich");
     } else {
       Update.printError(Serial);
+      updateMsg(Update.errorString());
     }
   }
 };
@@ -518,7 +537,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       } else if (strcmp((char *)data, "reloadPoints") == 0) {
         mypoints.build();
       } else if (strcmp((char *)data, "reboot") == 0) {
-        ESP.restart();
+        reboot = true;
       } else if (strcmp((char *)data, "wifilist") == 0) {
         sendWifiList();
       } else if (strcmp((char *)data, "ds18b20ids") == 0) {
@@ -730,5 +749,9 @@ void WEBloop() {
                      " < " + String(millis() - WiFiApstarttime));
       stopAccessPoint();
     }
+  }
+  if (reboot) {
+    sleep(1000);
+    ESP.restart();
   }
 }

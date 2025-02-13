@@ -79,11 +79,7 @@ void mqttIoTemp::processCallback(char *topic, byte *payload,
     }
 
     if (!current.isNull()) {
-      Serial.print("Wert für ");
-      Serial.print(this->json);
-      Serial.print(": ");
       int16_t newval = round(current.as<float>() * valtyp);
-      Serial.println(newval);
       if (newval < this->minval) {
         newval = cut(this->mincut, newval, this->minval);
       } else if (newval > this->maxval) {
@@ -98,7 +94,6 @@ void mqttIoTemp::processCallback(char *topic, byte *payload,
     String out;
     serializeJson(doc, out);
     doc.clear();
-    Serial.println(out);
   }
 };
 
