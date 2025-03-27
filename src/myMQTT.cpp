@@ -12,19 +12,19 @@ myMQTT::myMQTT() : client(espClient) {}
 
 // Callback for received messages
 void myMQTT::callback(char *topic, byte *payload, unsigned int length) {
-  //if (topic[0]!=0) {
-    Serial.print("Message received on topic: ");
-    Serial.println(topic);
-    Serial.print("Message: ");
-    for (unsigned int i = 0; i < length; i++) {
-      Serial.print((char)payload[i]);
-    }
-    Serial.println();
-    for (auto &mqttreg : mymqtt->mqttRegister) {
-      mqttreg->processCallback(topic, payload, length);
-    }
-  //}
+  mymqtt->docallback(topic, payload, length);
+  Serial.print("Message received on topic: ");
+  Serial.println(topic);
+  Serial.print("Message: ");
+  for (unsigned int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+  for (auto &mqttreg : mymqtt->mqttRegister) {
+    mqttreg->processCallback(topic, payload, length);
+  }
 }
+
 
 // myMQTT Initialization function
 void myMQTT::init() {
@@ -147,10 +147,32 @@ void myMQTT::publish(String topic, String message) {
   }
 }
 
+void myMQTT::docallback(char *topic, byte *payload, unsigned int length) {
+  u_int8_t len = strlen(this->subscribeTopic);
+  if (strncmp(this->subscribeTopic, topic, len) == 0) {
+    if (strcmp("query", &topic[len]) == 0) {
+      if (strncmp("all", (char *)payload, length) == 0) {
+        messagedispatcher.notify(MQTTGET_DATA);
+      } else if (strncmp("temps", (char *)payload, length) == 0) {
+        messagedispatcher.notify(CHANGE_TEMP);
+      } else if (strncmp("inputs", (char *)payload, length) == 0) {
+        messagedispatcher.notify(CHANGE_DI);
+      } else if (strncmp("outpus", (char *)payload, length) == 0) {
+        messagedispatcher.notify(CHANGE_DO);
+      } else if (strncmp("points", (char *)payload, length) == 0) {
+        messagedispatcher.notify(CHANGE_POINTS);
+      } else if (strncmp("mixer", (char *)payload, length) == 0) {
+        messagedispatcher.notify(CHANGE_MIXER);
+      }
+    }
+  }
+}
+
+
 void myMQTT::onMessage(uint32_t dataChange) {
   if ((dataChange & (CHANGE_TEMP + MQTTGET_DATA)) != 0) {
-    this->publish("temperatures", datacare.jsonTemeratures(false));
-    this->publish("noreadtemp", datacare.jsonTemeratures(false));
+    this->publish("temps", datacare.jsonTemeratures(false));
+    this->publish("tempsnoop", datacare.jsonNoTemeratures(false));
   }
   if ((dataChange & (CHANGE_DI + MQTTGET_DATA)) != 0) {
     this->publish("inputs", datacare.jsonDI(false));
@@ -164,8 +186,8 @@ void myMQTT::onMessage(uint32_t dataChange) {
   if ((dataChange & (CHANGE_POINTS + MQTTGET_DATA)) != 0) {
     this->publish("points", mypoints.getJSONValue(false));
   }
-  if ((dataChange & (CHANGE_MIXER)) != 0) {
-    this->publish("points", mypoints.getJSONValueMixer());
+  if ((dataChange & (CHANGE_MIXER + MQTTGET_DATA)) != 0) {
+    this->publish("mixer", mypoints.getJSONValueMixer());
   }
 }
 

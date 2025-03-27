@@ -59,6 +59,7 @@ public:
   myMQTT();    // Constructor
   void init(); // myMQTT initialization function
   String cleanSubscribTopic(String topic);
+  void docallback(char *topic, byte *payload, unsigned int length);
   void loop();      // myMQTT loop function to be called regularly
   void reconnect(); // Reconnect to the broker if disconnected
   String cleanPubTopic(String topic);
