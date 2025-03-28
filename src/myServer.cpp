@@ -751,7 +751,8 @@ void WEBloop() {
     }
   }
   if (reboot) {
-    sleep(1000);
+    Serial.println("Restart!");
+    delay(200);
     ESP.restart();
   }
 }

@@ -3,7 +3,7 @@
 #include "data/DataCare.h"
 #include "points/myPoints.h"
 
-//#define DEBUG_MQTTPUB
+// #define DEBUG_MQTTPUB
 
 myMQTT *mymqtt = new myMQTT();
 
@@ -24,7 +24,6 @@ void myMQTT::callback(char *topic, byte *payload, unsigned int length) {
     mqttreg->processCallback(topic, payload, length);
   }
 }
-
 
 // myMQTT Initialization function
 void myMQTT::init() {
@@ -95,12 +94,13 @@ String myMQTT::cleanPubTopic(String topic) {
 // Reconnect to the myMQTT broker
 void myMQTT::reconnect() {
   // Keep trying to reconnect while not connected
-  if (this->client.connect(this->clientId, this->user, this->pass, this->willTopic,
-                     this->willQos, this->willRetain, this->willMessage)) {
+  if (this->client.connect(this->clientId, this->user, this->pass,
+                           this->willTopic, this->willQos, this->willRetain,
+                           this->willMessage)) {
     Serial.println("MQTT Connected!");
     if (this->connectTopic) {
       this->client.publish(this->connectTopic, this->connectMessage,
-                     this->connectRetain);
+                           this->connectRetain);
     }
     if (this->subscribeTopic) {
       this->client.subscribe(this->subscribeTopic, this->subscribeQos);
@@ -122,11 +122,11 @@ void myMQTT::loop() {
     if (!client.connected()) {
       if (millis() - this->lastConnect > this->connectTime)
         reconnect(); // Reconnect if the connection is lost
-    } else
-      if (xSemaphoreTake(this->xMutex, portMAX_DELAY)) {
-        client.loop(); // Update the myMQTT client to process incoming and outgoing messages
-        xSemaphoreGive(this->xMutex);
-      }
+    } else if (xSemaphoreTake(this->xMutex, portMAX_DELAY)) {
+      client.loop(); // Update the myMQTT client to process incoming and
+                     // outgoing messages
+      xSemaphoreGive(this->xMutex);
+    }
   }
 }
 
@@ -135,7 +135,8 @@ void myMQTT::publish(String topic, String message) {
   if (this->active) {
     if (client.connected() && xSemaphoreTake(this->xMutex, portMAX_DELAY)) {
       String top = this->publishTopic + topic;
-      boolean send = client.publish(top.c_str(), message.c_str(), this->publishRetain);
+      boolean send =
+          client.publish(top.c_str(), message.c_str(), this->publishRetain);
       xSemaphoreGive(this->xMutex);
 #ifdef DEBUG_MQTTPUB
       Serial.print(top + " " + send + " sent: ");
@@ -167,7 +168,6 @@ void myMQTT::docallback(char *topic, byte *payload, unsigned int length) {
     }
   }
 }
-
 
 void myMQTT::onMessage(uint32_t dataChange) {
   if ((dataChange & (CHANGE_TEMP + MQTTGET_DATA)) != 0) {

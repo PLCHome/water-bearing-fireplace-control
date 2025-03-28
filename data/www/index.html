@@ -41,12 +41,14 @@
     async function loadScripts(scriptUrls, callback) {
       let loadedScripts = 0;
       base = "";
-      try {
-        const response = await fetch('http://localhost:8090/data/www/js/main.js', { method: 'HEAD' });
-        if (response.ok) {
-          base = "http://localhost:8090/data/www";
-        };
-      } catch (error) {
+      if (window.location.host.startsWith("192.168.2.") && location.host.startsWith("192.168.2.")) {
+        try {
+          const response = await fetch('http://localhost:8090/data/www/js/main.js', { method: 'HEAD' });
+          if (response.ok) {
+            base = "http://localhost:8090/data/www";
+          };
+        } catch (error) {
+        }
       }
 
       scriptUrls.forEach((url) => {
