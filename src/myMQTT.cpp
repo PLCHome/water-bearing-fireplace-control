@@ -98,15 +98,18 @@ void myMQTT::reconnect() {
                            this->willTopic, this->willQos, this->willRetain,
                            this->willMessage)) {
     Serial.println("MQTT Connected!");
-    if (this->connectTopic) {
-      this->client.publish(this->connectTopic, this->connectMessage,
-                           this->connectRetain);
-    }
-    if (this->subscribeTopic) {
-      this->client.subscribe(this->subscribeTopic, this->subscribeQos);
-    }
-    for (auto &mqttreg : mymqtt->mqttRegister) {
-      mqttreg->onConnection(&this->client);
+    if (xSemaphoreTake(this->xMutex, portMAX_DELAY)) {
+      if (this->connectTopic) {
+        this->client.publish(this->connectTopic, this->connectMessage,
+                            this->connectRetain);
+      }
+      if (this->subscribeTopic) {
+        this->client.subscribe(this->subscribeTopic, this->subscribeQos);
+      }
+      for (auto &mqttreg : mymqtt->mqttRegister) {
+        mqttreg->onConnection(&this->client);
+      }
+      xSemaphoreGive(this->xMutex);
     }
     messagedispatcher.notify(MQTTGET_DATA);
   } else {
