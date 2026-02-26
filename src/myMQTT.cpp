@@ -152,20 +152,26 @@ void myMQTT::publish(String topic, String message) {
 }
 
 void myMQTT::docallback(char *topic, byte *payload, unsigned int length) {
-  u_int8_t len = strlen(this->subscribeTopic);
+  u_int8_t len = strlen(this->subscribeTopic)-1;
   if (strncmp(this->subscribeTopic, topic, len) == 0) {
     if (strcmp("query", &topic[len]) == 0) {
       if (strncmp("all", (char *)payload, length) == 0) {
+        //Serial.println("MQTTGET_DATA");
         messagedispatcher.notify(MQTTGET_DATA);
       } else if (strncmp("temps", (char *)payload, length) == 0) {
+        //Serial.println("CHANGE_TEMP");
         messagedispatcher.notify(CHANGE_TEMP);
       } else if (strncmp("inputs", (char *)payload, length) == 0) {
+        //Serial.println("CHANGE_DI");
         messagedispatcher.notify(CHANGE_DI);
-      } else if (strncmp("outpus", (char *)payload, length) == 0) {
+      } else if (strncmp("outputs", (char *)payload, length) == 0) {
+        //Serial.println("CHANGE_DO");
         messagedispatcher.notify(CHANGE_DO);
       } else if (strncmp("points", (char *)payload, length) == 0) {
+        //Serial.println("CHANGE_POINTS");
         messagedispatcher.notify(CHANGE_POINTS);
       } else if (strncmp("mixer", (char *)payload, length) == 0) {
+        //Serial.println("CHANGE_MIXER");
         messagedispatcher.notify(CHANGE_MIXER);
       }
     }
@@ -181,7 +187,7 @@ void myMQTT::onMessage(uint32_t dataChange) {
     this->publish("inputs", datacare.jsonDI(false));
   }
   if ((dataChange & (CHANGE_DO + MQTTGET_DATA)) != 0) {
-    this->publish("outpus", datacare.jsonDO(false));
+    this->publish("outputs", datacare.jsonDO(false));
   }
   // if (dataChange & (CHANGE_LED|WSGET_DATA) != 0) {
   //     notifyClients(datacare.jsonLED());
