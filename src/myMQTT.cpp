@@ -95,10 +95,9 @@ String myMQTT::cleanPubTopic(String topic) {
 void myMQTT::reconnect() {
   // Keep trying to reconnect while not connected
   if (this->client.connect(this->clientId, this->user, this->pass,
-                           this->willTopic, this->willQos, this->willRetain,
-                           this->willMessage)) {
+                          this->willTopic, this->willQos, this->willRetain,
+                          this->willMessage)) {
     Serial.println("MQTT Connected!");
-    if (xSemaphoreTake(this->xMutex, portMAX_DELAY)) {
       if (this->connectTopic) {
         this->client.publish(this->connectTopic, this->connectMessage,
                             this->connectRetain);
@@ -109,8 +108,6 @@ void myMQTT::reconnect() {
       for (auto &mqttreg : mymqtt->mqttRegister) {
         mqttreg->onConnection(&this->client);
       }
-      xSemaphoreGive(this->xMutex);
-    }
     messagedispatcher.notify(MQTTGET_DATA);
   } else {
     Serial.print("Failed, rc=");
@@ -122,12 +119,14 @@ void myMQTT::reconnect() {
 // myMQTT loop function (to be called regularly)
 void myMQTT::loop() {
   if (this->active) {
-    if (!client.connected()) {
-      if (millis() - this->lastConnect > this->connectTime)
-        reconnect(); // Reconnect if the connection is lost
-    } else if (xSemaphoreTake(this->xMutex, portMAX_DELAY)) {
-      client.loop(); // Update the myMQTT client to process incoming and
-                     // outgoing messages
+    if (xSemaphoreTake(this->xMutex, portMAX_DELAY)) {
+      if (!client.connected()) {
+        if (millis() - this->lastConnect > this->connectTime)
+          reconnect(); // Reconnect if the connection is lost
+      } else {
+        client.loop(); // Update the myMQTT client to process incoming and
+                      // outgoing messages
+      }
       xSemaphoreGive(this->xMutex);
     }
   }

@@ -3,6 +3,7 @@
 
 #include "Hardware.h"
 #include <Arduino.h>
+/*
 #include <DallasTemperature.h>
 #include <OneWire.h>
 
@@ -23,5 +24,5 @@ public:
   bool stringToDeviceAddress(const String &str, DeviceAddress &address);
   int16_t getTemp(const DeviceAddress &address);
 };
-
+*/
 #endif /* DS18B20_H_ */

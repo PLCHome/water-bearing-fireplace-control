@@ -4,6 +4,7 @@
 #include "../DataCare.h"
 #include "Datatool.h"
 #include <Arduino.h>
+/*
 #include <DallasTemperature.h>
 
 class ds18b20Temp : public Datatool {
@@ -16,5 +17,6 @@ public:
   uint16_t getTempVals() override;
   bool processTempValues() override;
 };
+*/
 
 #endif /* DS18B20TEMP_H_ */

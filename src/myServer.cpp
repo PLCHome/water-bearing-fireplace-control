@@ -293,9 +293,9 @@ void handleSysinfo(AsyncWebServerRequest *request) {
   doc["wifihostname"] = WiFi.getHostname();
   doc["wifiip"] = WiFi.localIP().toString();
   doc["wifiipv6"] = WiFi.localIPv6().toString();
-  if (datacare.getDs18b20()) {
+  /*if (datacare.getDs18b20()) {
     doc["ds18b20ids"] = datacare.getDs18b20()->getJsonIDs(false);
-  }
+  }*/
 
   String json;
   serializeJson(doc, json);
@@ -540,10 +540,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         reboot = true;
       } else if (strcmp((char *)data, "wifilist") == 0) {
         sendWifiList();
-      } else if (strcmp((char *)data, "ds18b20ids") == 0) {
+      /*} else if (strcmp((char *)data, "ds18b20ids") == 0) {
         if (datacare.getDs18b20()) {
           notifyClients(datacare.getDs18b20()->getJsonIDs(true));
-        }
+        }*/
       }
     } else {
       JsonDocument doc;

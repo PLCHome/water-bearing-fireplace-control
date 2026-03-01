@@ -1,4 +1,5 @@
 #include "ds18b20Temp.h"
+/*
 #include "../../mySetup.h"
 
 bool ds18b20Temp::init(DataCare *master) {
@@ -29,3 +30,4 @@ bool ds18b20Temp::processTempValues() {
     }
   return result;
 }
+*/

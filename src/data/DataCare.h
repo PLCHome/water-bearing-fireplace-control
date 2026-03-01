@@ -2,7 +2,7 @@
 #define DATACARE_H_
 
 #include "hardware/Beeb.h"
-#include "hardware/DS18B20.h"
+//#include "hardware/DS18B20.h"
 #include "hardware/Gpio.h"
 #include "hardware/I2C.h"
 #include "hardware/Modbus.h"
@@ -27,7 +27,7 @@ private:
   I2C *i2c;
   Beeb *beeb;
   Gpio *gpio;
-  DS18B20 *ds18b20;
+  //DS18B20 *ds18b20;
   std::vector<Datatool *> datatools;
 
   int16_t *temeratures;
@@ -78,7 +78,7 @@ public:
   I2C *getI2C() const;
   Beeb *getBeeb() const;
   Gpio *getGpio() const;
-  DS18B20 *getDs18b20() const;
+  //DS18B20 *getDs18b20() const;
 
   int16_t *getTemeratures(int16_t pos = 0) const;
   int16_t *getLastTemeratures(int16_t pos = 0) const;

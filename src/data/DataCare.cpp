@@ -5,7 +5,7 @@
 #include "../mySetup.h"
 
 #include "io/beebDOut.h"
-#include "io/ds18b20Temp.h"
+//#include "io/ds18b20Temp.h"
 #include "io/gpioDio.h"
 #include "io/modbDOut.h"
 #include "io/modbTemp.h"
@@ -19,7 +19,7 @@ DataCare::DataCare() {
   this->i2c = new I2C();
   this->beeb = new Beeb();
   this->gpio = new Gpio();
-  this->ds18b20 = new DS18B20();
+  //this->ds18b20 = new DS18B20();
 }
 
 void DataCare::init() {
@@ -27,7 +27,7 @@ void DataCare::init() {
   this->i2c->init();
   this->beeb->init();
   this->gpio->init();
-  this->ds18b20->init();
+  //this->ds18b20->init();
 
   createIO();
 
@@ -105,7 +105,7 @@ void DataCare::createIO() {
           {"outputs", []() { return new modbDOut(); }},
           {"beeb", []() { return new beebDOut(); }},
           {"gpio", []() { return new gpioDio(); }},
-          {"ds18b20s", []() { return new ds18b20Temp(); }},
+          //{"ds18b20s", []() { return new ds18b20Temp(); }},
           {"mqtts", []() { return new mqttIoTemp(); }}};
 
       if (actions.find(card) != actions.end()) {
@@ -184,13 +184,13 @@ void DataCare::initLedVals() {
 
 bool DataCare::processTempValues() {
   bool result = false;
-  if (this->getDs18b20())
-    this->getDs18b20()->requestTemperatures();
+  //if (this->getDs18b20())
+  //  this->getDs18b20()->requestTemperatures();
   for (const auto &datatool : this->datatools) {
     result |= datatool->processTempValues();
   }
-  if (this->getDs18b20())
-    this->getDs18b20()->temperaturesFinished();
+  //if (this->getDs18b20())
+  //  this->getDs18b20()->temperaturesFinished();
   return result;
 }
 
@@ -270,7 +270,7 @@ Beeb *DataCare::getBeeb() const { return this->beeb; }
 
 Gpio *DataCare::getGpio() const { return this->gpio; }
 
-DS18B20 *DataCare::getDs18b20() const { return this->ds18b20; }
+//DS18B20 *DataCare::getDs18b20() const { return this->ds18b20; }
 
 int16_t *DataCare::getTemeratures(int16_t pos) const {
   return &this->temeratures[pos];

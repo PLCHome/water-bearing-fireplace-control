@@ -1,5 +1,5 @@
 #include "DS18B20.h"
-
+/*
 #include "../../KC868-A8S.h"
 #include "../../mySetup.h"
 
@@ -81,3 +81,4 @@ int16_t DS18B20::getTemp(const DeviceAddress &address) {
   }
   return 0;
 }
+*/
